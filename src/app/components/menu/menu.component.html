@@ -1,6 +1,22 @@
-<nav>
-  <ul>
-    <li><a routerLink="/home" routerLinkActive="active">Home</a></li>
-    <li><a routerLink="/about" routerLinkActive="active">About</a></li>
+<nav class="bg-gray-800 p-4">
+  <ul class="flex gap-4 list-none m-0 p-0">
+    <li>
+      <a
+        routerLink="/home"
+        routerLinkActive="bg-blue-600 font-bold"
+        class="text-white no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-gray-600"
+      >
+        Home
+      </a>
+    </li>
+    <li>
+      <a
+        routerLink="/about"
+        routerLinkActive="bg-blue-600 font-bold"
+        class="text-white no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-gray-600"
+      >
+        About
+      </a>
+    </li>
   </ul>
 </nav>
