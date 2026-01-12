@@ -2,6 +2,31 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.19.
 
+## Project Priorities
+
+### ‼️ High Priority
+
+- Login
+- Roles
+- Lista eventos —> detalles
+- Inscripción —> form
+- Capitanes —> random de los yes eventoActividad
+- Equipos (crear capitan con find de user) —> detalles (colores)
+- Resultados
+
+### ⚠️ Medium Priority
+
+- Calendario
+- Quien ha pagado
+- Ver aulas (profe/admin)
+- Materiales
+
+### 🟢 Low Priority
+
+- Ubicaciones (mapa)
+- Color por equipo
+- Clasificación
+
 ## Development server
 
 To start a local development server, run:
