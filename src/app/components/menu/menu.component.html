@@ -1,22 +1,34 @@
-<nav class="bg-gray-800 p-4">
-  <ul class="flex gap-4 list-none m-0 p-0">
-    <li>
+<nav class="bg-blue-400 p-4">
+  <div class="flex items-center justify-between">
+    <!-- Logo izquierda -->
+    <div class="flex items-center">
+      <img
+        src="/images/logo-tajamar.png"
+        alt="Logo Tajamar"
+        class="h-10 w-auto"
+      />
+    </div>
+
+    <!-- Home centro -->
+    <div class="flex-1 flex justify-center">
       <a
         routerLink="/home"
         routerLinkActive="bg-blue-600 font-bold"
-        class="text-white no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-gray-600"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
       >
         Home
       </a>
-    </li>
-    <li>
+    </div>
+
+    <!-- Perfil derecha -->
+    <div class="flex items-center">
       <a
-        routerLink="/about"
+        routerLink="/perfil"
         routerLinkActive="bg-blue-600 font-bold"
-        class="text-white no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-gray-600"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
       >
-        About
+        Perfil
       </a>
-    </li>
-  </ul>
+    </div>
+  </div>
 </nav>

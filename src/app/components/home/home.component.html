@@ -1,5 +1,43 @@
-<div class="home-container">
-  <h1>Welcome to Home</h1>
-  <p>This is the home page of your Angular application.</p>
-  <p>You can navigate to different pages using the menu above.</p>
+<div class="home-container p-8">
+  <div class="grid grid-cols-2 gap-8">
+    <!-- Bloque Izquierdo - Inscribirse -->
+    @if (eventosProximos.length > 0 ) {
+      <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4 text-gray-800">Inscribete al siguiente evento</h2>
+        <div class="border-l-4 border-blue-400 pl-4 py-2 mb-6">
+          <p class="font-semibold text-gray-800">{{ eventosProximos[0].fechaEvento }}</p>
+          
+          <div class="flex flex-wrap gap-2">
+            @for (actividad of eventosProximos[0].listaActividades; track actividad.idActividad) {
+              <span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
+                {{ actividad.nombre }}
+              </span>
+            }
+          </div>
+        </div>
+        <button class="bg-blue-400 text-black px-6 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold">
+          Inscribir
+        </button>
+      </div>
+    }
+
+    <!-- Bloque Derecho - Proximos Eventos -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+      <h2 class="text-2xl font-bold mb-6 text-gray-800">Proximos Eventos</h2>
+      <div class="space-y-4">
+        @for (evento of eventosProximos; track evento.idEvento) {
+          <div class="border-l-4 border-blue-400 pl-4 py-2">
+            <p class="font-semibold text-gray-800">{{ evento.fechaEvento }}</p>
+            <div class="flex flex-wrap gap-2">
+              @for (actividad of evento.listaActividades; track actividad.idActividad) {
+                <span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
+                  {{ actividad.nombre }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
 </div>
