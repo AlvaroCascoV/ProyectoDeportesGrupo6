@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos.service';
 
 @Component({
   selector: 'app-eventos',
   standalone: true,
+  imports: [RouterModule],
   templateUrl: './eventos.component.html',
   styleUrl: './eventos.component.css',
 })
