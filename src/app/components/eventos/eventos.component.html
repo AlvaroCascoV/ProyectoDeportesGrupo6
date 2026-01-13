@@ -1,0 +1,70 @@
+<div class="eventos-container p-8">
+  <h1 class="text-3xl font-bold mb-6 text-gray-800">Eventos</h1>
+
+  @if (eventos.length > 0) {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (evento of eventos; track evento.idEvento) {
+    <div
+      class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+      [class.border-blue-500]="comprobarFechaProxima(evento)"
+      [class.border-4]="comprobarFechaProxima(evento)"
+    >
+      <div class="mb-4">
+        <h2 class="text-xl font-bold text-gray-800 mb-2">
+          {{ evento.fechaEvento }}
+        </h2>
+
+        @if (comprobarFechaProxima(evento)) {
+        <span
+          class="inline-block mt-2 bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-semibold"
+        >
+          Próximo
+        </span>
+        } @else {
+        <span
+          class="inline-block mt-2 bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold"
+        >
+          Pasado
+        </span>
+        }
+      </div>
+
+      <div class="mb-4">
+        <h3 class="text-sm font-semibold text-gray-600 mb-2">Actividades:</h3>
+        @if (evento.listaActividades && evento.listaActividades.length > 0) {
+        <div class="flex flex-wrap gap-2">
+          @for ( actividad of evento.listaActividades; track
+          actividad.idActividad ) {
+          <span
+            class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold"
+          >
+            {{ actividad.nombre }}
+          </span>
+          }
+        </div>
+        } @else {
+        <p class="text-sm text-gray-500 italic">No hay actividades asignadas</p>
+        }
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-gray-200">
+        <p class="text-sm text-gray-600 mb-4">
+          Profesor ID: {{ evento.idProfesor }}
+        </p>
+        @if (comprobarFechaProxima(evento)) {
+        <button
+          class="bg-blue-400 text-black px-6 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold w-50"
+        >
+          Inscribir
+        </button>
+        }
+      </div>
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="bg-white p-8 rounded-lg shadow-md text-center">
+    <p class="text-gray-600 text-lg">No hay eventos disponibles</p>
+  </div>
+  }
+</div>

@@ -10,21 +10,35 @@
     </div>
 
     <!-- Home centro -->
-    <div class="flex-1 flex justify-center">
-      <a
-        routerLink="/home"
-        routerLinkActive="bg-blue-600 font-bold"
-        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
-      >
-        Home
-      </a>
+    <div class="flex justify-center">
+      <div class="flex-1 flex">
+        <a
+          routerLink="/home"
+          routerLinkActive="bg-blue-500 font-bold"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
+        >
+          Home
+        </a>
+      </div>
+      <div class="flex-1 flex">
+        <a
+          routerLink="/eventos"
+          routerLinkActive="bg-blue-500 font-bold"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
+        >
+          Eventos
+        </a>
+      </div>
     </div>
 
     <!-- Perfil derecha -->
     <div class="flex items-center">
       <a
         routerLink="/perfil"
-        routerLinkActive="bg-blue-600 font-bold"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
         class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
       >
         Perfil
