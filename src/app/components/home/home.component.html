@@ -1,6 +1,6 @@
 <div class="home-container p-8">
   <div class="home-container p-8">
-    <div class="grid grid-cols-2 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- Bloque Izquierdo - Inscribirse -->
       @if (eventosProximos.length > 0 ) {
       <div class="bg-white p-6 rounded-lg shadow-md">
@@ -51,6 +51,12 @@
           </div>
           }
         </div>
+      </div>
+      <div class="contenedor-principal col-span-1 md:col-span-2">
+        <h1 class="text-2xl font-bold mb-4 text-gray-800">Calendario de eventos</h1>
+        <app-calendario
+          [eventosRecibidos]="eventosCalendario">
+        </app-calendario>
       </div>
     </div>
   </div>

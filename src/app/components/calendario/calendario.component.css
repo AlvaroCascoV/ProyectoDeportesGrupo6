@@ -1,0 +1,20 @@
+.calendar-wrapper {
+	width: 100%;
+}
+
+/* Ajusta el contenedor principal del calendario */
+.calendar-wrapper .fc {
+	width: 100%;
+	max-width: 100%;
+}
+
+/* Estiliza encabezados y celdas para mejor lectura en español */
+.calendar-wrapper .fc .fc-col-header-cell-cushion,
+.calendar-wrapper .fc .fc-daygrid-day-number {
+	font-weight: 600;
+}
+
+.calendar-wrapper .fc .fc-toolbar-title {
+	font-size: 1.3rem;
+}
+
