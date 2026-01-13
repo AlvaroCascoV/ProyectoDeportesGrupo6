@@ -1,10 +1,11 @@
-import { Actividad } from "./Actividad";
+import { Actividad } from './Actividad';
+import { ActividadesEvento } from './ActividadesEvento';
 
 export class Evento {
-    constructor(
-        public idEvento: number,
-        public fechaEvento: string,
-        public idProfesor: number,
-        public listaActividades: Actividad[] = []
-    ) {}
+  constructor(
+    public idEvento: number,
+    public fechaEvento: string,
+    public idProfesor: number
+  ) {}
+  public listaActividades!: ActividadesEvento[];
 }
