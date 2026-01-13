@@ -10,7 +10,11 @@ export const routes: Routes = [
     path: 'eventos/:idEvento/resultados',
     redirectTo: '/eventos',
     // TODO: Create ResultadosComponent and replace redirectTo with component
-    // { path: 'eventos/:idEvento/resultados', component: ResultadosComponent },
+  },
+  {
+    path: 'eventos/crear',
+    redirectTo: '/eventos',
+    // TODO: Create CrearEventoComponent and replace redirectTo with component
   },
   { path: '**', redirectTo: '/home' },
 ];

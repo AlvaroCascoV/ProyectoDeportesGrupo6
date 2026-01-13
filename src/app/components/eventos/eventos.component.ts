@@ -1,20 +1,43 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos.service';
 
 @Component({
   selector: 'app-eventos',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, FormsModule],
   templateUrl: './eventos.component.html',
   styleUrl: './eventos.component.css',
 })
 export class EventosComponent implements OnInit {
   public eventos: Evento[] = [];
   private eventosOriginales: Evento[] = [];
+  public mostrarModal = false;
+  public nuevoEvento = {
+    fechaEvento: '',
+    idProfesor: 0,
+  };
 
   constructor(private _servicioEventos: EventosService) {}
+
+  abrirModal(): void {
+    this.mostrarModal = true;
+  }
+
+  cerrarModal(): void {
+    this.mostrarModal = false;
+    this.nuevoEvento = { fechaEvento: '', idProfesor: 0 };
+  }
+
+  crearEvento(): void {
+    // TODO: Implementar la lógica para crear el evento
+    console.log('Crear evento:', this.nuevoEvento);
+    // Aquí llamarías al servicio para crear el evento
+    // this._servicioEventos.crearEvento(this.nuevoEvento).subscribe(...)
+    this.cerrarModal();
+  }
 
   //pasar la fecha al formato dd/mm/yyyy
   formatearFecha(fecha: string): string {
