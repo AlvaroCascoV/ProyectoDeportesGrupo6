@@ -1,4 +1,3 @@
-import { Actividad } from './Actividad';
 import { ActividadesEvento } from './ActividadesEvento';
 
 export class Evento {
