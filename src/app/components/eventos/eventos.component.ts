@@ -62,7 +62,7 @@ export class EventosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this._servicioEventos.getActividadesPorEvento().subscribe((response) => {
+    this._servicioEventos.getEventosActividades().subscribe((response) => {
       this.eventosOriginales = response;
       this.eventos = response.map((evento: any) => ({
         ...evento,

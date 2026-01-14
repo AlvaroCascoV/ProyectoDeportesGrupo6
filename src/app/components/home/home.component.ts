@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos.service';
 import { CalendarioComponent } from '../calendario/calendario.component';
+import { ActividadesEvento } from '../../models/ActividadesEvento';
 
 @Component({
   selector: 'app-home',
@@ -14,14 +15,15 @@ export class HomeComponent implements OnInit {
   public eventos!: Evento[];
   public eventosProximos: Evento[] = [];
   public eventosCalendario: Evento[] = [];
-
+  public mostrarModal: boolean = false;
+  public actividadesEvento!: ActividadesEvento[];
+  public eventoSeleccionado!: Evento;
   
   constructor(private _servicioEventos: EventosService) {}
 
   ngOnInit(): void {
-    this._servicioEventos.getActividadesPorEvento().subscribe((response) => {
+    this._servicioEventos.getEventos().subscribe((response) => {
       this.eventos = response;
-      // conservar copia sin formatear para el calendario
       this.eventosCalendario = response;
       console.log("Respuesta: "+JSON.stringify(response));
       this.rellenarEventosProximos(this.eventos);
@@ -61,5 +63,25 @@ export class HomeComponent implements OnInit {
       });
   }
 
+  abrirModal(): void {
+    this.mostrarModal = true;
+  }
+
+  abrirModalEvento(evento: Evento): void {
+    this.eventoSeleccionado = evento;
+    this.getActividadesEvento(evento.idEvento);
+    this.mostrarModal = true;
+  }
+
+  cerrarModal(): void {
+    this.mostrarModal = false;
+  }
+
+  getActividadesEvento(idEvento:number){
+    this._servicioEventos.getActividadesEvento(idEvento)
+    .subscribe(response => {
+      this.actividadesEvento = response
+    })
+  }
 
 }
