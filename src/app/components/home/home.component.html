@@ -9,7 +9,7 @@
         </h2>
         <div class="border-l-4 border-blue-400 pl-4 py-2 mb-6">
           <p class="font-semibold text-gray-800">
-            {{ eventosProximos[0].fechaEvento }}
+            {{ eventosProximos[0].fechaEvento }} - Evento {{ eventosProximos[0].idEvento }}
           </p>
 
           <div class="flex flex-wrap gap-2">
@@ -37,7 +37,7 @@
         <div class="space-y-4">
           @for (evento of eventosProximos; track evento.idEvento) {
           <div class="border-l-4 border-blue-400 pl-4 py-2">
-            <p class="font-semibold text-gray-800">{{ evento.fechaEvento }}</p>
+            <p class="font-semibold text-gray-800">{{ evento.fechaEvento }} - Evento {{ evento.idEvento }}</p>
             <div class="flex flex-wrap gap-2">
               @for (actividad of evento.listaActividades; track
               actividad.idActividad) {
