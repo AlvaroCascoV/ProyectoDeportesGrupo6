@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment.development';
+import { environment } from '../../../environments/environment.development';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Evento } from '../models/Evento';
-import { ActividadesEvento } from '../models/ActividadesEvento';
+import { Evento } from '../../models/Evento';
+import { ActividadesEvento } from '../../models/ActividadesEvento';
 
 @Injectable({
   providedIn: 'root'
