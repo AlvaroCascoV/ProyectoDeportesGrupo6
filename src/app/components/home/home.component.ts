@@ -22,8 +22,8 @@ export class HomeComponent implements OnInit {
     this._servicioEventos.getActividadesPorEvento().subscribe((response) => {
       this.eventos = response;
       // conservar copia sin formatear para el calendario
-      this.eventosCalendario = [...response];
-      console.log(response);
+      this.eventosCalendario = response;
+      console.log("Respuesta: "+JSON.stringify(response));
       this.rellenarEventosProximos(this.eventos);
     });
   }
@@ -42,21 +42,23 @@ export class HomeComponent implements OnInit {
   comprobarFechaProxima(fecha: string): boolean {
     let fechaEvento = new Date(fecha);
     let ahora = new Date(); 
-    if (fechaEvento > ahora) return true;
-    else return false;
+    if (fechaEvento > ahora) 
+      return true;
+    else 
+      return false;
   }
 
-  rellenarEventosProximos(eventos: Evento[]): void {
-    eventos.forEach((evento) => {
-      if(this.eventosProximos.length==3){
-        return;
-      }
-      if (this.comprobarFechaProxima(evento.fechaEvento)) {
-        this.eventosProximos.push(evento);
-      }
-      
-    });
-    this.eventosProximos.map((evento) => {evento.fechaEvento = this.formatearFecha(evento.fechaEvento)})
+   rellenarEventosProximos(eventos: Evento[]): void {
+    // filtrar solo eventos futuros, ordenar por fecha asc (más cercano primero)
+    // y crear copias con la fecha formateada para mostrar en la UI
+    this.eventosProximos = eventos
+      .filter((evento) => this.comprobarFechaProxima(evento.fechaEvento))
+      .sort((a, b) => new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime())
+      .map((evento) => {
+        const copia: Evento = { ...evento } as Evento;
+        copia.fechaEvento = this.formatearFecha(evento.fechaEvento);
+        return copia;
+      });
   }
 
 
