@@ -25,6 +25,9 @@ export class CalendarioComponent implements OnChanges {
     contentHeight: 'auto',
     expandRows: true,
     dayMaxEventRows: true,
+    displayEventTime: false, // 
+    eventColor: '#50a2ff',   // 
+    eventTextColor: '#ffffff',
     events: [],
     eventClick: (info) => this.onEventClick(info)
   };

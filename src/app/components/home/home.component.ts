@@ -48,9 +48,13 @@ export class HomeComponent implements OnInit {
 
   rellenarEventosProximos(eventos: Evento[]): void {
     eventos.forEach((evento) => {
+      if(this.eventosProximos.length==3){
+        return;
+      }
       if (this.comprobarFechaProxima(evento.fechaEvento)) {
         this.eventosProximos.push(evento);
       }
+      
     });
     this.eventosProximos.map((evento) => {evento.fechaEvento = this.formatearFecha(evento.fechaEvento)})
   }
