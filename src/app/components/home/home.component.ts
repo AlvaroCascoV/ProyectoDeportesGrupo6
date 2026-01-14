@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Evento } from '../../models/Evento';
-import { EventosService } from '../../services/eventos.service';
+import { EventosService } from '../../services/eventos/eventos.service';
 import { CalendarioComponent } from '../calendario/calendario.component';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Evento } from '../../models/Evento';
-import { EventosService } from '../../services/eventos.service';
+import { EventosService } from '../../services/eventos/eventos.service';
 
 @Component({
   selector: 'app-eventos',
