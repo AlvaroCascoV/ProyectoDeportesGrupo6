@@ -14,7 +14,15 @@ export class EventosService {
   
   constructor(private _http : HttpClient) { }
 
-  getActividadesPorEvento(): Observable<Evento[]>{
+  getEventos(): Observable<Evento[]>{
+    return this._http.get<Evento[]>(`${this.url}api/eventos`)
+  }
+
+  getActividadesEvento(idEvento: number): Observable<ActividadesEvento[]>{
+    return this._http.get<ActividadesEvento[]>(`${this.url}api/actividades/actividadesevento/${idEvento}`);
+  }
+
+  getEventosActividades(): Observable<Evento[]>{
     // para cada evento sacamos las actividades
     // metemos las actividades en la propiedad listaActividades de los eventos
     return this._http.get<Evento[]>(this.url + 'api/Eventos').pipe(
