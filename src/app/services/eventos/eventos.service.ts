@@ -7,29 +7,44 @@ import { Evento } from '../../models/Evento';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class EventosService {
   private url = environment.urlApi;
-  
-  constructor(private _http : HttpClient) { }
 
-  getEventos(): Observable<Evento[]>{
-    return this._http.get<Evento[]>(`${this.url}api/eventos`)
+  constructor(private _http: HttpClient) {}
+
+  getEventos(): Observable<Evento[]> {
+    return this._http.get<Evento[]>(`${this.url}api/eventos`);
   }
 
-  getActividadesEvento(idEvento: number): Observable<ActividadesEvento[]>{
-    return this._http.get<ActividadesEvento[]>(`${this.url}api/actividades/actividadesevento/${idEvento}`);
+  getActividadesEvento(idEvento: number): Observable<ActividadesEvento[]> {
+    return this._http.get<ActividadesEvento[]>(
+      `${this.url}api/actividades/actividadesevento/${idEvento}`
+    );
   }
 
-  getEventosActividades(): Observable<Evento[]>{
+  getProfesoresActivos(): Observable<any[]> {
+    return this._http.get<any[]>(`${this.url}api/ProfesEventos/ProfesActivos`);
+  }
+
+  getProfesoresConEventos(): Observable<any[]> {
+    return this._http.get<any[]>(
+      `${this.url}api/ProfesEventos/ProfesConEventos`
+    );
+  }
+
+  getEventosActividades(): Observable<Evento[]> {
     // para cada evento sacamos las actividades
     // metemos las actividades en la propiedad listaActividades de los eventos
     return this._http.get<Evento[]>(this.url + 'api/Eventos').pipe(
       map((eventos: Evento[]) => {
-        eventos.forEach(e => {
-          this._http.get<ActividadesEvento[]>(`${this.url}api/actividades/actividadeseventos/${e.idEvento}`)
-            .subscribe(lista => e.listaActividades = lista);
+        eventos.forEach((e) => {
+          this._http
+            .get<ActividadesEvento[]>(
+              `${this.url}api/actividades/actividadeseventos/${e.idEvento}`
+            )
+            .subscribe((lista) => (e.listaActividades = lista));
         });
         // devolvemos los eventos de inmediato; las actividades llegarán luego
         return eventos;
