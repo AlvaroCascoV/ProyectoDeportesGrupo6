@@ -1,23 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { CalendarioComponent } from '../calendario/calendario.component';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
+import { RouterModule } from '@angular/router';
+import { InscripcionComponent } from '../inscripcion/inscripcion.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css',
-  imports: [CalendarioComponent]
+  styleUrls: ['./home.component.css'],
+  imports: [CalendarioComponent, RouterModule, InscripcionComponent]
 })
 export class HomeComponent implements OnInit {
   public eventos!: Evento[];
   public eventosProximos: Evento[] = [];
   public eventosCalendario: Evento[] = [];
+  public inscribirse: boolean = true;
   public mostrarModal: boolean = false;
   public actividadesEvento!: ActividadesEvento[];
   public eventoSeleccionado!: Evento;
+  @ViewChild(InscripcionComponent) inscripcionComponent?: InscripcionComponent;
   
   constructor(private _servicioEventos: EventosService) {}
 
@@ -75,6 +79,7 @@ export class HomeComponent implements OnInit {
 
   cerrarModal(): void {
     this.mostrarModal = false;
+    this.inscribirse = true;
   }
 
   getActividadesEvento(idEvento:number){
@@ -82,6 +87,19 @@ export class HomeComponent implements OnInit {
     .subscribe(response => {
       this.actividadesEvento = response
     })
+  }
+
+  mostrarForm():void {
+    this.inscribirse = false;
+  }
+
+  // Invocado por el botón del modal para ejecutar la inscripción en el componente hijo
+  submitInscripcionModal(){
+    if(this.inscripcionComponent){
+      this.inscripcionComponent.inscribirUsuario();
+    } else {
+      console.warn('Componente Inscripcion no disponible para enviar');
+    }
   }
 
 }
