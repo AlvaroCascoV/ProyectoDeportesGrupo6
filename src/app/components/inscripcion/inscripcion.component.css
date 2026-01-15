@@ -1,0 +1,17 @@
+/* Styles specific to the Inscripcion component. The layout relies mostly on utility classes (Tailwind or similar).
+	 Add a tiny tweak to make the card stand out on small screens. */
+
+:host {
+	display: block;
+}
+
+.inscripcion-card {
+	/* fallback card style if utilities are not available */
+	background: #ffffff;
+	border-radius: 1rem;
+	box-shadow: 0 8px 24px rgba(16,24,40,0.08);
+}
+
+.inscripcion-help {
+	color: #6b7280;
+}
