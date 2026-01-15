@@ -4,6 +4,7 @@ import { EventosComponent } from './components/eventos/eventos.component';
 import { PerfilComponent } from './components/perfil/perfil.component';
 
 export const routes: Routes = [
+  { path: 'auth', loadChildren: () => import('./auth/auth.routes') },
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
   { path: 'eventos', component: EventosComponent },
