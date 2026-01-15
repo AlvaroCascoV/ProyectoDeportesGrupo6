@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
 import { EventosComponent } from './components/eventos/eventos.component';
 import { PerfilComponent } from './components/perfil/perfil.component';
+import { AulasComponent } from './components/aulas/aulas.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -17,6 +18,10 @@ export const routes: Routes = [
     path: 'eventos/crear',
     redirectTo: '/eventos',
     // TODO: Create CrearEventoComponent and replace redirectTo with component
+  },
+  {
+    path: 'aulas',
+    component: AulasComponent,
   },
   { path: '**', redirectTo: '/home' },
 ];
