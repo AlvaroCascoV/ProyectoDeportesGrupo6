@@ -209,7 +209,14 @@
         <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-2">
           Actividades:
         </h3>
-        @if (actividadesEvento && actividadesEvento.length > 0) {
+        @if (cargandoActividades) {
+        <div class="flex items-center py-3 md:py-4">
+          <div class="loader-small mr-2"></div>
+          <span class="text-gray-600 text-xs md:text-sm"
+            >Cargando actividades...</span
+          >
+        </div>
+        } @else if (actividadesEvento && actividadesEvento.length > 0) {
         <div class="flex flex-wrap gap-2">
           @for (actividad of actividadesEvento; track actividad.idActividad) {
           <span
@@ -220,12 +227,9 @@
           }
         </div>
         } @else {
-        <div class="flex items-center py-3 md:py-4">
-          <div class="loader-small mr-2"></div>
-          <span class="text-gray-600 text-xs md:text-sm"
-            >Cargando actividades...</span
-          >
-        </div>
+        <p class="text-gray-600 text-xs md:text-sm py-3 md:py-4">
+          No hay actividades programadas para este evento
+        </p>
         }
       </div>
 

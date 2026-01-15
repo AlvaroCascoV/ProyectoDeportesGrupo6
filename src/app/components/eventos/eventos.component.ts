@@ -19,6 +19,7 @@ export class EventosComponent implements OnInit {
   public mostrarModalDetalles = false;
   public eventoSeleccionado!: Evento;
   public actividadesEvento!: ActividadesEvento[];
+  public cargandoActividades = false;
   public nuevoEvento = {
     fechaEvento: '',
     idProfesor: 0,
@@ -66,22 +67,26 @@ export class EventosComponent implements OnInit {
   }
 
   getActividadesEvento(idEvento: number): void {
+    this.cargandoActividades = true;
     this._servicioEventos
       .getActividadesEvento(idEvento)
       .subscribe((response) => {
         this.actividadesEvento = response;
+        this.cargandoActividades = false;
         console.log(response);
       });
   }
 
   abrirModalDetalles(evento: Evento): void {
     this.eventoSeleccionado = evento;
+    this.actividadesEvento = [];
     this.getActividadesEvento(evento.idEvento);
     this.mostrarModalDetalles = true;
   }
 
   cerrarModalDetalles(): void {
     this.mostrarModalDetalles = false;
+    this.cargandoActividades = false;
   }
 
   ngOnInit(): void {
