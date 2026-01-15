@@ -48,13 +48,32 @@ export class EventosComponent implements OnInit {
     const fechaISO = new Date(this.nuevoEvento.fechaEvento).toISOString();
 
     this._servicioEventos.insertEvento(fechaISO).subscribe({
-      next: () => {
-        // Recargar eventos después de crear
-        this.ngOnInit();
-        this.cerrarModal();
+      next: (response) => {
+        const idEvento = response.idEvento || response.id;
+
+        // Asociar profesor al evento recién creado
+        if (idEvento && this.nuevoEvento.idProfesor > 0) {
+          this._servicioEventos
+            .asociarProfesorEvento(idEvento, this.nuevoEvento.idProfesor)
+            .subscribe({
+              next: () => {
+                // Recargar eventos después de crear y asociar
+                this.ngOnInit();
+                this.cerrarModal();
+              },
+              error: () => {
+                // Aún así recargar eventos aunque falle la asociación
+                this.ngOnInit();
+                this.cerrarModal();
+              },
+            });
+        } else {
+          // Si no hay profesor o no se pudo obtener el idEvento, solo recargar
+          this.ngOnInit();
+          this.cerrarModal();
+        }
       },
-      error: (error) => {
-        console.error('Error al crear evento:', error);
+      error: () => {
         // TODO: Mostrar mensaje de error al usuario
       },
     });

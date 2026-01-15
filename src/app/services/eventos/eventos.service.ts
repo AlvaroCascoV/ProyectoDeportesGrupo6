@@ -57,9 +57,12 @@ export class EventosService {
     // La fecha va en la URL en formato ISO: 2026-01-15T09:47:13.513Z
     // Codificar la fecha para la URL (los caracteres especiales necesitan encoding)
     const fechaEncoded = encodeURIComponent(fechaEvento);
-    return this._http.post<any>(
-      `${this.url}api/Eventos/create/${fechaEncoded}`,
-      null
-    );
+    const url = `${this.url}api/Eventos/create/${fechaEncoded}`;
+    return this._http.post<any>(url, null);
+  }
+
+  asociarProfesorEvento(idEvento: number, idProfesor: number): Observable<any> {
+    const url = `${this.url}api/ProfesEventos/AsociarProfesorEvento/${idEvento}/${idProfesor}`;
+    return this._http.post<any>(url, null);
   }
 }
