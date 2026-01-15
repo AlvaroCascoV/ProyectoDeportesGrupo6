@@ -24,13 +24,9 @@ export class EventosService {
     );
   }
 
-  getProfesoresActivos(): Observable<any[]> {
-    return this._http.get<any[]>(`${this.url}api/ProfesEventos/ProfesActivos`);
-  }
-
-  getProfesoresConEventos(): Observable<any[]> {
-    return this._http.get<any[]>(
-      `${this.url}api/ProfesEventos/ProfesConEventos`
+  getProfesorById(idProfesor: number): Observable<any> {
+    return this._http.get<any>(
+      `${this.url}api/ProfesEventos/FindProfe?idprofesor=${idProfesor}`
     );
   }
 
