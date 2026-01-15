@@ -51,15 +51,4 @@ export class EventosService {
       })
     );
   }
-
-  //  inserta un nuevo evento por la fecha
-  insertEvento(fechaEvento: string): Observable<any> {
-    // La fecha va en la URL en formato ISO: 2026-01-15T09:47:13.513Z
-    // Codificar la fecha para la URL (los caracteres especiales como : y T necesitan encoding)
-    const fechaEncoded = encodeURIComponent(fechaEvento);
-    return this._http.post<any>(
-      `${this.url}api/Eventos/create/${fechaEncoded}`,
-      null
-    );
-  }
 }
