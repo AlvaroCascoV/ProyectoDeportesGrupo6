@@ -40,24 +40,11 @@ export class EventosComponent implements OnInit {
   }
 
   crearEvento(): void {
-    if (!this.nuevoEvento.fechaEvento) {
-      return;
-    }
-
-    // Convertir la fecha a formato ISO (2026-01-15T09:47:13.513Z)
-    const fechaISO = new Date(this.nuevoEvento.fechaEvento).toISOString();
-
-    this._servicioEventos.insertEvento(fechaISO).subscribe({
-      next: () => {
-        // Recargar eventos después de crear
-        this.ngOnInit();
-        this.cerrarModal();
-      },
-      error: (error) => {
-        console.error('Error al crear evento:', error);
-        // TODO: Mostrar mensaje de error al usuario
-      },
-    });
+    // TODO: Implementar la lógica para crear el evento
+    console.log('Crear evento:', this.nuevoEvento);
+    // Aquí llamarías al servicio para crear el evento
+    // this._servicioEventos.crearEvento(this.nuevoEvento).subscribe(...)
+    this.cerrarModal();
   }
 
   //pasar la fecha al formato dd/mm/yyyy
