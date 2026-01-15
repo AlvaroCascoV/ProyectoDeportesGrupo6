@@ -37,43 +37,30 @@
         }
       </div>
 
-      <div class="mb-4">
-        <h3 class="text-sm font-semibold text-gray-600 mb-2">Actividades:</h3>
-        @if (evento.listaActividades && evento.listaActividades.length > 0) {
-        <div class="flex flex-wrap gap-2">
-          @for ( actividad of evento.listaActividades; track
-          actividad.idActividad ) {
-          <span
-            class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold"
-          >
-            {{ actividad.nombreActividad }}
-          </span>
-          }
-        </div>
-        } @else {
-        <p class="text-sm text-gray-500 italic">No hay actividades asignadas</p>
-        }
-      </div>
-
       <div class="mt-4 pt-4 border-t border-gray-200">
-        <p class="text-sm text-gray-600 mb-4">
-          Profesor: {{ evento.idProfesor }}
-        </p>
-        <div class="flex gap-2 w-50">
-          @if (comprobarFechaProxima(evento)) {
+        <div class="flex gap-2 w-50 flex-col">
           <button
-            class="bg-blue-400 text-black px-6 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold flex-1"
+            (click)="abrirModalDetalles(evento)"
+            class="bg-green-300 text-black px-6 py-2 rounded hover:bg-green-500 cursor-pointer font-semibold w-full"
           >
-            Inscribirme
+            Detalles
           </button>
-          } @else {
-          <a
-            [routerLink]="['/eventos', evento.idEvento, 'resultados']"
-            class="bg-gray-400 text-black px-6 py-2 rounded hover:bg-gray-500 cursor-pointer font-semibold flex-1 text-center no-underline"
-          >
-            Ver Resultados
-          </a>
-          }
+          <div class="flex gap-2">
+            @if (comprobarFechaProxima(evento)) {
+            <button
+              class="bg-blue-400 text-black px-6 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold flex-1"
+            >
+              Inscribirme
+            </button>
+            } @else {
+            <a
+              [routerLink]="['/eventos', evento.idEvento, 'resultados']"
+              class="bg-gray-400 text-black px-6 py-2 rounded hover:bg-gray-500 cursor-pointer font-semibold flex-1 text-center no-underline"
+            >
+              Ver Resultados
+            </a>
+            }
+          </div>
         </div>
       </div>
     </div>
@@ -158,6 +145,105 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+  }
+
+  <!-- Modal para mostrar detalles del evento -->
+  @if (mostrarModalDetalles && eventoSeleccionado) {
+  <div
+    class="fixed inset-0 flex items-center justify-center z-50 p-4 backdrop-blur-sm bg-white/30"
+    (click)="cerrarModalDetalles()"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl p-4 md:p-6 w-full max-w-2xl relative z-10 border border-gray-200 max-h-[90vh] overflow-y-auto"
+      (click)="$event.stopPropagation()"
+      style="background-color: white"
+    >
+      <div class="flex justify-between items-center mb-4 md:mb-6">
+        <h2 class="text-xl md:text-2xl font-bold text-gray-800">
+          Detalles del Evento
+        </h2>
+        <button
+          (click)="cerrarModalDetalles()"
+          class="text-gray-500 hover:text-gray-700 text-2xl md:text-3xl font-bold leading-none"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="mb-3 md:mb-4">
+        <h3
+          class="text-base md:text-lg font-semibold text-gray-700 mb-1 md:mb-2"
+        >
+          Fecha:
+        </h3>
+        <p class="text-gray-800 text-sm md:text-base">
+          {{ eventoSeleccionado.fechaEvento }}
+        </p>
+      </div>
+
+      <div class="mb-3 md:mb-4">
+        <h3
+          class="text-base md:text-lg font-semibold text-gray-700 mb-1 md:mb-2"
+        >
+          ID Evento:
+        </h3>
+        <p class="text-gray-800 text-sm md:text-base">
+          {{ eventoSeleccionado.idEvento }}
+        </p>
+      </div>
+
+      <div class="mb-3 md:mb-4">
+        <h3
+          class="text-base md:text-lg font-semibold text-gray-700 mb-1 md:mb-2"
+        >
+          Profesor:
+        </h3>
+        <p class="text-gray-800 text-sm md:text-base">
+          {{ eventoSeleccionado.idProfesor }}
+        </p>
+      </div>
+
+      <div class="mb-4 md:mb-6">
+        <h3 class="text-base md:text-lg font-semibold text-gray-700 mb-2">
+          Actividades:
+        </h3>
+        @if (actividadesEvento && actividadesEvento.length > 0) {
+        <div class="flex flex-wrap gap-2">
+          @for (actividad of actividadesEvento; track actividad.idActividad) {
+          <span
+            class="bg-blue-200 text-blue-800 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold"
+          >
+            {{ actividad.nombreActividad }}
+          </span>
+          }
+        </div>
+        } @else {
+        <div class="flex items-center py-3 md:py-4">
+          <div class="loader-small mr-2"></div>
+          <span class="text-gray-600 text-xs md:text-sm"
+            >Cargando actividades...</span
+          >
+        </div>
+        }
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-3">
+        <button
+          (click)="cerrarModalDetalles()"
+          class="flex-1 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 font-semibold text-sm md:text-base"
+        >
+          Cerrar
+        </button>
+        @if (comprobarFechaProxima(eventoSeleccionado)) {
+        <button
+          class="flex-1 bg-blue-400 text-black px-4 py-2 rounded hover:bg-blue-500 font-semibold text-sm md:text-base"
+        >
+          Inscribirse
+        </button>
+        }
+      </div>
     </div>
   </div>
   }

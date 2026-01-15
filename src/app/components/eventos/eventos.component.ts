@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos/eventos.service';
+import { ActividadesEvento } from '../../models/ActividadesEvento';
 
 @Component({
   selector: 'app-eventos',
@@ -15,6 +16,9 @@ export class EventosComponent implements OnInit {
   public eventos: Evento[] = [];
   private eventosOriginales: Evento[] = [];
   public mostrarModal = false;
+  public mostrarModalDetalles = false;
+  public eventoSeleccionado!: Evento;
+  public actividadesEvento!: ActividadesEvento[];
   public nuevoEvento = {
     fechaEvento: '',
     idProfesor: 0,
@@ -61,10 +65,36 @@ export class EventosComponent implements OnInit {
     return fechaEvento > ahora;
   }
 
+  getActividadesEvento(idEvento: number): void {
+    this._servicioEventos
+      .getActividadesEvento(idEvento)
+      .subscribe((response) => {
+        this.actividadesEvento = response;
+        console.log(response);
+      });
+  }
+
+  abrirModalDetalles(evento: Evento): void {
+    this.eventoSeleccionado = evento;
+    this.getActividadesEvento(evento.idEvento);
+    this.mostrarModalDetalles = true;
+  }
+
+  cerrarModalDetalles(): void {
+    this.mostrarModalDetalles = false;
+  }
+
   ngOnInit(): void {
-    this._servicioEventos.getEventosActividades().subscribe((response) => {
-      this.eventosOriginales = response;
-      this.eventos = response.map((evento: any) => ({
+    this._servicioEventos.getEventos().subscribe((response) => {
+      // Ordenar eventos por fecha (más recientes primero)
+      const eventosOrdenados = response.sort((a, b) => {
+        const fechaA = new Date(a.fechaEvento).getTime();
+        const fechaB = new Date(b.fechaEvento).getTime();
+        return fechaB - fechaA; // Orden descendente (más recientes primero)
+      });
+
+      this.eventosOriginales = eventosOrdenados;
+      this.eventos = eventosOrdenados.map((evento: any) => ({
         ...evento,
         fechaEvento: this.formatearFecha(evento.fechaEvento),
       }));
