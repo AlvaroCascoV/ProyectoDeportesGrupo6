@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
+import { DetallesComponent } from '../detalles/detalles.component';
 
 @Component({
   selector: 'app-eventos',
   standalone: true,
-  imports: [RouterModule, FormsModule],
+  imports: [RouterModule, FormsModule, DetallesComponent],
   templateUrl: './eventos.component.html',
   styleUrl: './eventos.component.css',
 })
