@@ -3,12 +3,14 @@ import { HomeComponent } from './components/home/home.component';
 import { EventosComponent } from './components/eventos/eventos.component';
 import { PerfilComponent } from './components/perfil/perfil.component';
 import { AulasComponent } from './components/aulas/aulas.component';
+import { InscripcionComponent } from './components/inscripcion/inscripcion.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
   { path: 'eventos', component: EventosComponent },
   { path: 'perfil', component: PerfilComponent },
+  { path: 'inscripcion/:idEvento', component: InscripcionComponent },
   {
     path: 'eventos/:idEvento/resultados',
     redirectTo: '/eventos',
