@@ -20,9 +20,8 @@ export class EventosComponent implements OnInit {
   public eventoSeleccionado!: Evento;
   public actividadesEvento!: ActividadesEvento[];
   public cargandoActividades = false;
-  public cargandoProfesores = false;
-  public profesoresMap: Map<number, string> = new Map();
-  public profesoresRolesMap: Map<number, string> = new Map();
+  public profesorActual: { id: number; nombre: string } | null = null;
+  public cargandoProfesor = false;
   public nuevoEvento = {
     fechaEvento: '',
     idProfesor: 0,
@@ -44,6 +43,31 @@ export class EventosComponent implements OnInit {
       return;
     }
 
+    // Validar profesor primero si se proporcionó un ID
+    if (this.nuevoEvento.idProfesor > 0) {
+      this._servicioEventos
+        .getProfesorById(this.nuevoEvento.idProfesor)
+        .subscribe({
+          next: (profesor) => {
+            // Si es profesor válido, crear el evento
+            if (profesor && profesor.role?.toUpperCase() === 'PROFESOR') {
+              this.crearEventoConFecha();
+            } else {
+              // TODO: Mostrar error "El usuario asignado no es un profesor"
+            }
+          },
+          error: () => {
+            // Si hay error (incluyendo 204), no es profesor
+            // TODO: Mostrar error "El usuario asignado no es un profesor"
+          },
+        });
+    } else {
+      // Si no hay profesor, crear evento sin profesor
+      this.crearEventoConFecha();
+    }
+  }
+
+  crearEventoConFecha(): void {
     // Convertir la fecha a formato ISO (2026-01-15T09:47:13.513Z)
     const fechaISO = new Date(this.nuevoEvento.fechaEvento).toISOString();
 
@@ -115,73 +139,56 @@ export class EventosComponent implements OnInit {
   abrirModalDetalles(evento: Evento): void {
     this.eventoSeleccionado = evento;
     this.actividadesEvento = [];
+    this.profesorActual = null;
     this.getActividadesEvento(evento.idEvento);
+
+    // Cargar profesor si tiene ID válido
+    if (evento.idProfesor >= 0) {
+      this.cargarProfesor(evento.idProfesor);
+    }
+
     this.mostrarModalDetalles = true;
   }
 
   cerrarModalDetalles(): void {
     this.mostrarModalDetalles = false;
     this.cargandoActividades = false;
+    this.profesorActual = null;
+    this.cargandoProfesor = false;
   }
 
-  getNombreProfesor(idProfesor: number): string {
-    return this.profesoresMap.get(idProfesor) || '';
-  }
-
-  tieneNombreProfesor(idProfesor: number): boolean {
-    return this.profesoresMap.has(idProfesor);
-  }
-
-  esProfesorValido(
-    idProfesor: number
-  ): 'no_asignado' | 'no_es_profesor' | 'valido' {
-    if (idProfesor < 0) {
-      return 'no_asignado';
+  cargarProfesor(idProfesor: number): void {
+    if (this.cargandoProfesor) {
+      return;
     }
-    // Si ya terminó de cargar y el ID no está en la lista de profesores activos,
-    // entonces el usuario no es un profesor
-    if (!this.cargandoProfesores && !this.profesoresMap.has(idProfesor)) {
-      return 'no_es_profesor';
-    }
-    // Si está en el mapa, verificar que sea profesor
-    if (this.profesoresMap.has(idProfesor)) {
-      const role = this.profesoresRolesMap.get(idProfesor);
-      if (role && role.toUpperCase() !== 'PROFESOR') {
-        return 'no_es_profesor';
-      }
-      return 'valido';
-    }
-    // Si aún está cargando, asumimos que es válido (puede que aún no se haya cargado)
-    return 'valido';
-  }
 
-  cargarProfesores(): void {
-    this.cargandoProfesores = true;
-    // Cargar todos los profesores activos de una vez
-    this._servicioEventos.getProfesoresActivos().subscribe({
-      next: (profesores) => {
-        profesores.forEach((profesor) => {
-          // El campo 'usuario' contiene el nombre completo
-          this.profesoresMap.set(
-            profesor.idUsuario,
-            profesor.usuario || `Profesor ${profesor.idUsuario}`
-          );
-          // Guardar el rol para verificar si es profesor
-          this.profesoresRolesMap.set(profesor.idUsuario, profesor.role || '');
-        });
-        this.cargandoProfesores = false;
+    this.cargandoProfesor = true;
+
+    this._servicioEventos.getProfesorById(idProfesor).subscribe({
+      next: (profesor) => {
+        // Si recibimos datos y es profesor, guardar temporalmente para mostrar
+        if (
+          profesor &&
+          profesor.role?.toUpperCase() === 'PROFESOR' &&
+          profesor.usuario
+        ) {
+          this.profesorActual = {
+            id: idProfesor,
+            nombre: profesor.usuario,
+          };
+        }
+        // Si es 204 (No Content) o no es profesor, profesorActual queda null
+        this.cargandoProfesor = false;
       },
       error: () => {
-        console.error('Error al cargar profesores');
-        this.cargandoProfesores = false;
+        // Si hay error (incluyendo 204), no es profesor
+        this.profesorActual = null;
+        this.cargandoProfesor = false;
       },
     });
   }
 
   ngOnInit(): void {
-    // Cargar profesores primero
-    this.cargarProfesores();
-
     this._servicioEventos.getEventos().subscribe((response) => {
       // Ordenar eventos por fecha (más recientes primero)
       const eventosOrdenados = response.sort((a, b) => {
