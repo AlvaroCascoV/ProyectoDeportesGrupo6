@@ -3,7 +3,6 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos/eventos.service';
-import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { DetallesComponent } from '../detalles/detalles.component';
 
 @Component({
@@ -19,10 +18,6 @@ export class EventosComponent implements OnInit {
   public mostrarModal = false;
   public mostrarModalDetalles = false;
   public eventoSeleccionado!: Evento;
-  public actividadesEvento!: ActividadesEvento[];
-  public cargandoActividades = false;
-  public profesorActual: { id: number; nombre: string } | null = null;
-  public cargandoProfesor = false;
   public nuevoEvento = {
     fechaEvento: '',
     idProfesor: 0,
@@ -126,67 +121,17 @@ export class EventosComponent implements OnInit {
     return fechaEvento > ahora;
   }
 
-  getActividadesEvento(idEvento: number): void {
-    this.cargandoActividades = true;
-    this._servicioEventos
-      .getActividadesEvento(idEvento)
-      .subscribe((response) => {
-        this.actividadesEvento = response;
-        this.cargandoActividades = false;
-        console.log(response);
-      });
-  }
-
   abrirModalDetalles(evento: Evento): void {
-    this.eventoSeleccionado = evento;
-    this.actividadesEvento = [];
-    this.profesorActual = null;
-    this.getActividadesEvento(evento.idEvento);
-
-    // Cargar profesor si tiene ID válido
-    if (evento.idProfesor >= 0) {
-      this.cargarProfesor(evento.idProfesor);
-    }
-
+    const eventoOriginal = this.eventosOriginales.find(
+      (e) => e.idEvento === evento.idEvento
+    ) || evento;
+    
+    this.eventoSeleccionado = eventoOriginal;
     this.mostrarModalDetalles = true;
   }
 
   cerrarModalDetalles(): void {
     this.mostrarModalDetalles = false;
-    this.cargandoActividades = false;
-    this.profesorActual = null;
-    this.cargandoProfesor = false;
-  }
-
-  cargarProfesor(idProfesor: number): void {
-    if (this.cargandoProfesor) {
-      return;
-    }
-
-    this.cargandoProfesor = true;
-
-    this._servicioEventos.getProfesorById(idProfesor).subscribe({
-      next: (profesor) => {
-        // Si recibimos datos y es profesor, guardar temporalmente para mostrar
-        if (
-          profesor &&
-          profesor.role?.toUpperCase() === 'PROFESOR' &&
-          profesor.usuario
-        ) {
-          this.profesorActual = {
-            id: idProfesor,
-            nombre: profesor.usuario,
-          };
-        }
-        // Si es 204 (No Content) o no es profesor, profesorActual queda null
-        this.cargandoProfesor = false;
-      },
-      error: () => {
-        // Si hay error (incluyendo 204), no es profesor
-        this.profesorActual = null;
-        this.cargandoProfesor = false;
-      },
-    });
   }
 
   ngOnInit(): void {

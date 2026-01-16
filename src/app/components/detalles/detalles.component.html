@@ -89,7 +89,7 @@
       <p class="text-gray-600 text-xs md:text-sm py-3 md:py-4">
         No hay actividades programadas para este evento
       </p>
-      } @if (!mostrarFormulario && esFechaProxima) {
+      } @if (!mostrarFormulario && comprobarFechaProximaEvento(evento)) {
       <app-inscripcion [idEvento]="evento.idEvento"></app-inscripcion>
       }
     </div>
@@ -101,7 +101,7 @@
       >
         Cerrar
       </button>
-      @if (esFechaProxima) { @if (mostrarFormulario) {
+      @if (comprobarFechaProximaEvento(evento)) { @if (mostrarFormulario) {
       <button
         (click)="mostrarForm()"
         class="flex-1 bg-blue-400 text-black px-4 py-2 rounded hover:bg-blue-500 font-semibold text-sm md:text-base"

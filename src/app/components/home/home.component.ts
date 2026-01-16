@@ -2,10 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { CalendarioComponent } from '../calendario/calendario.component';
-import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { RouterModule } from '@angular/router';
-import { InscripcionComponent } from '../inscripcion/inscripcion.component';
-import Swal from 'sweetalert2';
 import { DetallesComponent } from '../detalles/detalles.component';
 
 @Component({
@@ -21,11 +18,7 @@ export class HomeComponent implements OnInit {
   public eventosCalendario: Evento[] = [];
   private eventosOriginales: Evento[] = [];
   public mostrarModal: boolean = false;
-  public actividadesEvento: ActividadesEvento[] = [];
-  public cargandoActividades: boolean = false;
   public eventoSeleccionado!: Evento;
-  public profesorActual: { id: number; nombre: string } | null = null;
-  public cargandoProfesor: boolean = false;
   public mostrarFormularioInmediato: boolean = false;
 
   constructor(private _servicioEventos: EventosService) {}
@@ -93,89 +86,12 @@ export class HomeComponent implements OnInit {
       evento;
 
     this.eventoSeleccionado = eventoOriginal;
-    this.actividadesEvento = [];
-    this.profesorActual = null;
     this.mostrarFormularioInmediato = mostrarFormulario;
-    this.getActividadesEvento(eventoOriginal.idEvento);
-
-    if (eventoOriginal.idProfesor >= 0) {
-      this.cargarProfesor(eventoOriginal.idProfesor);
-    }
-
     this.mostrarModal = true;
   }
 
   cerrarModal(): void {
     this.mostrarModal = false;
-    this.cargandoActividades = false;
-    this.profesorActual = null;
-    this.cargandoProfesor = false;
     this.mostrarFormularioInmediato = false;
-  }
-
-  getActividadesEvento(idEvento: number): void {
-    this.cargandoActividades = true;
-    this._servicioEventos.getActividadesEvento(idEvento).subscribe({
-      next: (response) => {
-        this.actividadesEvento = response;
-        this.cargandoActividades = false;
-      },
-      error: () => {
-        this.cargandoActividades = false;
-      },
-    });
-  }
-
-  // Invocado por el botón del modal para ejecutar la inscripción en el componente hijo
-  submitInscripcionModal(){
-    if(this.inscripcionComponent){
-      this.inscripcionComponent.inscribirUsuario();
-      this.cerrarModal();
-      Swal.fire({
-        title: '¡Inscripción Confirmada!',
-        text: 'Te has inscrito correctamente al evento',
-        icon: 'success',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#3085d6'
-      });
-    } else {
-      console.warn('Componente Inscripcion no disponible para enviar');
-  cargarProfesor(idProfesor: number): void {
-    if (this.cargandoProfesor) {
-      return;
-    }
-
-    this.cargandoProfesor = true;
-
-    this._servicioEventos.getProfesorById(idProfesor).subscribe({
-      next: (profesor) => {
-        if (
-          profesor &&
-          profesor.role?.toUpperCase() === 'PROFESOR' &&
-          profesor.usuario
-        ) {
-          this.profesorActual = {
-            id: idProfesor,
-            nombre: profesor.usuario,
-          };
-        }
-        this.cargandoProfesor = false;
-      },
-      error: () => {
-        this.profesorActual = null;
-        this.cargandoProfesor = false;
-      },
-    });
-  }
-
-  comprobarFechaProximaEvento(evento: Evento): boolean {
-    const eventoOriginal = this.eventosOriginales.find(
-      (e) => e.idEvento === evento.idEvento
-    );
-    if (!eventoOriginal) return false;
-
-    const fechaEvento = new Date(eventoOriginal.fechaEvento);
-    const ahora = new Date();
-    return fechaEvento > ahora;
   }
 }

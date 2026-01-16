@@ -152,14 +152,7 @@
   <!-- Modal para mostrar detalles del evento -->
   <app-detalles
     [evento]="eventoSeleccionado"
-    [actividadesEvento]="actividadesEvento"
-    [cargandoActividades]="cargandoActividades"
-    [profesorActual]="profesorActual"
-    [cargandoProfesor]="cargandoProfesor"
     [mostrar]="mostrarModalDetalles && eventoSeleccionado !== undefined"
-    [esFechaProxima]="
-      eventoSeleccionado ? comprobarFechaProxima(eventoSeleccionado) : false
-    "
     (cerrar)="cerrarModalDetalles()"
   ></app-detalles>
 </div>

@@ -75,14 +75,7 @@
 <!-- Modal para mostrar detalles del evento -->
 <app-detalles
   [evento]="eventoSeleccionado"
-  [actividadesEvento]="actividadesEvento"
-  [cargandoActividades]="cargandoActividades"
-  [profesorActual]="profesorActual"
-  [cargandoProfesor]="cargandoProfesor"
   [mostrar]="mostrarModal && eventoSeleccionado !== undefined"
-  [esFechaProxima]="
-    eventoSeleccionado ? comprobarFechaProximaEvento(eventoSeleccionado) : false
-  "
   [mostrarFormularioInmediato]="mostrarFormularioInmediato"
   (cerrar)="cerrarModal()"
 ></app-detalles>
