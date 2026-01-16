@@ -4,6 +4,8 @@ import { EventosService } from '../../services/eventos/eventos.service';
 import { CalendarioComponent } from '../calendario/calendario.component';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { RouterModule } from '@angular/router';
+import { InscripcionComponent } from '../inscripcion/inscripcion.component';
+import Swal from 'sweetalert2';
 import { DetallesComponent } from '../detalles/detalles.component';
 
 @Component({
@@ -124,6 +126,20 @@ export class HomeComponent implements OnInit {
     });
   }
 
+  // Invocado por el botón del modal para ejecutar la inscripción en el componente hijo
+  submitInscripcionModal(){
+    if(this.inscripcionComponent){
+      this.inscripcionComponent.inscribirUsuario();
+      this.cerrarModal();
+      Swal.fire({
+        title: '¡Inscripción Confirmada!',
+        text: 'Te has inscrito correctamente al evento',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6'
+      });
+    } else {
+      console.warn('Componente Inscripcion no disponible para enviar');
   cargarProfesor(idProfesor: number): void {
     if (this.cargandoProfesor) {
       return;
