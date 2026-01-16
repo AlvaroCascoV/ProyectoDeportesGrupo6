@@ -1,6 +1,5 @@
 export class Alumno {
-    constructor (
-        
+  constructor(
     public idUsuario: number,
     public nombre: string,
     public apellidos: string,
@@ -12,6 +11,5 @@ export class Alumno {
     public idCurso: number,
     public curso: string,
     public idCursoUsuario: number
-
-    ) {}
+  ) {}
 }

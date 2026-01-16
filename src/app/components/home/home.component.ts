@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { CalendarioComponent } from '../calendario/calendario.component';
@@ -6,32 +6,46 @@ import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { RouterModule } from '@angular/router';
 import { InscripcionComponent } from '../inscripcion/inscripcion.component';
 import Swal from 'sweetalert2';
+import { DetallesComponent } from '../detalles/detalles.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
-  imports: [CalendarioComponent, RouterModule, InscripcionComponent]
+  imports: [CalendarioComponent, RouterModule, DetallesComponent],
 })
 export class HomeComponent implements OnInit {
   public eventos!: Evento[];
   public eventosProximos: Evento[] = [];
   public eventosCalendario: Evento[] = [];
-  public inscribirse: boolean = true;
+  private eventosOriginales: Evento[] = [];
   public mostrarModal: boolean = false;
-  public actividadesEvento!: ActividadesEvento[];
+  public actividadesEvento: ActividadesEvento[] = [];
+  public cargandoActividades: boolean = false;
   public eventoSeleccionado!: Evento;
-  @ViewChild(InscripcionComponent) inscripcionComponent?: InscripcionComponent;
-  
+  public profesorActual: { id: number; nombre: string } | null = null;
+  public cargandoProfesor: boolean = false;
+  public mostrarFormularioInmediato: boolean = false;
+
   constructor(private _servicioEventos: EventosService) {}
 
   ngOnInit(): void {
     this._servicioEventos.getEventos().subscribe((response) => {
-      this.eventos = response;
-      this.eventosCalendario = response;
-      console.log("Respuesta: "+JSON.stringify(response));
-      this.rellenarEventosProximos(this.eventos);
+      const eventosOrdenados = response.sort((a, b) => {
+        const fechaA = new Date(a.fechaEvento).getTime();
+        const fechaB = new Date(b.fechaEvento).getTime();
+        return fechaB - fechaA;
+      });
+
+      this.eventosOriginales = eventosOrdenados;
+      this.eventos = eventosOrdenados.map((evento: any) => ({
+        ...evento,
+        fechaEvento: this.formatearFecha(evento.fechaEvento),
+      }));
+
+      this.eventosCalendario = eventosOrdenados;
+      this.rellenarEventosProximos(this.eventosOriginales);
     });
   }
 
@@ -48,19 +62,20 @@ export class HomeComponent implements OnInit {
 
   comprobarFechaProxima(fecha: string): boolean {
     let fechaEvento = new Date(fecha);
-    let ahora = new Date(); 
-    if (fechaEvento > ahora) 
-      return true;
-    else 
-      return false;
+    let ahora = new Date();
+    if (fechaEvento > ahora) return true;
+    else return false;
   }
 
-   rellenarEventosProximos(eventos: Evento[]): void {
+  rellenarEventosProximos(eventos: Evento[]): void {
     // filtrar solo eventos futuros, ordenar por fecha asc (más cercano primero)
     // y crear copias con la fecha formateada para mostrar en la UI
     this.eventosProximos = eventos
       .filter((evento) => this.comprobarFechaProxima(evento.fechaEvento))
-      .sort((a, b) => new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime())
+      .sort(
+        (a, b) =>
+          new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime()
+      )
       .map((evento) => {
         const copia: Evento = { ...evento } as Evento;
         copia.fechaEvento = this.formatearFecha(evento.fechaEvento);
@@ -72,26 +87,43 @@ export class HomeComponent implements OnInit {
     this.mostrarModal = true;
   }
 
-  abrirModalEvento(evento: Evento): void {
-    this.eventoSeleccionado = evento;
-    this.getActividadesEvento(evento.idEvento);
+  abrirModalEvento(evento: Evento, mostrarFormulario: boolean = false): void {
+    const eventoOriginal =
+      this.eventosOriginales.find((e) => e.idEvento === evento.idEvento) ||
+      evento;
+
+    this.eventoSeleccionado = eventoOriginal;
+    this.actividadesEvento = [];
+    this.profesorActual = null;
+    this.mostrarFormularioInmediato = mostrarFormulario;
+    this.getActividadesEvento(eventoOriginal.idEvento);
+
+    if (eventoOriginal.idProfesor >= 0) {
+      this.cargarProfesor(eventoOriginal.idProfesor);
+    }
+
     this.mostrarModal = true;
   }
 
   cerrarModal(): void {
     this.mostrarModal = false;
-    this.inscribirse = true;
+    this.cargandoActividades = false;
+    this.profesorActual = null;
+    this.cargandoProfesor = false;
+    this.mostrarFormularioInmediato = false;
   }
 
-  getActividadesEvento(idEvento:number){
-    this._servicioEventos.getActividadesEvento(idEvento)
-    .subscribe(response => {
-      this.actividadesEvento = response
-    })
-  }
-
-  mostrarForm():void {
-    this.inscribirse = false;
+  getActividadesEvento(idEvento: number): void {
+    this.cargandoActividades = true;
+    this._servicioEventos.getActividadesEvento(idEvento).subscribe({
+      next: (response) => {
+        this.actividadesEvento = response;
+        this.cargandoActividades = false;
+      },
+      error: () => {
+        this.cargandoActividades = false;
+      },
+    });
   }
 
   // Invocado por el botón del modal para ejecutar la inscripción en el componente hijo
@@ -108,7 +140,42 @@ export class HomeComponent implements OnInit {
       });
     } else {
       console.warn('Componente Inscripcion no disponible para enviar');
+  cargarProfesor(idProfesor: number): void {
+    if (this.cargandoProfesor) {
+      return;
     }
+
+    this.cargandoProfesor = true;
+
+    this._servicioEventos.getProfesorById(idProfesor).subscribe({
+      next: (profesor) => {
+        if (
+          profesor &&
+          profesor.role?.toUpperCase() === 'PROFESOR' &&
+          profesor.usuario
+        ) {
+          this.profesorActual = {
+            id: idProfesor,
+            nombre: profesor.usuario,
+          };
+        }
+        this.cargandoProfesor = false;
+      },
+      error: () => {
+        this.profesorActual = null;
+        this.cargandoProfesor = false;
+      },
+    });
   }
 
+  comprobarFechaProximaEvento(evento: Evento): boolean {
+    const eventoOriginal = this.eventosOriginales.find(
+      (e) => e.idEvento === evento.idEvento
+    );
+    if (!eventoOriginal) return false;
+
+    const fechaEvento = new Date(eventoOriginal.fechaEvento);
+    const ahora = new Date();
+    return fechaEvento > ahora;
+  }
 }
