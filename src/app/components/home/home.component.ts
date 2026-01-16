@@ -5,6 +5,7 @@ import { CalendarioComponent } from '../calendario/calendario.component';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { RouterModule } from '@angular/router';
 import { InscripcionComponent } from '../inscripcion/inscripcion.component';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-home',
@@ -97,6 +98,14 @@ export class HomeComponent implements OnInit {
   submitInscripcionModal(){
     if(this.inscripcionComponent){
       this.inscripcionComponent.inscribirUsuario();
+      this.cerrarModal();
+      Swal.fire({
+        title: '¡Inscripción Confirmada!',
+        text: 'Te has inscrito correctamente al evento',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6'
+      });
     } else {
       console.warn('Componente Inscripcion no disponible para enviar');
     }
