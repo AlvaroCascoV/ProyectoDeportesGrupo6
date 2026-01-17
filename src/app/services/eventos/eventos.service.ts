@@ -61,4 +61,8 @@ export class EventosService {
     const url = `${this.url}api/ProfesEventos/AsociarProfesorEvento/${idEvento}/${idProfesor}`;
     return this._http.post<any>(url, null);
   }
+
+  insertarActividadesEvento(idEvento:number, idActividad:number): Observable<any>{
+    return this._http.post<any>(`${this.url}api/ActividadesEvento/create?idevento=${idEvento}&idactividad=${idActividad}`,null)
+  }
 }

@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { DetallesComponent } from '../detalles/detalles.component';
+import { ActividadesService } from '../../services/actividades/actividades.service';
+import { Actividad } from '../../models/Actividad';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-eventos',
@@ -22,8 +25,12 @@ export class EventosComponent implements OnInit {
     fechaEvento: '',
     idProfesor: 0,
   };
-
-  constructor(private _servicioEventos: EventosService) {}
+  public actividades: Actividad[] = [];
+  public actividadesSeleccionadas: Actividad[] = [];
+  constructor(
+    private _servicioEventos: EventosService,
+    private _servicioActividades: ActividadesService
+  ) {}
 
   abrirModal(): void {
     this.mostrarModal = true;
@@ -36,6 +43,13 @@ export class EventosComponent implements OnInit {
 
   crearEvento(): void {
     if (!this.nuevoEvento.fechaEvento) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Por favor, selecciona una fecha para el evento',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#d33'
+      });
       return;
     }
 
@@ -49,12 +63,23 @@ export class EventosComponent implements OnInit {
             if (profesor && profesor.role?.toUpperCase() === 'PROFESOR') {
               this.crearEventoConFecha();
             } else {
-              // TODO: Mostrar error "El usuario asignado no es un profesor"
+              Swal.fire({
+                title: 'Error',
+                text: 'El usuario asignado no es un profesor',
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#d33'
+              });
             }
           },
           error: () => {
-            // Si hay error (incluyendo 204), no es profesor
-            // TODO: Mostrar error "El usuario asignado no es un profesor"
+            Swal.fire({
+              title: 'Error',
+              text: 'El usuario asignado no es un profesor',
+              icon: 'error',
+              confirmButtonText: 'Aceptar',
+              confirmButtonColor: '#d33'
+            });
           },
         });
     } else {
@@ -70,31 +95,83 @@ export class EventosComponent implements OnInit {
     this._servicioEventos.insertEvento(fechaISO).subscribe({
       next: (response) => {
         const idEvento = response.idEvento || response.id;
-
+        console.log("Evento añadido: "+idEvento)
+        
+        // Insertar actividades si las hay
+        if (idEvento && this.actividadesSeleccionadas.length > 0) {
+          this.actividadesSeleccionadas.forEach(act => {
+            console.log("Añadiendo actividad: "+act.nombre)
+            this._servicioEventos.insertarActividadesEvento(idEvento, act.idActividad)
+            .subscribe({
+              next: (response) => {
+                console.log(response)
+              },
+              error: (error) => {
+                console.error("Error al insertar actividad:", error)
+              }
+            })
+          });
+        }
+        
         // Asociar profesor al evento recién creado
         if (idEvento && this.nuevoEvento.idProfesor > 0) {
           this._servicioEventos
             .asociarProfesorEvento(idEvento, this.nuevoEvento.idProfesor)
             .subscribe({
               next: () => {
-                // Recargar eventos después de crear y asociar
-                this.ngOnInit();
                 this.cerrarModal();
+                // Evento creado con éxito
+                Swal.fire({
+                  title: '¡Evento Creado!',
+                  text: 'El evento se ha creado correctamente',
+                  icon: 'success',
+                  confirmButtonText: 'Aceptar',
+                  confirmButtonColor: '#3085d6'
+                }).then(() => {
+                  this.ngOnInit();
+                  this.cerrarModal();
+                  this.actividadesSeleccionadas = [];
+                });
               },
               error: () => {
-                // Aún así recargar eventos aunque falle la asociación
-                this.ngOnInit();
-                this.cerrarModal();
+                // Evento creado pero error asociando profesor
+                Swal.fire({
+                  title: 'Evento Creado',
+                  text: 'El evento se creó, pero hubo un error al asignar el profesor',
+                  icon: 'warning',
+                  confirmButtonText: 'Aceptar',
+                  confirmButtonColor: '#ff9800'
+                }).then(() => {
+                  this.ngOnInit();
+                  this.cerrarModal();
+                  this.actividadesSeleccionadas = [];
+                });
               },
             });
         } else {
-          // Si no hay profesor o no se pudo obtener el idEvento, solo recargar
-          this.ngOnInit();
+          // Evento creado sin profesor
           this.cerrarModal();
+          Swal.fire({
+            title: '¡Evento Creado!',
+            text: 'El evento se ha creado correctamente',
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#3085d6'
+          }).then(() => {
+            this.ngOnInit();
+            this.cerrarModal();
+            this.actividadesSeleccionadas = [];
+          });
         }
       },
       error: () => {
-        // TODO: Mostrar mensaje de error al usuario
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo crear el evento. Por favor, intenta nuevamente',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33'
+        });
       },
     });
   }
@@ -134,6 +211,22 @@ export class EventosComponent implements OnInit {
     this.mostrarModalDetalles = false;
   }
 
+  onActividadSeleccionada(actividad: Actividad, event: Event): void {
+    //coge el checkbox seleccionado
+    const input = event.target as HTMLInputElement;
+    if (input.checked) {
+      //busca en actividades si ya se habia añadido la actividad del checkbox y sino la añade
+      if (!this.actividadesSeleccionadas.find(a => a.idActividad === actividad.idActividad)) {
+        this.actividadesSeleccionadas.push(actividad);
+      }
+    } else { //si esta en actividadesSeleccionadas las filtra para que solo quede una
+      this.actividadesSeleccionadas = this.actividadesSeleccionadas.filter(
+        a => a.idActividad !== actividad.idActividad
+      );
+    }
+    console.log('Actividades seleccionadas:', this.actividadesSeleccionadas);
+  }
+
   ngOnInit(): void {
     this._servicioEventos.getEventos().subscribe((response) => {
       // Ordenar eventos por fecha (más recientes primero)
@@ -151,5 +244,10 @@ export class EventosComponent implements OnInit {
 
       console.log(response);
     });
+
+    this._servicioActividades.getActividades().subscribe(response=>{
+      this.actividades = response;
+      console.log("Actividades:"+this.actividades)
+    })
   }
 }

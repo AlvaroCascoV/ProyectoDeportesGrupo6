@@ -129,6 +129,27 @@
           />
         </div>
 
+        @if(actividades && actividades.length > 0) {
+        <div class="actividades-section">
+          <label>Seleccionar Actividades</label>
+          @for(actividad of actividades; track actividad.idActividad){
+            <div class="checkbox-wrapper">
+              <input
+                type="checkbox"
+                [id]="'actividad-' + actividad.idActividad"
+                [value]="actividad.idActividad"
+                (change)="onActividadSeleccionada(actividad, $event)"
+                class="custom-checkbox"
+              />
+              <label [for]="'actividad-' + actividad.idActividad" class="checkbox-label">
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-text">{{actividad.nombre}}</span>
+              </label>
+            </div>
+          }
+        </div>
+        }
+
         <div class="flex gap-3">
           <button
             type="button"
