@@ -48,6 +48,7 @@
           <div class="flex gap-2">
             @if (comprobarFechaProxima(evento)) {
             <button
+              (click)="abrirModalInscripcion(evento)"
               class="bg-blue-400 text-black px-6 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold flex-1"
             >
               Inscribirme
@@ -174,6 +175,7 @@
   <app-detalles
     [evento]="eventoSeleccionado"
     [mostrar]="mostrarModalDetalles && eventoSeleccionado !== undefined"
+    [mostrarFormularioInmediato]="mostrarFormularioInmediato"
     (cerrar)="cerrarModalDetalles()"
   ></app-detalles>
 </div>

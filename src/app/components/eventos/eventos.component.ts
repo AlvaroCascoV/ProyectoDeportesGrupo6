@@ -20,6 +20,7 @@ export class EventosComponent implements OnInit {
   private eventosOriginales: Evento[] = [];
   public mostrarModal = false;
   public mostrarModalDetalles = false;
+  public mostrarFormularioInmediato = false;
   public eventoSeleccionado!: Evento;
   public nuevoEvento = {
     fechaEvento: '',
@@ -209,6 +210,17 @@ export class EventosComponent implements OnInit {
 
   cerrarModalDetalles(): void {
     this.mostrarModalDetalles = false;
+    this.mostrarFormularioInmediato = false;
+  }
+
+  abrirModalInscripcion(evento: Evento): void {
+    const eventoOriginal = this.eventosOriginales.find(
+      (e) => e.idEvento === evento.idEvento
+    ) || evento;
+    
+    this.eventoSeleccionado = eventoOriginal;
+    this.mostrarFormularioInmediato = true;
+    this.mostrarModalDetalles = true;
   }
 
   onActividadSeleccionada(actividad: Actividad, event: Event): void {
