@@ -9,9 +9,51 @@
     </button>
   </div>
 
-  @if (eventos.length > 0) {
+  <div class="flex flex-wrap items-center gap-3 mb-6 bg-white/70 border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+    <h3 class="text-sm font-semibold text-gray-700">Filtrar por:</h3>
+    <div class="flex flex-wrap gap-2">
+      <button
+        class="px-4 py-2 rounded-full border text-sm font-semibold transition-colors"
+        [class.bg-blue-400]="filtroActivo === 'todos'"
+        [class.text-white]="filtroActivo === 'todos'"
+        [class.border-blue-400]="filtroActivo === 'todos'"
+        [class.bg-gray-50]="filtroActivo !== 'todos'"
+        [class.text-gray-700]="filtroActivo !== 'todos'"
+        [class.border-gray-200]="filtroActivo !== 'todos'"
+        [class.hover\:bg-gray-100]="filtroActivo !== 'todos'"
+        [class.hover\:border-blue-200]="filtroActivo !== 'todos'"
+        (click)="filtrarTodos()"
+      >Todos</button>
+      <button
+        class="px-4 py-2 rounded-full border text-sm font-semibold transition-colors"
+        [class.bg-blue-400]="filtroActivo === 'proximos'"
+        [class.text-white]="filtroActivo === 'proximos'"
+        [class.border-blue-400]="filtroActivo === 'proximos'"
+        [class.bg-gray-50]="filtroActivo !== 'proximos'"
+        [class.text-gray-700]="filtroActivo !== 'proximos'"
+        [class.border-gray-200]="filtroActivo !== 'proximos'"
+        [class.hover\:bg-gray-100]="filtroActivo !== 'proximos'"
+        [class.hover\:border-blue-200]="filtroActivo !== 'proximos'"
+        (click)="filtrarProximos()"
+      >Próximos</button>
+      <button
+        class="px-4 py-2 rounded-full border text-sm font-semibold transition-colors"
+        [class.bg-blue-400]="filtroActivo === 'pasados'"
+        [class.text-white]="filtroActivo === 'pasados'"
+        [class.border-blue-400]="filtroActivo === 'pasados'"
+        [class.bg-gray-50]="filtroActivo !== 'pasados'"
+        [class.text-gray-700]="filtroActivo !== 'pasados'"
+        [class.border-gray-200]="filtroActivo !== 'pasados'"
+        [class.hover\:bg-gray-100]="filtroActivo !== 'pasados'"
+        [class.hover\:border-blue-200]="filtroActivo !== 'pasados'"
+        (click)="filtrarPasados()"
+      >Pasados</button>
+    </div>
+  </div>
+
+  @if (eventosFiltrados.length > 0) {
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    @for (evento of eventos; track evento.idEvento) {
+    @for (evento of eventosFiltrados; track evento.idEvento) {
     <div
       class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
       [class.border-blue-500]="comprobarFechaProxima(evento)"

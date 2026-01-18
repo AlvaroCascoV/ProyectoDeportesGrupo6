@@ -18,6 +18,8 @@ import Swal from 'sweetalert2';
 export class EventosComponent implements OnInit {
   public eventos: Evento[] = [];
   private eventosOriginales: Evento[] = [];
+  public eventosFiltrados: Evento[] = [];
+  public filtroActivo: 'todos' | 'proximos' | 'pasados' = 'todos';
   public mostrarModal = false;
   public mostrarModalDetalles = false;
   public mostrarFormularioInmediato = false;
@@ -239,6 +241,25 @@ export class EventosComponent implements OnInit {
     console.log('Actividades seleccionadas:', this.actividadesSeleccionadas);
   }
 
+  filtrarTodos(): void {
+    this.eventosFiltrados = [...this.eventos];
+    this.filtroActivo = 'todos';
+  }
+
+  filtrarProximos(): void {
+    this.eventosFiltrados = this.eventos.filter((evento) =>
+      this.comprobarFechaProxima(evento)
+    );
+    this.filtroActivo = 'proximos';
+  }
+
+  filtrarPasados(): void {
+    this.eventosFiltrados = this.eventos.filter((evento) =>
+      !this.comprobarFechaProxima(evento)
+    );
+    this.filtroActivo = 'pasados';
+  }
+
   ngOnInit(): void {
     this._servicioEventos.getEventos().subscribe((response) => {
       // Ordenar eventos por fecha (más recientes primero)
@@ -253,6 +274,9 @@ export class EventosComponent implements OnInit {
         ...evento,
         fechaEvento: this.formatearFecha(evento.fechaEvento),
       }));
+
+      this.eventosFiltrados = [...this.eventos];
+      this.filtroActivo = 'todos';
 
       console.log(response);
     });
