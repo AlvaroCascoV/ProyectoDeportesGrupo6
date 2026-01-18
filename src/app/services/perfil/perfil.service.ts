@@ -15,8 +15,16 @@ export class PerfilService {
 
   getPerfil(token: string): Observable<Alumno>{
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+      'Authorization': `bearer ${token}`
     });
     return this._http.get<Alumno>(`${this.url}api/usuariosdeportes/perfil`, {headers})
   }
+
+  getActividadesUser(token: string): Observable<any>{
+    const headers = new HttpHeaders({
+      'Authorization': `bearer ${token}`
+    });
+    return this._http.get<any>(`${this.url}api/UsuariosDeportes/ActividadesUser`, {headers})
+  }
+
 }
