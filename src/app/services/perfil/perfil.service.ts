@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment.development';
 import { Alumno } from '../../models/Alumno';
 import { Observable } from 'rxjs';
+import { Inscripcion } from '../../models/Inscripcion';
 
 @Injectable({
   providedIn: 'root'
@@ -20,11 +21,11 @@ export class PerfilService {
     return this._http.get<Alumno>(`${this.url}api/usuariosdeportes/perfil`, {headers})
   }
 
-  getActividadesUser(token: string): Observable<any>{
+  getActividadesUser(token: string): Observable<Inscripcion[]>{
     const headers = new HttpHeaders({
       'Authorization': `bearer ${token}`
     });
-    return this._http.get<any>(`${this.url}api/UsuariosDeportes/ActividadesUser`, {headers})
+    return this._http.get<Inscripcion[]>(`${this.url}api/UsuariosDeportes/ActividadesUser`, {headers})
   }
 
 }

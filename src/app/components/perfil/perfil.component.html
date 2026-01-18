@@ -111,4 +111,124 @@
     </div>
   </div>
   }
+  @if(inscripciones && inscripciones.length > 0){
+    <div class="mt-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b-2 border-blue-400 pb-2">
+        Mis Inscripciones
+      </h2>
+      <div class="flex flex-wrap items-center gap-3 mb-6 bg-white/70 border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+        <h3 class="text-sm font-semibold text-gray-700">Filtrar por:</h3>
+        <div class="flex flex-wrap gap-2">
+          <button 
+            class="px-4 py-2 rounded-full border text-sm font-semibold transition-colors"
+            [class.bg-blue-400]="filtroActivo === 'todos'"
+            [class.text-white]="filtroActivo === 'todos'"
+            [class.border-blue-400]="filtroActivo === 'todos'"
+            [class.bg-gray-50]="filtroActivo !== 'todos'"
+            [class.text-gray-700]="filtroActivo !== 'todos'"
+            [class.border-gray-200]="filtroActivo !== 'todos'"
+            [class.hover\:bg-gray-100]="filtroActivo !== 'todos'"
+            [class.hover\:border-blue-200]="filtroActivo !== 'todos'"
+            (click)="filtrarTodos()"
+          >
+          Todos</button>
+          <button 
+            class="px-4 py-2 rounded-full border text-sm font-semibold transition-colors"
+            [class.bg-blue-400]="filtroActivo === 'pasados'"
+            [class.text-white]="filtroActivo === 'pasados'"
+            [class.border-blue-400]="filtroActivo === 'pasados'"
+            [class.bg-gray-50]="filtroActivo !== 'pasados'"
+            [class.text-gray-700]="filtroActivo !== 'pasados'"
+            [class.border-gray-200]="filtroActivo !== 'pasados'"
+            [class.hover\:bg-gray-100]="filtroActivo !== 'pasados'"
+            [class.hover\:border-blue-200]="filtroActivo !== 'pasados'"
+            (click)="filtrarPasados()"
+          >
+          Pasados</button>
+          <button 
+            class="px-4 py-2 rounded-full border text-sm font-semibold transition-colors"
+            [class.bg-blue-400]="filtroActivo === 'proximos'"
+            [class.text-white]="filtroActivo === 'proximos'"
+            [class.border-blue-400]="filtroActivo === 'proximos'"
+            [class.bg-gray-50]="filtroActivo !== 'proximos'"
+            [class.text-gray-700]="filtroActivo !== 'proximos'"
+            [class.border-gray-200]="filtroActivo !== 'proximos'"
+            [class.hover\:bg-gray-100]="filtroActivo !== 'proximos'"
+            [class.hover\:border-blue-200]="filtroActivo !== 'proximos'"
+            (click)="filtrarProximos()"
+          >
+          Próximos</button>
+          
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (inscripcion of inscripcionesFiltro ; track inscripcion){
+          <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+            <!-- Encabezado con Evento -->
+            <div class="mb-4">
+              <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+                Evento #{{ inscripcion.idEvento }}
+              </span>
+              <h3 class="text-lg font-bold text-gray-800">
+                {{ inscripcion.nombreActividad }}
+              </h3>
+            </div>
+            
+            <!-- Badge Estado Fecha -->
+            <div class="mb-4">
+              @if (comprobarFechaProxima(inscripcion.fechaEvento)) {
+                <span class="inline-block bg-green-200 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
+                  Próximo
+                </span>
+              } @else {
+                <span class="inline-block bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">
+                  Pasado
+                </span>
+              }
+            </div>
+            
+            <!-- Información de la Actividad -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-4 space-y-3">
+              <div>
+                <h4 class="text-xs font-semibold text-gray-600 mb-1">ID Actividad</h4>
+                <p class="text-gray-800">{{ inscripcion.idActividad }}</p>
+              </div>
+              
+              <div>
+                <h4 class="text-xs font-semibold text-gray-600 mb-1">Fecha del Evento</h4>
+                <p class="text-gray-800 font-semibold">
+                  {{ formatearFecha(inscripcion.fechaEvento) }}
+                </p>
+              </div>
+              
+              <div>
+                <h4 class="text-xs font-semibold text-gray-600 mb-1">Fecha de Inscripción</h4>
+                <p class="text-sm text-gray-700">
+                  {{ formatearFecha(inscripcion.fechaInscripcion) }}
+                </p>
+              </div>
+            </div>
+            
+            <!-- Estado de Capitanía -->
+            <div class="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border-l-4 border-orange-400">
+              <span class="text-sm font-semibold text-gray-700">Capitán:</span>
+              <span 
+                class="px-3 py-1 rounded-full text-xs font-bold"
+                [class.bg-green-200]="inscripcion.quiereSerCapitan"
+                [class.text-green-800]="inscripcion.quiereSerCapitan"
+                [class.bg-gray-200]="!inscripcion.quiereSerCapitan"
+                [class.text-gray-800]="!inscripcion.quiereSerCapitan"
+              >
+                {{ inscripcion.quiereSerCapitan ? 'Sí' : 'No' }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </div> 
+  } @else {
+    <div class="mt-8 bg-white p-6 rounded-lg shadow-md text-center">
+      <p class="text-gray-600 text-lg">No tienes inscripciones aún</p>
+    </div>
+  }
 </div>
