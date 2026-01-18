@@ -5,6 +5,7 @@ import { InscripcionesService } from '../../services/inscripciones/inscripciones
 import { ActivatedRoute } from '@angular/router';
 import { Actividad } from '../../models/Actividad';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
+import Swal from 'sweetalert2';
 
 interface ActividadOption { id: number; nombre: string }
 
@@ -42,8 +43,21 @@ export class InscripcionComponent implements OnInit{
         "quiereSerCapitan": this.quieroSerCapitan,
         "fechaInscripcion": new Date()
       }
-      this._servicioInscripciones.createInscripcion(inscripcion).subscribe(response => {
-        console.log(response)
+      this._servicioInscripciones.createInscripcion(inscripcion).subscribe({
+        next: (response) => {
+          console.log(response)
+        },
+        error: (error) => {
+          if (error.status === 400) {
+            Swal.fire({
+              title: 'Error',
+              text: 'Ya estás inscrito en este evento.',
+              icon: 'error',
+              confirmButtonText: 'Aceptar',
+              confirmButtonColor: '#d33'
+            });
+          }
+        }
       })
     }
     
