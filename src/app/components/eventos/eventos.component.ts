@@ -266,7 +266,7 @@ export class EventosComponent implements OnInit {
       const eventosOrdenados = response.sort((a, b) => {
         const fechaA = new Date(a.fechaEvento).getTime();
         const fechaB = new Date(b.fechaEvento).getTime();
-        return fechaB - fechaA; // Orden descendente (más recientes primero)
+        return fechaA- fechaB; // Orden descendente (más recientes primero)
       });
 
       this.eventosOriginales = eventosOrdenados;
