@@ -116,6 +116,15 @@ export class InscripcionComponent implements OnInit {
           confirmButtonColor: '#d33',
         });
         return false;
+      } else {
+        // Inscripción ya existente: informamos al usuario y continuamos con el flujo.
+        await Swal.fire({
+          title: 'Ya estás inscrito',
+          text: 'Ya estabas inscrito en esta actividad. Ahora puedes gestionar tu equipo.',
+          icon: 'info',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        });
       }
     }
 
