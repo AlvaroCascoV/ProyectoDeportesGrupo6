@@ -41,6 +41,16 @@
           <i class="fas fa-bell"></i>Materiales
         </a>
       </div>
+      <div class="flex-1 flex items-center justify-center">
+        <a
+          routerLink="/aulas"
+          routerLinkActive="bg-blue-500 font-bold"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer flex items-center gap-2"
+        >
+          Aulas
+        </a>
+      </div>
     </div>
 
     <!-- Perfil + Logout derecha -->
