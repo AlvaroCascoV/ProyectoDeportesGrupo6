@@ -3,28 +3,32 @@ import { HomeComponent } from './components/home/home.component';
 import { EventosComponent } from './components/eventos/eventos.component';
 import { PerfilComponent } from './components/perfil/perfil.component';
 import { AulasComponent } from './components/aulas/aulas.component';
-import { InscripcionComponent } from './components/inscripcion/inscripcion.component';
 import { MaterialesComponent } from './components/materiales/materiales.component';
+import { authGuard } from './auth/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
-  { path: 'home', component: HomeComponent },
-  { path: 'eventos', component: EventosComponent },
-  { path: 'perfil', component: PerfilComponent },
-  { path: 'materiales', component: MaterialesComponent },
+  { path: 'auth', loadChildren: () => import('./auth/auth.routes') },
   {
-    path: 'eventos/:idEvento/resultados',
-    redirectTo: '/eventos',
-    // TODO: Create ResultadosComponent and replace redirectTo with component
+    path: '',
+    canActivateChild: [authGuard],
+    children: [
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
+      { path: 'home', component: HomeComponent },
+      { path: 'eventos', component: EventosComponent },
+      { path: 'perfil', component: PerfilComponent },
+      { path: 'materiales', component: MaterialesComponent },
+      {
+        path: 'eventos/:idEvento/resultados',
+        redirectTo: '/eventos',
+        // TODO: Create ResultadosComponent and replace redirectTo with component
+      },
+      {
+        path: 'eventos/crear',
+        redirectTo: '/eventos',
+        // TODO: Create CrearEventoComponent and replace redirectTo with component
+      },
+      { path: 'aulas', component: AulasComponent },
+      { path: '**', redirectTo: 'home' },
+    ],
   },
-  {
-    path: 'eventos/crear',
-    redirectTo: '/eventos',
-    // TODO: Create CrearEventoComponent and replace redirectTo with component
-  },
-  {
-    path: 'aulas',
-    component: AulasComponent,
-  },
-  { path: '**', redirectTo: '/home' },
 ];
