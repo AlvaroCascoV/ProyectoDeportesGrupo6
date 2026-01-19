@@ -18,6 +18,25 @@ export class EventosService {
     return this._http.get<Evento[]>(`${this.url}api/eventos`);
   }
 
+  getProximoEvento(): Observable<Evento> {
+    return this.getEventos().pipe(
+      map(eventos => {
+        const proximoEvento = eventos
+          .filter((evento) => {
+            let fechaEventoDate = new Date(evento.fechaEvento);
+            let ahora = new Date();
+            return fechaEventoDate > ahora;
+          })
+          .sort(
+            (a, b) =>
+              new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime()
+          )[0];
+        console.log("Próximo evento: " + JSON.stringify(proximoEvento));
+        return proximoEvento;
+      })
+    );
+  }
+
   getActividadesEvento(idEvento: number): Observable<ActividadesEvento[]> {
     return this._http.get<ActividadesEvento[]>(
       `${this.url}api/actividades/actividadesevento/${idEvento}`

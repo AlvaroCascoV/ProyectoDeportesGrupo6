@@ -1,0 +1,119 @@
+<div class="materiales-container p-4 md:p-8 max-w-7xl mx-auto">
+  @if (proximoEventoActividad.length > 0) {
+    <!-- Header con información del evento -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+      <div class="flex items-center justify-between mb-2">
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800">
+          Solicitud de Materiales
+        </h1>
+        <span class="bg-blue-400 text-white px-4 py-2 rounded-full text-sm font-semibold">
+          Próximo Evento
+        </span>
+      </div>
+      <div class="border-l-4 border-blue-400 pl-4 mt-4">
+        <p class="text-gray-700 font-semibold text-lg">
+          <i class="fas fa-calendar-alt mr-2 text-blue-400"></i>
+          {{ formatearFecha(proximoEventoActividad[0].fechaEvento) }}
+        </p>
+        <p class="text-gray-600 text-sm mt-1">
+          Evento #{{ proximoEventoActividad[0].idEvento }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Actividades y materiales asociados -->
+    <div class="space-y-6">
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-800">
+                Actividades del evento
+            </h2>
+      @for (actividad of proximoEventoActividad; track actividad.idEventoActividad) {
+        <div class="bg-white p-6 rounded-lg shadow-md">
+           
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-xl font-bold text-gray-800">{{ actividad.nombreActividad }}</h3>
+            </div>
+            <button
+              (click)="abrirModalSolicitar(actividad.idEventoActividad)"
+              class="bg-blue-400 text-black px-4 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold transition-colors flex items-center gap-2 text-sm"
+            >
+              <i class="fas fa-circle-plus"></i>
+              Solicitar material
+            </button>
+          </div>
+
+          <div class="mt-4 space-y-3">
+            @if (obtenerMaterialesDeActividad(actividad.idEventoActividad).length > 0) {
+              @for (material of obtenerMaterialesDeActividad(actividad.idEventoActividad); track material.idMaterial) {
+                <div class="border border-gray-200 rounded-lg p-4 flex flex-col gap-2 hover:shadow-sm transition-shadow">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <p class="font-semibold text-gray-800 text-lg">{{ material.nombreMaterial }}</p>
+                      <p class="text-sm text-gray-600">Solicitado:</p>
+                      <p class="text-sm text-gray-600">
+                        <i class="fas fa-calendar mr-2 text-gray-400"></i>
+                        {{ formatearFecha(material.fechaSolicitud) }}
+                      </p>
+                    </div>
+                    @if (material.pendiente) {
+                      <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">Pendiente</span>
+                    } @else {
+                      <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Entregado</span>
+                    }
+                  </div>
+
+                  @if (material.pendiente) {
+                    <div class="flex justify-end">
+                      <button class="bg-blue-400 text-black px-4 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold transition-colors flex items-center gap-2">
+                        
+                        Aportar
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+            } @else {
+              <div class="border border-dashed border-gray-300 rounded-lg p-4 text-gray-600 text-sm flex items-center gap-2 bg-gray-50">
+                <i class="fas fa-box-open text-gray-400"></i>
+                No hay materiales registrados para esta actividad.
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Loading State -->
+    <div class="flex items-center justify-center min-h-[50vh]">
+      <div class="text-center">
+        <div class="loader mx-auto mb-4"></div>
+        <p class="text-gray-600 font-semibold text-lg">Cargando materiales del evento...</p>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal de formulario: nombre del material + botón Solicitar -->
+@if(modalSolicitarMaterial){
+  <div class="modal-solicitar-material" [attr.aria-hidden]="!modalSolicitarMaterial">
+    <div class="modal-solicitar-material__backdrop" aria-hidden="true"></div>
+    <div class="modal-solicitar-material__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-solicitar-material-title">
+      <button type="button" class="modal-solicitar-material__close" (click)="cerrarModalSolicitar()" aria-label="Cerrar modal">×</button>
+      <form class="modal-solicitar-material__form" novalidate>
+        <h2 id="modal-solicitar-material-title" class="modal-solicitar-material__title">Solicitar material</h2>
+
+        <div class="form-row">
+          <label for="material-nombre">Nombre del material</label>
+          <input id="material-nombre" [(ngModel)]="materialNombre" name="materialNombre" type="text" placeholder="Ej. Balón de fútbol" />
+        </div>
+        
+          
+        <div class="form-actions">
+          <button (click)="cerrarModalSolicitar()" class="btn btn-secondary">Cancelar</button>
+       
+          <button (click)="solicitarMaterial(idEventoActividadModal)" class="btn btn-primary">Solicitar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
