@@ -23,7 +23,7 @@
 
     <!-- Actividades y materiales asociados -->
     <div class="space-y-6">
-         <h2 class="text-2xl md:text-3xl font-bold text-gray-800">
+      <h2 class="text-2xl md:text-3xl font-bold text-gray-800">
                 Actividades del evento
             </h2>
       @for (actividad of proximoEventoActividad; track actividad.idEventoActividad) {
@@ -34,6 +34,7 @@
               <h3 class="text-xl font-bold text-gray-800">{{ actividad.nombreActividad }}</h3>
             </div>
             <button
+              (click)="abrirModalSolicitar(actividad.idEventoActividad)"
               class="bg-blue-400 text-black px-4 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold transition-colors flex items-center gap-2 text-sm"
             >
               <i class="fas fa-circle-plus"></i>
@@ -91,3 +92,28 @@
     </div>
   }
 </div>
+
+<!-- Modal de formulario: nombre del material + botón Solicitar -->
+@if(modalSolicitarMaterial){
+  <div class="modal-solicitar-material" [attr.aria-hidden]="!modalSolicitarMaterial">
+    <div class="modal-solicitar-material__backdrop" aria-hidden="true"></div>
+    <div class="modal-solicitar-material__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-solicitar-material-title">
+      <button type="button" class="modal-solicitar-material__close" (click)="cerrarModalSolicitar()" aria-label="Cerrar modal">×</button>
+      <form class="modal-solicitar-material__form" novalidate>
+        <h2 id="modal-solicitar-material-title" class="modal-solicitar-material__title">Solicitar material</h2>
+
+        <div class="form-row">
+          <label for="material-nombre">Nombre del material</label>
+          <input id="material-nombre" [(ngModel)]="materialNombre" name="materialNombre" type="text" placeholder="Ej. Balón de fútbol" />
+        </div>
+        
+          
+        <div class="form-actions">
+          <button (click)="cerrarModalSolicitar()" class="btn btn-secondary">Cancelar</button>
+       
+          <button (click)="solicitarMaterial(idEventoActividadModal)" class="btn btn-primary">Solicitar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

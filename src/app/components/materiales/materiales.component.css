@@ -1,0 +1,98 @@
+/* Modal: solicitar material (mínimo, sin lógica) */
+.modal-solicitar-material {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: none;
+}
+.modal-solicitar-material:not([hidden]) {
+	display: grid;
+	place-items: center;
+}
+
+.modal-solicitar-material__backdrop {
+	position: fixed;
+	inset: 0;
+ 	pointer-events: none;
+}
+
+.modal-solicitar-material__dialog {
+	background: #fff;
+	width: min(520px, 92vw);
+	border-radius: 12px;
+	box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+	padding: 20px;
+}
+
+.modal-solicitar-material__title {
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: #1f2937; /* gray-800 */
+	margin: 0 0 12px;
+}
+
+.modal-solicitar-material__close {
+	position: absolute;
+	top: 12px;
+	right: 16px;
+	background: none;
+	border: none;
+	font-size: 28px;
+	cursor: pointer;
+	color: #6b7280; /* gray-500 */
+	transition: color 0.2s;
+}
+.modal-solicitar-material__close:hover {
+	color: #1f2937; /* gray-800 */
+}
+
+.form-row {
+	display: grid;
+	gap: 6px;
+	margin-bottom: 12px;
+}
+.form-row label {
+	font-weight: 600;
+	color: #374151; /* gray-700 */
+}
+.form-row input {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid #d1d5db; /* gray-300 */
+	border-radius: 8px;
+	outline: none;
+}
+.form-row input:focus {
+	border-color: #60a5fa; /* blue-400 */
+	box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+
+.form-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
+.btn {
+	padding: 10px 16px;
+	border-radius: 8px;
+	border: none;
+	cursor: pointer;
+	font-weight: 600;
+}
+.btn-primary {
+	background-color: #1976d2;
+	color: #fff;
+}
+.btn-primary:hover {
+	background-color: #1565c0;
+}
+.btn-secondary {
+	background-color: #e5e7eb;
+	color: #374151;
+	border: 1px solid #d1d5db;
+	transition: all 0.2s ease;
+}
+.btn-secondary:hover {
+	background-color: #d1d5db;
+	border-color: #9ca3af;
+}

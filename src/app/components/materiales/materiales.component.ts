@@ -5,10 +5,13 @@ import { EventosService } from '../../services/eventos/eventos.service';
 import { Evento } from '../../models/Evento';
 import { Material } from '../../models/Material';
 import { forkJoin, mergeMap } from 'rxjs';
+import { FormsModule } from '@angular/forms';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-materiales',
-  standalone: false,
+  standalone: true,
+  imports: [FormsModule],
   templateUrl: './materiales.component.html',
   styleUrl: './materiales.component.css'
 })
@@ -16,6 +19,9 @@ export class MaterialesComponent implements OnInit{
   public proximoEventoActividad : ActividadesEvento[] = []
   public materialesEvento: Material[] = []
   public materialesPorActividad: { [key: number]: Material[] } = {};
+  public materialNombre: string = "";
+  public modalSolicitarMaterial: boolean = false;
+  public idEventoActividadModal!:number;
   constructor(private _servicioMateriales: MaterialesService, private _servicioEventos: EventosService){}
 
   ngOnInit(): void {
@@ -71,6 +77,71 @@ export class MaterialesComponent implements OnInit{
 
   obtenerMaterialesDeActividad(idActividad: number): Material[] {
     return this.materialesPorActividad[idActividad] ?? [];
+  }
+
+  solicitarMaterial(idEventoActividad:number): void{
+    let material = new Material
+    (
+      0, 
+      idEventoActividad, 
+      parseInt(localStorage.getItem("userID") || "0"),
+      this.materialNombre,
+      true,
+      new Date().toISOString()
+    )
+    console.log("EventoActividad: "+idEventoActividad)
+    console.log("Material: "+JSON.stringify(material))
+    this._servicioMateriales.solicitarMaterial(material).subscribe({
+      next: (response) => {
+        console.log(response)
+        Swal.fire({
+          title: '¡Material solicitado!',
+          text: 'Tu solicitud de material ha sido registrada correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#1976d2'
+        });
+        this._servicioMateriales.getMaterialesEventoActividad(idEventoActividad).subscribe({
+          next: (materiales) => {
+            this.materialesPorActividad[idEventoActividad] = materiales;
+          },
+          error: (error) => {
+            console.error("Error al actualizar materiales: ", error);
+          }
+        });
+        
+        this.cerrarModalSolicitar();
+        this.materialNombre = '';
+      },
+      error: (error) => {
+        console.error(error)
+        if (error.status === 400) {
+          Swal.fire({
+            title: 'Error en la solicitud',
+            text: 'No se pudo procesar tu solicitud. Verifica los datos ingresados.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#d32f2f'
+          });
+        } else {
+          Swal.fire({
+            title: 'Error',
+            text: 'Ha ocurrido un error inesperado. Por favor, intenta nuevamente.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#d32f2f'
+          });
+        }
+      }
+    })
+  }
+
+  abrirModalSolicitar(idEventoActividad: number){
+    this.modalSolicitarMaterial = true;
+    this.idEventoActividadModal = idEventoActividad;
+  }
+  cerrarModalSolicitar(){
+    this.modalSolicitarMaterial = false;
   }
 
   aportarMaterial(

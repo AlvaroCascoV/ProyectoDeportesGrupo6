@@ -19,4 +19,7 @@ export class MaterialesService {
     return this._http.put<any>(`${this.url}api/materiales/update`, material)
   }
 
+  solicitarMaterial(material: Material):Observable<any>{
+    return this._http.post<any>(`${this.url}api/materiales/create`, material);
+  }
 }
