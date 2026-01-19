@@ -1,27 +1,36 @@
+<form class="space-y-6 p-6 from-gray-50 to-blue-50 rounded-xl">
+  <div>
+    <label class="block text-sm font-semibold text-gray-800 mb-3 tracking-wide"
+      >Insrcríbete a una actividad:
+    </label>
+    <select
+      [(ngModel)]="idEventoActividad"
+      (ngModelChange)="onActividadChange()"
+      name="idEventoActividad"
+      class="block w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 bg-white shadow-sm cursor-pointer transition-all duration-300 ease-in-out hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%233b82f6%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-size-[20px] bg-position-[right_0.75rem_center] bg-no-repeat pr-10"
+    >
+      <option [ngValue]="0" disabled selected class="text-gray-400 italic">
+        -- Elige una actividad --
+      </option>
+      @for(actividad of actividadesEvento; track actividad){
+      <option
+        [ngValue]="actividad.idEventoActividad"
+        class="text-gray-800 font-medium py-2"
+      >
+        {{ actividad.nombreActividad }}
+      </option>
+      }
+    </select>
+  </div>
 
-<form class="space-y-6 p-6  from-gray-50 to-blue-50 rounded-xl">
-    <div>
-        <label class="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">Insrcríbete a una actividad: </label>
-        <select 
-            [(ngModel)]="idEventoActividad" 
-            name="idEventoActividad" 
-            class="block w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 bg-white shadow-sm cursor-pointer transition-all duration-300 ease-in-out hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%233b82f6%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:20px] bg-[position:right_0.75rem_center] bg-no-repeat pr-10">
-            <option [value]="0" disabled selected class="text-gray-400 italic">-- Elige una actividad --</option>
-            @for(actividad of actividadesEvento; track actividad){
-                <option [value]="actividad.idEventoActividad" class="text-gray-800 font-medium py-2">{{ actividad.nombreActividad }}</option>
-            }
-        </select>
-    </div>
-
-    <div class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors duration-200">
-        <input 
-            type="checkbox" 
-            [(ngModel)]="quieroSerCapitan" 
-            name="quieroSerCapitan" 
-            id="capitan" 
-            class="w-5 h-5 text-blue-500 border-2 border-gray-300 rounded focus:ring-2 focus:ring-blue-400 cursor-pointer transition-all" 
-        />
-        <label for="capitan" class="text-sm font-medium text-gray-700 cursor-pointer select-none">Quiero ser capitán</label>
-    </div>
-    
+  @if (actividadSeleccionada) {
+  <app-equipos-selector
+    [idEvento]="idEvento"
+    [idActividad]="actividadSeleccionada.idActividad"
+    [idEventoActividad]="actividadSeleccionada.idEventoActividad"
+    [minimoJugadores]="actividadSeleccionada.minimoJugadores"
+    [role]="'ALUMNO'"
+    [showConfirmButton]="false"
+  ></app-equipos-selector>
+  }
 </form>
