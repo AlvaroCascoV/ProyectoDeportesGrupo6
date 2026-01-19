@@ -7,9 +7,10 @@ export const authRoutes: Routes = [
     path: '',
     component: AuthLayout,
     children: [
+      { path: '', redirectTo: 'login', pathMatch: 'full' },
       { path: 'login', component: LoginPage },
-      
-      { path: '**', redirectTo: 'login'},
+
+      { path: '**', redirectTo: 'login' },
     ],
   },
 ];

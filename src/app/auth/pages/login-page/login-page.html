@@ -58,7 +58,9 @@
       formControlName="password"
     />
   </label>
-  <button type="submit" class="btn btn-secondary">Login</button>
+  <button type="submit" class="btn btn-secondary" [disabled]="isPosting()">
+    @if (isPosting()) { Entrando... } @else { Login }
+  </button>
   @if (hasError()) {
   <div role="alert" class="alert alert-error animate-fadeIn">
     <svg

@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import { AuthResponse } from '../interfaces/Auth-response';
 
@@ -15,6 +15,22 @@ export class AuthService {
   private urlApi: string = environment.urlApi;
   private http = inject(HttpClient);
 
+  constructor() {
+    // Restaurar sesión si existe (refresh de página, etc.)
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+
+    if (token && role) {
+      this._token.set(token);
+      this._role.set(role);
+      this._authStatus.set('authenticated');
+    } else {
+      this._token.set(null);
+      this._role.set(null);
+      this._authStatus.set('not-authenticated');
+    }
+  }
+
   authStatus = computed<AuthStatus>(() => {
     if (this._authStatus() === 'checking') return 'checking';
 
@@ -27,9 +43,9 @@ export class AuthService {
   role = computed<string | null>(() => this._role());
   token = computed<string | null>(() => this._token());
 
-  login(username: string, password: string):Observable<Boolean> {
+  login(username: string, password: string): Observable<boolean> {
     return this.http
-      .post<AuthResponse>(`${this.urlApi}/api/Auth/LoginEventos`, {
+      .post<AuthResponse>(`${this.urlApi}api/Auth/LoginEventos`, {
         username: username,
         password: password,
       })
@@ -39,16 +55,53 @@ export class AuthService {
           this._role.set(response.role);
           this._token.set(response.response);
           localStorage.setItem('token', response.response);
-
+          localStorage.setItem('role', response.role);
         }),
-        map(() => true),
-        catchError((error: any) => {
-            this._role.set(null);
-            this._token.set(null);
-            this._authStatus.set('not-authenticated');
-            return of(false);
-        })
+        switchMap(() => {
+          const token = this._token();
+          if (!token) return of(true);
 
+          const headers = new HttpHeaders({
+            Authorization: `bearer ${token}`,
+          });
+
+          // Guardar userID para el resto de la app (inscripción, materiales, etc.)
+          return this.http
+            .get<{ idUsuario: number }>(
+              `${this.urlApi}api/usuariosdeportes/perfil`,
+              {
+                headers,
+              }
+            )
+            .pipe(
+              tap((perfil) => {
+                if (perfil?.idUsuario != null) {
+                  localStorage.setItem('userID', String(perfil.idUsuario));
+                }
+              }),
+              map(() => true),
+              // Si el perfil falla, el login sigue siendo correcto (token ya guardado)
+              catchError(() => of(true))
+            );
+        }),
+        catchError((error: any) => {
+          this._role.set(null);
+          this._token.set(null);
+          this._authStatus.set('not-authenticated');
+          localStorage.removeItem('token');
+          localStorage.removeItem('role');
+          localStorage.removeItem('userID');
+          return of(false);
+        })
       );
+  }
+
+  logout(): void {
+    this._role.set(null);
+    this._token.set(null);
+    this._authStatus.set('not-authenticated');
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userID');
   }
 }

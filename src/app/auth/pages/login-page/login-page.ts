@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login-page',
+  standalone: true,
   imports: [ReactiveFormsModule],
   templateUrl: './login-page.html',
 })
@@ -17,13 +18,11 @@ export class LoginPage {
   authService = inject(AuthService);
 
   loginForm = this.fb.group({
-    username: [
-      '',
-      [Validators.required],
-    ],
+    username: ['', [Validators.required]],
     password: ['', [Validators.required]],
   });
   onSubmit() {
+    if (this.isPosting()) return;
     if (this.loginForm.invalid) {
       this.hasError.set(true);
       setTimeout(() => {
@@ -33,14 +32,19 @@ export class LoginPage {
     }
     const { username = '', password = '' } = this.loginForm.value;
 
-    this.authService.login(username!, password!).subscribe((isAuthenticated) => {
-      if (isAuthenticated) {
-        this.router.navigateByUrl(['/home'].join(''));
-        return;
-      } this.hasError.set(true);
-      setTimeout(() => {
-        this.hasError.set(false);
-      }, 3000);
-    });
+    this.isPosting.set(true);
+    this.authService
+      .login(username!, password!)
+      .subscribe((isAuthenticated) => {
+        this.isPosting.set(false);
+        if (isAuthenticated) {
+          this.router.navigateByUrl('/home');
+          return;
+        }
+        this.hasError.set(true);
+        setTimeout(() => {
+          this.hasError.set(false);
+        }, 3000);
+      });
   }
 }
