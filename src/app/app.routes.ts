@@ -7,6 +7,7 @@ import { InscripcionComponent } from './components/inscripcion/inscripcion.compo
 import { MaterialesComponent } from './components/materiales/materiales.component';
 
 export const routes: Routes = [
+  { path: 'auth', loadChildren: () => import('./auth/auth.routes') },
   { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent },
   { path: 'eventos', component: EventosComponent },
