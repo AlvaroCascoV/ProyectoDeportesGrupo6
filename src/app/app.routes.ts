@@ -4,6 +4,7 @@ import { EventosComponent } from './components/eventos/eventos.component';
 import { PerfilComponent } from './components/perfil/perfil.component';
 import { AulasComponent } from './components/aulas/aulas.component';
 import { MaterialesComponent } from './components/materiales/materiales.component';
+import { EquiposComponent } from './components/equipos/equipos.component';
 import { authGuard } from './auth/guards/auth.guard';
 
 export const routes: Routes = [
@@ -15,6 +16,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },
       { path: 'eventos', component: EventosComponent },
+      { path: 'equipos', component: EquiposComponent },
       { path: 'perfil', component: PerfilComponent },
       { path: 'materiales', component: MaterialesComponent },
       {

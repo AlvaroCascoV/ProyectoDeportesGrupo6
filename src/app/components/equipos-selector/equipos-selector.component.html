@@ -1,0 +1,93 @@
+<div class="space-y-3 p-4 bg-white rounded-xl border border-gray-200">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-sm font-semibold text-gray-800">Equipos</p>
+      <p class="text-xs text-gray-500">
+        Elige un equipo o crea uno nuevo para esta actividad.
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="toggleCrearEquipo()"
+      class="px-3 py-2 rounded-lg text-sm font-semibold border border-blue-300 text-blue-700 hover:bg-blue-50 transition-colors"
+    >
+      {{ mostrarCrearEquipo ? "Cancelar" : "Crear equipo" }}
+    </button>
+  </div>
+
+  @if (cargandoEquipos) {
+  <p class="text-sm text-gray-600">Cargando equipos...</p>
+  } @else if (equipos && equipos.length > 0) {
+  <div class="space-y-2">
+    @for (equipo of equipos; track equipo.idEquipo) {
+    <label
+      class="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 cursor-pointer transition-colors"
+    >
+      <input
+        type="radio"
+        [value]="equipo.idEquipo"
+        [(ngModel)]="selectedEquipoId"
+        name="equipoSeleccionado"
+        class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+        [disabled]="mostrarCrearEquipo"
+      />
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-gray-800">
+          {{ equipo.nombreEquipo }}
+        </p>
+        <p class="text-xs text-gray-500">Equipo #{{ equipo.idEquipo }}</p>
+      </div>
+    </label>
+    }
+  </div>
+  } @else {
+  <p class="text-sm text-gray-600">
+    No hay equipos todavía. Crea uno para poder continuar.
+  </p>
+  } @if (mostrarCrearEquipo) {
+  <div class="space-y-3 pt-2 border-t border-gray-200">
+    <div>
+      <label class="block text-sm font-semibold text-gray-800 mb-2"
+        >Nombre del equipo</label
+      >
+      <input
+        type="text"
+        [(ngModel)]="nuevoEquipoNombre"
+        name="nuevoEquipoNombre"
+        placeholder="Ej: Equipo A"
+        class="block w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 bg-white shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500"
+      />
+    </div>
+
+    <div>
+      <label class="block text-sm font-semibold text-gray-800 mb-2"
+        >Color</label
+      >
+      <select
+        [(ngModel)]="nuevoEquipoColorId"
+        name="nuevoEquipoColorId"
+        class="block w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 bg-white shadow-sm cursor-pointer transition-all duration-300 ease-in-out hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-4 focus:ring-blue-200 focus:border-blue-500"
+      >
+        <option [ngValue]="null" disabled selected class="text-gray-400 italic">
+          -- Elige un color --
+        </option>
+        @if (cargandoColores) {
+        <option [ngValue]="null" disabled>Cargando colores...</option>
+        } @else { @for (color of colores; track color.idColor) {
+        <option [ngValue]="color.idColor">{{ color.nombreColor }}</option>
+        } }
+      </select>
+    </div>
+  </div>
+  } @if (showConfirmButton) {
+  <div class="pt-2 border-t border-gray-200 flex justify-end">
+    <button
+      type="button"
+      (click)="confirmar()"
+      class="bg-green-400 text-black px-4 py-2 rounded hover:bg-green-500 font-semibold text-sm"
+    >
+      Confirmar equipo
+    </button>
+  </div>
+  }
+</div>

@@ -79,16 +79,18 @@ export class DetallesComponent implements OnInit, OnChanges {
     this.mostrarFormulario = false;
   }
 
-  submitInscripcion(): void {
+  async submitInscripcion(): Promise<void> {
     if (this.inscripcionComponent) {
-      this.inscripcionComponent.inscribirUsuario();
+      const ok = await this.inscripcionComponent.inscribirUsuario();
+      if (!ok) return;
+
       this.cerrarModal();
-      Swal.fire({
+      await Swal.fire({
         title: '¡Inscripción Confirmada!',
-        text: 'Te has inscrito correctamente al evento',
+        text: 'Te has inscrito correctamente al evento y te has unido a un equipo.',
         icon: 'success',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#3085d6'
+        confirmButtonColor: '#3085d6',
       });
     }
   }
