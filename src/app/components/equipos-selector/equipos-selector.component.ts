@@ -225,28 +225,14 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     }
 
     const miembroPayload = new MiembroEquipo(0, idEquipoObjetivo, idUsuario);
-    const roleAttempts: MiembroEquipoRole[] = ['ALUMNO'];
-    let joined = false;
-    let lastError: any = null;
 
-    for (const roleAttempt of roleAttempts) {
-      try {
-        await firstValueFrom(
-          this._equiposService.joinEquipo(roleAttempt, miembroPayload)
-        );
-        joined = true;
-        break;
-      } catch (e: any) {
-        lastError = e;
-      }
-    }
-
-    if (!joined) {
+    try {
+      await firstValueFrom(
+        this._equiposService.joinEquipo('ALUMNO', miembroPayload)
+      );
+    } catch (e: any) {
       const maybeMsg =
-        lastError?.error?.message ||
-        lastError?.error?.title ||
-        lastError?.error ||
-        null;
+        e?.error?.message || e?.error?.title || e?.error || null;
 
       await Swal.fire({
         title: 'Error',
