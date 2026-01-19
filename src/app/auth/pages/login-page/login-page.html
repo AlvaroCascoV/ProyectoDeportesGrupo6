@@ -1,87 +1,68 @@
-<form
-  class="flex flex-col gap-2"
-  [formGroup]="loginForm"
-  (ngSubmit)="onSubmit()"
->
-  <label class="input validator">
-    <svg
-      class="h-[1em] opacity-50"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+<form class="space-y-4" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label class="block text-sm font-semibold text-gray-700 mb-1"
+      >Usuario</label
     >
-      <g
-        stroke-linejoin="round"
-        stroke-linecap="round"
-        stroke-width="2.5"
-        fill="none"
-        stroke="currentColor"
+    <div class="flex">
+      <div class="relative flex-1">
+        <i
+          class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+        ></i>
+        <input
+          type="text"
+          placeholder="Tu usuario"
+          formControlName="username"
+          class="w-full pl-10 pr-3 py-2 border border-gray-200 rounded-l border-r-0 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          autocomplete="username"
+        />
+      </div>
+      <span
+        class="inline-flex items-center px-3 py-2 border border-gray-200 rounded-r bg-gray-50 text-gray-600 text-sm select-none"
       >
-        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-        <circle cx="12" cy="7" r="4"></circle>
-      </g>
-    </svg>
-    <input
-      type="text"
-      required
-      placeholder="Username"
-      minlength="3"
-      maxlength="30"
-      formControlName="username"
-    />
-  </label>
+        &#64;tajamar365.com
+      </span>
+    </div>
+    @if (loginForm.get('username')?.touched &&
+    loginForm.get('username')?.invalid) {
+    <p class="text-xs text-red-600 mt-1">El usuario es obligatorio</p>
+    }
+  </div>
 
-  <label class="input validator">
-    <svg
-      class="h-[1em] opacity-50"
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
+  <div>
+    <label class="block text-sm font-semibold text-gray-700 mb-1"
+      >Contraseña</label
     >
-      <g
-        stroke-linejoin="round"
-        stroke-linecap="round"
-        stroke-width="2.5"
-        fill="none"
-        stroke="currentColor"
-      >
-        <path
-          d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"
-        ></path>
-        <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
-      </g>
-    </svg>
-    <input
-      type="password"
-      required
-      placeholder="Password"
-      minlength="0"
-      title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
-      formControlName="password"
-    />
-  </label>
-  <button type="submit" class="btn btn-secondary" [disabled]="isPosting()">
+    <div class="relative">
+      <i
+        class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+      ></i>
+      <input
+        type="password"
+        placeholder="Tu contraseña"
+        formControlName="password"
+        class="w-full pl-10 pr-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+        autocomplete="current-password"
+      />
+    </div>
+    @if (loginForm.get('password')?.touched &&
+    loginForm.get('password')?.invalid) {
+    <p class="text-xs text-red-600 mt-1">La contraseña es obligatoria</p>
+    }
+  </div>
+
+  <button
+    type="submit"
+    [disabled]="isPosting()"
+    class="w-full bg-blue-400 text-black px-4 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+  >
     @if (isPosting()) { Entrando... } @else { Login }
   </button>
+
   @if (hasError()) {
-  <div role="alert" class="alert alert-error animate-fadeIn">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      class="h-6 w-6 shrink-0 stroke-current"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-    <span>Por favor, verifique la información</span>
+  <div
+    class="bg-red-100 border border-red-200 text-red-800 px-4 py-3 rounded text-sm"
+  >
+    Por favor, verifica usuario y contraseña.
   </div>
   }
-  <p class="validator-hint hidden">
-    Must be more than 8 characters, including
-    <br />At least one number <br />At least one lowercase letter <br />At least
-    one uppercase letter
-  </p>
 </form>

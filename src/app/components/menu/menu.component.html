@@ -43,8 +43,8 @@
       </div>
     </div>
 
-    <!-- Perfil derecha -->
-    <div class="flex items-center">
+    <!-- Perfil + Logout derecha -->
+    <div class="flex items-center gap-2">
       <a
         routerLink="/perfil"
         routerLinkActive="bg-blue-500 font-bold"
@@ -53,6 +53,16 @@
       >
         Perfil
       </a>
+
+      @if (authService.authStatus() === 'authenticated') {
+      <button
+        type="button"
+        (click)="logout()"
+        class="text-black px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
+      >
+        Cerrar sesión
+      </button>
+      }
     </div>
   </div>
 </nav>

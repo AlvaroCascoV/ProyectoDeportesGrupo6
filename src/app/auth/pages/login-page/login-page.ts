@@ -24,6 +24,7 @@ export class LoginPage {
   onSubmit() {
     if (this.isPosting()) return;
     if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
       this.hasError.set(true);
       setTimeout(() => {
         this.hasError.set(false);
@@ -31,10 +32,14 @@ export class LoginPage {
       return;
     }
     const { username = '', password = '' } = this.loginForm.value;
+    const usernameValue = (username ?? '').trim();
+    const loginUsername = usernameValue.includes('@')
+      ? usernameValue
+      : `${usernameValue}@tajamar365.com`;
 
     this.isPosting.set(true);
     this.authService
-      .login(username!, password!)
+      .login(loginUsername, password!)
       .subscribe((isAuthenticated) => {
         this.isPosting.set(false);
         if (isAuthenticated) {
