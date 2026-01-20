@@ -51,7 +51,7 @@ export class EventosComponent implements OnInit {
         text: 'Por favor, selecciona una fecha para el evento',
         icon: 'error',
         confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#d33'
+        confirmButtonColor: '#d33',
       });
       return;
     }
@@ -71,7 +71,7 @@ export class EventosComponent implements OnInit {
                 text: 'El usuario asignado no es un profesor',
                 icon: 'error',
                 confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#d33'
+                confirmButtonColor: '#d33',
               });
             }
           },
@@ -81,7 +81,7 @@ export class EventosComponent implements OnInit {
               text: 'El usuario asignado no es un profesor',
               icon: 'error',
               confirmButtonText: 'Aceptar',
-              confirmButtonColor: '#d33'
+              confirmButtonColor: '#d33',
             });
           },
         });
@@ -98,24 +98,25 @@ export class EventosComponent implements OnInit {
     this._servicioEventos.insertEvento(fechaISO).subscribe({
       next: (response) => {
         const idEvento = response.idEvento || response.id;
-        console.log("Evento añadido: "+idEvento)
-        
+        console.log('Evento añadido: ' + idEvento);
+
         // Insertar actividades si las hay
         if (idEvento && this.actividadesSeleccionadas.length > 0) {
-          this.actividadesSeleccionadas.forEach(act => {
-            console.log("Añadiendo actividad: "+act.nombre)
-            this._servicioEventos.insertarActividadesEvento(idEvento, act.idActividad)
-            .subscribe({
-              next: (response) => {
-                console.log(response)
-              },
-              error: (error) => {
-                console.error("Error al insertar actividad:", error)
-              }
-            })
+          this.actividadesSeleccionadas.forEach((act) => {
+            console.log('Añadiendo actividad: ' + act.nombre);
+            this._servicioEventos
+              .insertarActividadesEvento(idEvento, act.idActividad)
+              .subscribe({
+                next: (response) => {
+                  console.log(response);
+                },
+                error: (error) => {
+                  console.error('Error al insertar actividad:', error);
+                },
+              });
           });
         }
-        
+
         // Asociar profesor al evento recién creado
         if (idEvento && this.nuevoEvento.idProfesor > 0) {
           this._servicioEventos
@@ -129,7 +130,7 @@ export class EventosComponent implements OnInit {
                   text: 'El evento se ha creado correctamente',
                   icon: 'success',
                   confirmButtonText: 'Aceptar',
-                  confirmButtonColor: '#3085d6'
+                  confirmButtonColor: '#3085d6',
                 }).then(() => {
                   this.ngOnInit();
                   this.cerrarModal();
@@ -143,7 +144,7 @@ export class EventosComponent implements OnInit {
                   text: 'El evento se creó, pero hubo un error al asignar el profesor',
                   icon: 'warning',
                   confirmButtonText: 'Aceptar',
-                  confirmButtonColor: '#ff9800'
+                  confirmButtonColor: '#ff9800',
                 }).then(() => {
                   this.ngOnInit();
                   this.cerrarModal();
@@ -159,7 +160,7 @@ export class EventosComponent implements OnInit {
             text: 'El evento se ha creado correctamente',
             icon: 'success',
             confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#3085d6'
+            confirmButtonColor: '#3085d6',
           }).then(() => {
             this.ngOnInit();
             this.cerrarModal();
@@ -173,7 +174,7 @@ export class EventosComponent implements OnInit {
           text: 'No se pudo crear el evento. Por favor, intenta nuevamente',
           icon: 'error',
           confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#d33'
+          confirmButtonColor: '#d33',
         });
       },
     });
@@ -202,10 +203,10 @@ export class EventosComponent implements OnInit {
   }
 
   abrirModalDetalles(evento: Evento): void {
-    const eventoOriginal = this.eventosOriginales.find(
-      (e) => e.idEvento === evento.idEvento
-    ) || evento;
-    
+    const eventoOriginal =
+      this.eventosOriginales.find((e) => e.idEvento === evento.idEvento) ||
+      evento;
+
     this.eventoSeleccionado = eventoOriginal;
     this.mostrarModalDetalles = true;
   }
@@ -216,10 +217,10 @@ export class EventosComponent implements OnInit {
   }
 
   abrirModalInscripcion(evento: Evento): void {
-    const eventoOriginal = this.eventosOriginales.find(
-      (e) => e.idEvento === evento.idEvento
-    ) || evento;
-    
+    const eventoOriginal =
+      this.eventosOriginales.find((e) => e.idEvento === evento.idEvento) ||
+      evento;
+
     this.eventoSeleccionado = eventoOriginal;
     this.mostrarFormularioInmediato = true;
     this.mostrarModalDetalles = true;
@@ -230,12 +231,17 @@ export class EventosComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (input.checked) {
       //busca en actividades si ya se habia añadido la actividad del checkbox y sino la añade
-      if (!this.actividadesSeleccionadas.find(a => a.idActividad === actividad.idActividad)) {
+      if (
+        !this.actividadesSeleccionadas.find(
+          (a) => a.idActividad === actividad.idActividad
+        )
+      ) {
         this.actividadesSeleccionadas.push(actividad);
       }
-    } else { //si esta en actividadesSeleccionadas las filtra para que solo quede una
+    } else {
+      //si esta en actividadesSeleccionadas las filtra para que solo quede una
       this.actividadesSeleccionadas = this.actividadesSeleccionadas.filter(
-        a => a.idActividad !== actividad.idActividad
+        (a) => a.idActividad !== actividad.idActividad
       );
     }
     console.log('Actividades seleccionadas:', this.actividadesSeleccionadas);
@@ -254,19 +260,35 @@ export class EventosComponent implements OnInit {
   }
 
   filtrarPasados(): void {
-    this.eventosFiltrados = this.eventos.filter((evento) =>
-      !this.comprobarFechaProxima(evento)
+    this.eventosFiltrados = this.eventos.filter(
+      (evento) => !this.comprobarFechaProxima(evento)
     );
     this.filtroActivo = 'pasados';
   }
 
   ngOnInit(): void {
     this._servicioEventos.getEventos().subscribe((response) => {
-      // Ordenar eventos por fecha (más recientes primero)
-      const eventosOrdenados = response.sort((a, b) => {
+      // En "todos": primero próximos/abiertos y después pasados.
+      // - Próximos: fecha ascendente (el más cercano primero)
+      // - Pasados: fecha descendente (el más reciente primero)
+      const ahora = new Date().getTime();
+      const eventosOrdenados = [...response].sort((a, b) => {
         const fechaA = new Date(a.fechaEvento).getTime();
         const fechaB = new Date(b.fechaEvento).getTime();
-        return fechaA- fechaB; // Orden descendente (más recientes primero)
+
+        const esProximoA = fechaA > ahora;
+        const esProximoB = fechaB > ahora;
+
+        // Primero próximos, luego pasados
+        if (esProximoA !== esProximoB) {
+          return esProximoA ? -1 : 1;
+        }
+
+        // Dentro de cada grupo
+        if (esProximoA) {
+          return fechaA - fechaB;
+        }
+        return fechaB - fechaA;
       });
 
       this.eventosOriginales = eventosOrdenados;
@@ -281,9 +303,9 @@ export class EventosComponent implements OnInit {
       console.log(response);
     });
 
-    this._servicioActividades.getActividades().subscribe(response=>{
+    this._servicioActividades.getActividades().subscribe((response) => {
       this.actividades = response;
-      console.log("Actividades:"+this.actividades)
-    })
+      console.log('Actividades:' + this.actividades);
+    });
   }
 }
