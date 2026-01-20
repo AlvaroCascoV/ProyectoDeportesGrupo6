@@ -90,6 +90,42 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     this.cargarJugadoresEquipo(idEquipoNum);
   }
 
+  getEquipoColorNombre(idColor: number): string {
+    const id = Number(idColor);
+    if (!Number.isFinite(id)) return 'Sin color';
+    return (
+      this.colores.find((c) => c.idColor === id)?.nombreColor ?? `Color ${id}`
+    );
+  }
+
+  getEquipoColorSwatch(nombreColor: string): string | null {
+    const key = (nombreColor ?? '').trim().toLowerCase();
+    // Minimal mapping for common names; fallback to null (no dot).
+    switch (key) {
+      case 'rojo':
+        return '#ef4444';
+      case 'azul':
+        return '#3b82f6';
+      case 'verde':
+        return '#22c55e';
+      case 'amarillo':
+        return '#eab308';
+      case 'naranja':
+        return '#f97316';
+      case 'morado':
+      case 'violeta':
+        return '#a855f7';
+      case 'negro':
+        return '#111827';
+      case 'blanco':
+        return '#ffffff';
+      case 'gris':
+        return '#6b7280';
+      default:
+        return null;
+    }
+  }
+
   toggleCrearEquipo(): void {
     if (!this.canCreateEquipos) {
       void Swal.fire({
