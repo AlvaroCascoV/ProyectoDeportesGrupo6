@@ -16,6 +16,7 @@ import Swal from 'sweetalert2';
   styleUrl: './materiales.component.css'
 })
 export class MaterialesComponent implements OnInit{
+  public proximoEvento: Evento | null = null;
   public proximoEventoActividad : ActividadesEvento[] = []
   public materialesEvento: Material[] = []
   public materialesPorActividad: { [key: number]: Material[] } = {};
@@ -25,44 +26,56 @@ export class MaterialesComponent implements OnInit{
   constructor(private _servicioMateriales: MaterialesService, private _servicioEventos: EventosService){}
 
   ngOnInit(): void {
-    this._servicioEventos.getProximoEvento().pipe(
-      mergeMap((proximoEvento: Evento) => {
-        return this._servicioEventos.getActividadesEvento(proximoEvento.idEvento);
-      })
-    ).subscribe({
-      next: (actividades: ActividadesEvento[]) => {
-        this.proximoEventoActividad = actividades;
-        console.log("Actividades: ", actividades);
-        
-        if (actividades.length > 0) {
-          const materialesRequests = actividades.map(actividad =>
-            this._servicioMateriales.getMaterialesEventoActividad(actividad.idEventoActividad)
-          );
-          
-          forkJoin(materialesRequests).subscribe({
-            next: (resultados) => {
-              this.materialesEvento = resultados.flat();
-              this.materialesPorActividad = {};
+    this._servicioEventos.getProximoEvento().subscribe({
+      next: (proximoEvento) => {
+        this.proximoEvento = proximoEvento ?? null;
 
-              // Agrupa materiales por idEventoActividad
-              this.materialesEvento.forEach((material) => {
-                const id = material.idEventoActividad;
-                if (!this.materialesPorActividad[id]) {
-                  this.materialesPorActividad[id] = [];
-                }
-                this.materialesPorActividad[id].push(material);
-              });
-
-              console.log("Materiales agrupados: ", this.materialesPorActividad);
-            },
-            error: (error) => {
-              console.error("Error al cargar materiales: ", error);
-            }
-          });
+        if (!proximoEvento) {
+          console.warn('No hay próximo evento disponible');
+          return;
         }
+
+        this._servicioEventos.getActividadesEvento(proximoEvento.idEvento).subscribe({
+          next: (actividades: ActividadesEvento[]) => {
+            this.proximoEventoActividad = actividades;
+            console.log('Actividades: ', actividades);
+
+            if (actividades.length > 0) {
+              const materialesRequests = actividades.map(actividad =>
+                this._servicioMateriales.getMaterialesEventoActividad(actividad.idEventoActividad)
+              );
+
+              forkJoin(materialesRequests).subscribe({
+                next: (resultados) => {
+                  this.materialesEvento = resultados.flat();
+                  this.materialesPorActividad = {};
+
+                  // Agrupa materiales por idEventoActividad
+                  this.materialesEvento.forEach((material) => {
+                    const id = material.idEventoActividad;
+                    if (!this.materialesPorActividad[id]) {
+                      this.materialesPorActividad[id] = [];
+                    }
+                    this.materialesPorActividad[id].push(material);
+                  });
+
+                  console.log('Materiales agrupados: ', this.materialesPorActividad);
+                },
+                error: (error) => {
+                  console.error('Error al cargar materiales: ', error);
+                }
+              });
+            } else {
+              console.warn('El próximo evento no tiene actividades');
+            }
+          },
+          error: (error) => {
+            console.error('Error al cargar actividades del evento: ', error);
+          }
+        });
       },
       error: (error) => {
-        console.error("Error al cargar próximo evento: ", error);
+        console.error('Error al cargar próximo evento: ', error);
       }
     });
   }
