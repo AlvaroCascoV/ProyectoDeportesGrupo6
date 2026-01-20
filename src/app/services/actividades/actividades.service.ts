@@ -15,4 +15,8 @@ export class ActividadesService {
     return this._http.get<Actividad[]>(`${this.url}api/actividades`)
   }
 
+  insertActividad(actividad: any): Observable<Actividad> {
+    return this._http.post<Actividad>(`${this.url}api/actividades/create`, actividad);
+  }
+
 }

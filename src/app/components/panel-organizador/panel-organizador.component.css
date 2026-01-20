@@ -1,0 +1,55 @@
+.panel-admin-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Estilos para modales */
+.actividades-section {
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.actividades-section label {
+  color: #333;
+}
+
+/* Animación suave para los modales */
+@keyframes slideIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.fixed.inset-0 > div {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Estilos para inputs */
+input[type="date"],
+input[type="number"],
+input[type="text"] {
+  transition: all 0.3s ease;
+}
+
+input[type="date"]:focus,
+input[type="number"]:focus,
+input[type="text"]:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Checkbox personalizado */
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #60a5fa;
+  border-color: #3b82f6;
+}

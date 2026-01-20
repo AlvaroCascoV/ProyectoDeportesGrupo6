@@ -1,48 +1,59 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { Evento } from '../../models/Evento';
-import { EventosService } from '../../services/eventos/eventos.service';
-import { DetallesComponent } from '../detalles/detalles.component';
-import { ActividadesService } from '../../services/actividades/actividades.service';
 import { Actividad } from '../../models/Actividad';
+import { EventosService } from '../../services/eventos/eventos.service';
+import { ActividadesService } from '../../services/actividades/actividades.service';
 import Swal from 'sweetalert2';
 
 @Component({
-  selector: 'app-eventos',
+  selector: 'app-panel-organizador',
   standalone: true,
-  imports: [RouterModule, FormsModule, DetallesComponent],
-  templateUrl: './eventos.component.html',
-  styleUrl: './eventos.component.css',
+  imports: [FormsModule, CommonModule],
+  templateUrl: './panel-organizador.component.html',
+  styleUrl: './panel-organizador.component.css'
 })
-export class EventosComponent implements OnInit {
-  public eventos: Evento[] = [];
-  private eventosOriginales: Evento[] = [];
-  public eventosFiltrados: Evento[] = [];
-  public filtroActivo: 'todos' | 'proximos' | 'pasados' = 'todos';
-  public mostrarModal = false;
-  public mostrarModalDetalles = false;
-  public mostrarFormularioInmediato = false;
-  public eventoSeleccionado!: Evento;
-  public esOrganizador: boolean = false; 
+export class PanelOrganizadorComponent implements OnInit {
+  // Estados para modales
+  public mostrarModalEvento = false;
+  public mostrarModalActividad = false;
+
+  // Datos para formulario de evento
   public nuevoEvento = {
     fechaEvento: '',
     idProfesor: 0,
   };
   public actividades: Actividad[] = [];
   public actividadesSeleccionadas: Actividad[] = [];
+
+  // Datos para formulario de actividad
+  public nuevaActividad = {
+    nombre: '',
+    minimoJugadores: 1,
+  };
+
   constructor(
     private _servicioEventos: EventosService,
     private _servicioActividades: ActividadesService
   ) {}
 
-  abrirModal(): void {
-    this.mostrarModal = true;
+  ngOnInit(): void {
+    this._servicioActividades.getActividades().subscribe((response) => {
+      this.actividades = response;
+      console.log('Actividades:', this.actividades);
+    });
   }
 
-  cerrarModal(): void {
-    this.mostrarModal = false;
+  // ====== MÉTODOS PARA MODAL DE EVENTO ======
+  abrirModalEvento(): void {
+    this.mostrarModalEvento = true;
+  }
+
+  cerrarModalEvento(): void {
+    this.mostrarModalEvento = false;
     this.nuevoEvento = { fechaEvento: '', idProfesor: 0 };
+    this.actividadesSeleccionadas = [];
   }
 
   crearEvento(): void {
@@ -93,7 +104,7 @@ export class EventosComponent implements OnInit {
   }
 
   crearEventoConFecha(): void {
-    // Convertir la fecha a formato ISO (2026-01-15T09:47:13.513Z)
+    // Convertir la fecha a formato ISO
     const fechaISO = new Date(this.nuevoEvento.fechaEvento).toISOString();
 
     this._servicioEventos.insertEvento(fechaISO).subscribe({
@@ -124,7 +135,7 @@ export class EventosComponent implements OnInit {
             .asociarProfesorEvento(idEvento, this.nuevoEvento.idProfesor)
             .subscribe({
               next: () => {
-                this.cerrarModal();
+                this.cerrarModalEvento();
                 // Evento creado con éxito
                 Swal.fire({
                   title: '¡Evento Creado!',
@@ -133,8 +144,7 @@ export class EventosComponent implements OnInit {
                   confirmButtonText: 'Aceptar',
                   confirmButtonColor: '#3085d6',
                 }).then(() => {
-                  this.ngOnInit();
-                  this.cerrarModal();
+                  this.cerrarModalEvento();
                   this.actividadesSeleccionadas = [];
                 });
               },
@@ -147,15 +157,14 @@ export class EventosComponent implements OnInit {
                   confirmButtonText: 'Aceptar',
                   confirmButtonColor: '#ff9800',
                 }).then(() => {
-                  this.ngOnInit();
-                  this.cerrarModal();
+                  this.cerrarModalEvento();
                   this.actividadesSeleccionadas = [];
                 });
               },
             });
         } else {
           // Evento creado sin profesor
-          this.cerrarModal();
+          this.cerrarModalEvento();
           Swal.fire({
             title: '¡Evento Creado!',
             text: 'El evento se ha creado correctamente',
@@ -163,8 +172,7 @@ export class EventosComponent implements OnInit {
             confirmButtonText: 'Aceptar',
             confirmButtonColor: '#3085d6',
           }).then(() => {
-            this.ngOnInit();
-            this.cerrarModal();
+            this.cerrarModalEvento();
             this.actividadesSeleccionadas = [];
           });
         }
@@ -181,57 +189,9 @@ export class EventosComponent implements OnInit {
     });
   }
 
-  //pasar la fecha al formato dd/mm/yyyy
-  formatearFecha(fecha: string): string {
-    let fechaEvento = new Date(fecha);
-    const dia = String(fechaEvento.getDate()).padStart(2, '0');
-    const mes = String(fechaEvento.getMonth() + 1).padStart(2, '0');
-    const anio = fechaEvento.getFullYear();
-    const fechaFormateada = `${dia}/${mes}/${anio}`;
-    return fechaFormateada;
-  }
-
-  comprobarFechaProxima(evento: Evento): boolean {
-    // Buscar el evento original para obtener la fecha sin formatear
-    const eventoOriginal = this.eventosOriginales.find(
-      (e) => e.idEvento === evento.idEvento
-    );
-    if (!eventoOriginal) return false;
-
-    let fechaEvento = new Date(eventoOriginal.fechaEvento);
-    let ahora = new Date();
-    return fechaEvento > ahora;
-  }
-
-  abrirModalDetalles(evento: Evento): void {
-    const eventoOriginal =
-      this.eventosOriginales.find((e) => e.idEvento === evento.idEvento) ||
-      evento;
-
-    this.eventoSeleccionado = eventoOriginal;
-    this.mostrarModalDetalles = true;
-  }
-
-  cerrarModalDetalles(): void {
-    this.mostrarModalDetalles = false;
-    this.mostrarFormularioInmediato = false;
-  }
-
-  abrirModalInscripcion(evento: Evento): void {
-    const eventoOriginal =
-      this.eventosOriginales.find((e) => e.idEvento === evento.idEvento) ||
-      evento;
-
-    this.eventoSeleccionado = eventoOriginal;
-    this.mostrarFormularioInmediato = true;
-    this.mostrarModalDetalles = true;
-  }
-
   onActividadSeleccionada(actividad: Actividad, event: Event): void {
-    //coge el checkbox seleccionado
     const input = event.target as HTMLInputElement;
     if (input.checked) {
-      //busca en actividades si ya se habia añadido la actividad del checkbox y sino la añade
       if (
         !this.actividadesSeleccionadas.find(
           (a) => a.idActividad === actividad.idActividad
@@ -240,76 +200,77 @@ export class EventosComponent implements OnInit {
         this.actividadesSeleccionadas.push(actividad);
       }
     } else {
-      //si esta en actividadesSeleccionadas las filtra para que solo quede una
       this.actividadesSeleccionadas = this.actividadesSeleccionadas.filter(
         (a) => a.idActividad !== actividad.idActividad
       );
     }
-    console.log('Actividades seleccionadas:', this.actividadesSeleccionadas);
   }
 
-  filtrarTodos(): void {
-    this.eventosFiltrados = [...this.eventos];
-    this.filtroActivo = 'todos';
+  // ====== MÉTODOS PARA MODAL DE ACTIVIDAD ======
+  abrirModalActividad(): void {
+    this.mostrarModalActividad = true;
   }
 
-  filtrarProximos(): void {
-    this.eventosFiltrados = this.eventos.filter((evento) =>
-      this.comprobarFechaProxima(evento)
-    );
-    this.filtroActivo = 'proximos';
+  cerrarModalActividad(): void {
+    this.mostrarModalActividad = false;
+    this.nuevaActividad = { nombre: '', minimoJugadores: 1 };
   }
 
-  filtrarPasados(): void {
-    this.eventosFiltrados = this.eventos.filter(
-      (evento) => !this.comprobarFechaProxima(evento)
-    );
-    this.filtroActivo = 'pasados';
-  }
-
-  ngOnInit(): void {
-    if (localStorage.getItem("role") == "ORGANIZADOR"){
-      this.esOrganizador = true;
-    }
-    this._servicioEventos.getEventos().subscribe((response) => {
-      // En "todos": primero próximos/abiertos y después pasados.
-      // - Próximos: fecha ascendente (el más cercano primero)
-      // - Pasados: fecha descendente (el más reciente primero)
-      const ahora = new Date().getTime();
-      const eventosOrdenados = [...response].sort((a, b) => {
-        const fechaA = new Date(a.fechaEvento).getTime();
-        const fechaB = new Date(b.fechaEvento).getTime();
-
-        const esProximoA = fechaA > ahora;
-        const esProximoB = fechaB > ahora;
-
-        // Primero próximos, luego pasados
-        if (esProximoA !== esProximoB) {
-          return esProximoA ? -1 : 1;
-        }
-
-        // Dentro de cada grupo
-        if (esProximoA) {
-          return fechaA - fechaB;
-        }
-        return fechaB - fechaA;
+  crearActividad(): void {
+    if (!this.nuevaActividad.nombre) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Por favor, ingresa un nombre para la actividad',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#d33',
       });
+      return;
+    }
 
-      this.eventosOriginales = eventosOrdenados;
-      this.eventos = eventosOrdenados.map((evento: any) => ({
-        ...evento,
-        fechaEvento: this.formatearFecha(evento.fechaEvento),
-      }));
+    if (this.nuevaActividad.minimoJugadores < 1) {
+      Swal.fire({
+        title: 'Error',
+        text: 'El mínimo de jugadores debe ser al menos 1',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#d33',
+      });
+      return;
+    }
 
-      this.eventosFiltrados = [...this.eventos];
-      this.filtroActivo = 'todos';
+    // Crear objeto para enviar al servicio
+    const actividadData = {
+      IdActividad: 0,
+      nombre: this.nuevaActividad.nombre,
+      minimoJugadores: this.nuevaActividad.minimoJugadores,
+    };
 
-      console.log(response);
-    });
-
-    this._servicioActividades.getActividades().subscribe((response) => {
-      this.actividades = response;
-      console.log('Actividades:' + this.actividades);
+    this._servicioActividades.insertActividad(actividadData).subscribe({
+      next: (response) => {
+        Swal.fire({
+          title: '¡Actividad Creada!',
+          text: 'La actividad se ha creado correctamente',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          this.cerrarModalActividad();
+          // Recargar actividades
+          this._servicioActividades.getActividades().subscribe((response) => {
+            this.actividades = response;
+          });
+        });
+      },
+      error: () => {
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo crear la actividad. Por favor, intenta nuevamente',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33',
+        });
+      },
     });
   }
 }
