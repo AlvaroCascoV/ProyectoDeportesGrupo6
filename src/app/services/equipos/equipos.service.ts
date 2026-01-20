@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import { Equipo } from '../../models/Equipo';
 import { MiembroEquipo } from '../../models/MiembroEquipo';
@@ -42,41 +42,11 @@ export class EquiposService {
     const headers = this.getOptionalAuthHeaders();
     const baseUrl = `${this.url}api/MiembroEquipos/create`;
 
-    // New API shape: POST /create/{idUsuario}/{idEquipo} (no body)
-    return this._http
-      .post<MiembroEquipo>(`${baseUrl}/${idUsuario}/${idEquipo}`, null, {
-        headers,
-      })
-      .pipe(
-        catchError((err) => {
-          // Backwards compatibility with older endpoints:
-          // - POST /create (body)
-          // - POST /create/ALUMNO (body)
-          if (err?.status !== 405 && err?.status !== 404)
-            return throwError(() => err);
-
-          const miembroPayload: MiembroEquipo = {
-            idMiembroEquipo: 0,
-            idEquipo,
-            idUsuario,
-          };
-
-          return this._http
-            .post<MiembroEquipo>(baseUrl, miembroPayload, { headers })
-            .pipe(
-              catchError((err2) => {
-                if (err2?.status === 405 || err2?.status === 404) {
-                  return this._http.post<MiembroEquipo>(
-                    `${baseUrl}/ALUMNO`,
-                    miembroPayload,
-                    { headers }
-                  );
-                }
-                return throwError(() => err2);
-              })
-            );
-        })
-      );
+    return this._http.post<MiembroEquipo>(
+      `${baseUrl}/${idUsuario}/${idEquipo}`,
+      null,
+      { headers }
+    );
   }
 
   private getOptionalAuthHeaders(): HttpHeaders | undefined {
