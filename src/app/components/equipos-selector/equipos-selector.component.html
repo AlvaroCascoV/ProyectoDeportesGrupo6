@@ -41,14 +41,6 @@
         <p class="text-xs text-gray-500 flex items-center gap-2">
           <span>Equipo #{{ equipo.idEquipo }}</span>
           <span class="text-gray-300">•</span>
-          @if (getEquipoColorSwatch(getEquipoColorNombre(equipo.idColor))) {
-          <span
-            class="inline-block w-2.5 h-2.5 rounded-full border border-gray-200"
-            [style.backgroundColor]="
-              getEquipoColorSwatch(getEquipoColorNombre(equipo.idColor))
-            "
-          ></span>
-          }
           <span>Color: {{ getEquipoColorNombre(equipo.idColor) }}</span>
         </p>
       </div>

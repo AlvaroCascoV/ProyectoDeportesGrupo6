@@ -1,9 +1,16 @@
 <div class="max-w-3xl mx-auto p-4 space-y-4">
   <div class="bg-white rounded-xl border border-gray-200 p-4">
     <h2 class="text-xl font-bold text-gray-800">Equipos</h2>
+    @if (canCreateEquipos) {
+    <p class="text-sm text-gray-600">
+      Selecciona un evento y una actividad para ver equipos, crear equipos o
+      unirte a uno.
+    </p>
+    } @else {
     <p class="text-sm text-gray-600">
       Selecciona un evento y una actividad para ver equipos o unirte a uno.
     </p>
+    }
   </div>
 
   <div class="bg-white rounded-xl border border-gray-200 p-4 space-y-4">

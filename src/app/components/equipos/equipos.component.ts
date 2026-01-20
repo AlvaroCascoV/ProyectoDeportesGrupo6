@@ -22,9 +22,14 @@ export class EquiposComponent implements OnInit {
   public idEventoActividad: number = 0;
   public actividadSeleccionada: ActividadesEvento | null = null;
 
+  public canCreateEquipos: boolean = false;
+
   constructor(private _eventosService: EventosService) {}
 
   ngOnInit(): void {
+    const role = (localStorage.getItem('role') ?? '').toUpperCase();
+    this.canCreateEquipos = role === 'CAPITAN' || role === 'ADMINISTRADOR';
+
     this._eventosService.getEventos().subscribe((eventos) => {
       this.eventos = (eventos ?? []).sort(
         (a, b) =>
