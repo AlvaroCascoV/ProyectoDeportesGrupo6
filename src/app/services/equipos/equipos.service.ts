@@ -4,10 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
 import { Equipo } from '../../models/Equipo';
 import { MiembroEquipo } from '../../models/MiembroEquipo';
-
-// Roles used by backend (see /api/GestionEvento/roles).
-// For team membership, API expects role in the URL.
-export type MiembroEquipoRole = 'ALUMNO';
+import { UsuarioEquipo } from '../../models/UsuarioEquipo';
 
 @Injectable({
   providedIn: 'root',
@@ -33,11 +30,22 @@ export class EquiposService {
     });
   }
 
-  joinEquipo(role: MiembroEquipoRole, miembro: MiembroEquipo): Observable<any> {
-    return this._http.post<any>(
-      `${this.url}api/MiembroEquipos/create/${role}`,
-      miembro,
-      { headers: this.getOptionalAuthHeaders() }
+  getUsuariosEquipo(idEquipo: number): Observable<UsuarioEquipo[]> {
+    const headers = this.getOptionalAuthHeaders();
+    return this._http.get<UsuarioEquipo[]>(
+      `${this.url}api/Equipos/UsuariosEquipo/${idEquipo}`,
+      { headers }
+    );
+  }
+
+  joinEquipo(idUsuario: number, idEquipo: number): Observable<MiembroEquipo> {
+    const headers = this.getOptionalAuthHeaders();
+    const baseUrl = `${this.url}api/MiembroEquipos/create`;
+
+    return this._http.post<MiembroEquipo>(
+      `${baseUrl}/${idUsuario}/${idEquipo}`,
+      null,
+      { headers }
     );
   }
 

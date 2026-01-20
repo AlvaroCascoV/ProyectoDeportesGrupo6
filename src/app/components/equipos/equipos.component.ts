@@ -6,7 +6,7 @@ import { Evento } from '../../models/Evento';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { EquiposSelectorComponent } from '../equipos-selector/equipos-selector.component';
-import { MiembroEquipoRole } from '../../services/equipos/equipos.service';
+import { UserRoles } from '../../auth/constants/user-roles';
 
 @Component({
   selector: 'app-equipos',
@@ -23,11 +23,15 @@ export class EquiposComponent implements OnInit {
   public idEventoActividad: number = 0;
   public actividadSeleccionada: ActividadesEvento | null = null;
 
-  public role: MiembroEquipoRole = 'ALUMNO';
+  public canCreateEquipos: boolean = false;
 
   constructor(private _eventosService: EventosService) {}
 
   ngOnInit(): void {
+    const role = (localStorage.getItem('role') ?? '').toUpperCase();
+    this.canCreateEquipos =
+      role === UserRoles.CAPITAN || role === UserRoles.ADMINISTRADOR;
+
     this._eventosService.getEventos().subscribe((eventos) => {
       this.eventos = (eventos ?? []).sort(
         (a, b) =>

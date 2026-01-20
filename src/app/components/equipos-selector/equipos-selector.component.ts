@@ -13,12 +13,11 @@ import { firstValueFrom } from 'rxjs';
 import { Equipo } from '../../models/Equipo';
 import { Color } from '../../models/Color';
 import { MiembroEquipo } from '../../models/MiembroEquipo';
-import {
-  EquiposService,
-  MiembroEquipoRole,
-} from '../../services/equipos/equipos.service';
+import { UsuarioEquipo } from '../../models/UsuarioEquipo';
+import { EquiposService } from '../../services/equipos/equipos.service';
 import { ColoresService } from '../../services/colores/colores.service';
 import { PerfilService } from '../../services/perfil/perfil.service';
+import { UserRoles } from '../../auth/constants/user-roles';
 
 @Component({
   selector: 'app-equipos-selector',
@@ -33,7 +32,6 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
   @Input({ required: true }) idEventoActividad!: number;
   @Input({ required: true }) minimoJugadores!: number;
 
-  @Input() role: MiembroEquipoRole = 'ALUMNO';
   @Input() showConfirmButton: boolean = true;
 
   public equipos: Equipo[] = [];
@@ -48,6 +46,12 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
   public nuevoEquipoNombre: string = '';
   public nuevoEquipoColorId: number | null = null;
 
+  public canCreateEquipos: boolean = false;
+
+  public jugadoresEquipo: UsuarioEquipo[] = [];
+  public cargandoJugadores: boolean = false;
+  public idEquipoJugadores: number | null = null;
+
   private idCursoUsuario: number | null = null;
 
   constructor(
@@ -57,6 +61,9 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
+    const role = (localStorage.getItem('role') ?? '').toUpperCase();
+    this.canCreateEquipos =
+      role === UserRoles.CAPITAN || role === UserRoles.ADMINISTRADOR;
     this.cargarColores();
     this.cargarCursoUsuario();
   }
@@ -78,7 +85,41 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     }
   }
 
+  onEquipoSeleccionado(idEquipo: number): void {
+    const idEquipoNum = Number(idEquipo);
+    if (!Number.isFinite(idEquipoNum) || idEquipoNum <= 0) return;
+    this.selectedEquipoId = idEquipoNum;
+    this.cargarJugadoresEquipo(idEquipoNum);
+  }
+
+  getEquipoColorNombre(idColor: number): string {
+    const id = Number(idColor);
+    if (!Number.isFinite(id)) return 'Sin color';
+    return (
+      this.colores.find((c) => c.idColor === id)?.nombreColor ?? `Color ${id}`
+    );
+  }
+
+  private validateCreateEquipoPermission(): boolean {
+    if (this.canCreateEquipos) {
+      return true;
+    }
+
+    void Swal.fire({
+      title: 'No autorizado',
+      text: 'Solo CAPITAN o ADMINISTRADOR puede crear equipos.',
+      icon: 'warning',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#3085d6',
+    });
+
+    return false;
+  }
+
   toggleCrearEquipo(): void {
+    if (!this.validateCreateEquipoPermission()) {
+      return;
+    }
     this.mostrarCrearEquipo = !this.mostrarCrearEquipo;
     if (this.mostrarCrearEquipo) {
       this.selectedEquipoId = null;
@@ -86,10 +127,10 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
   }
 
   async confirmar(): Promise<boolean> {
-    return this.submit(this.role);
+    return this.submit();
   }
 
-  async submit(role: MiembroEquipoRole): Promise<boolean> {
+  async submit(): Promise<boolean> {
     if (!this.hasValidContext()) {
       await Swal.fire({
         title: 'Falta informacion',
@@ -156,6 +197,16 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     }
 
     if (quiereCrearEquipo) {
+      if (!this.canCreateEquipos) {
+        await Swal.fire({
+          title: 'No autorizado',
+          text: 'Solo CAPITAN o ADMINISTRADOR puede crear equipos.',
+          icon: 'warning',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        });
+        return false;
+      }
       if (this.nuevoEquipoColorId == null) {
         await Swal.fire({
           title: 'Falta informacion',
@@ -179,8 +230,6 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     }
 
     let idEquipoObjetivo: number;
-    let roleFinal: MiembroEquipoRole = role;
-
     if (quiereCrearEquipo) {
       const equipoPayload = new Equipo(
         0,
@@ -219,27 +268,26 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
       }
 
       idEquipoObjetivo = created.idEquipo;
-      roleFinal = 'ALUMNO';
     } else {
       idEquipoObjetivo = selectedEquipoIdNum!;
     }
 
-    const miembroPayload = new MiembroEquipo(0, idEquipoObjetivo, idUsuario);
-
     try {
       await firstValueFrom(
-        this._equiposService.joinEquipo('ALUMNO', miembroPayload)
+        this._equiposService.joinEquipo(idUsuario, idEquipoObjetivo)
       );
     } catch (e: any) {
-      const maybeMsg =
-        e?.error?.message || e?.error?.title || e?.error || null;
+      const maybeMsg = e?.error?.message || e?.error?.title || e?.error || null;
+      const fallbackMsg = quiereCrearEquipo
+        ? 'El equipo se creó, pero no se pudo añadirte como miembro.'
+        : 'No se pudo añadirte como miembro del equipo.';
 
       await Swal.fire({
         title: 'Error',
         text:
           typeof maybeMsg === 'string' && maybeMsg.trim().length > 0
             ? maybeMsg
-            : 'El equipo se creó, pero no se pudo añadirte como miembro.',
+            : fallbackMsg,
         icon: 'error',
         confirmButtonText: 'Aceptar',
         confirmButtonColor: '#d33',
@@ -252,6 +300,22 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     this.mostrarCrearEquipo = false;
     this.nuevoEquipoNombre = '';
     this.nuevoEquipoColorId = null;
+
+    this.cargarJugadoresEquipo(idEquipoObjetivo);
+
+    // On the /equipos page we want explicit feedback.
+    // In the inscripción modal we keep it silent (showConfirmButton=false).
+    if (this.showConfirmButton) {
+      await Swal.fire({
+        title: 'Listo',
+        text: quiereCrearEquipo
+          ? 'Equipo creado y te has unido correctamente.'
+          : 'Te has unido al equipo correctamente.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6',
+      });
+    }
 
     this.refrescarEquipos();
     return true;
@@ -267,8 +331,15 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
         next: (equipos) => {
           this.equipos = equipos ?? [];
           this.cargandoEquipos = false;
-          if (this.equipos.length === 0) {
+          if (this.equipos.length === 0 && this.canCreateEquipos) {
             this.mostrarCrearEquipo = true;
+          }
+
+          if (this.selectedEquipoId != null) {
+            const selected = Number(this.selectedEquipoId);
+            if (Number.isFinite(selected) && selected > 0) {
+              this.cargarJugadoresEquipo(selected);
+            }
           }
         },
         error: () => {
@@ -296,6 +367,30 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     this.mostrarCrearEquipo = false;
     this.nuevoEquipoNombre = '';
     this.nuevoEquipoColorId = null;
+
+    this.jugadoresEquipo = [];
+    this.cargandoJugadores = false;
+    this.idEquipoJugadores = null;
+  }
+
+  private cargarJugadoresEquipo(idEquipo: number): void {
+    if (this.cargandoJugadores && this.idEquipoJugadores === idEquipo) return;
+
+    this.cargandoJugadores = true;
+    this.idEquipoJugadores = idEquipo;
+    this._equiposService.getUsuariosEquipo(idEquipo).subscribe({
+      next: (jugadores) => {
+        // If user changed selection while loading, ignore old response
+        if (this.idEquipoJugadores !== idEquipo) return;
+        this.jugadoresEquipo = jugadores ?? [];
+        this.cargandoJugadores = false;
+      },
+      error: () => {
+        if (this.idEquipoJugadores !== idEquipo) return;
+        this.jugadoresEquipo = [];
+        this.cargandoJugadores = false;
+      },
+    });
   }
 
   private cargarColores(): void {
