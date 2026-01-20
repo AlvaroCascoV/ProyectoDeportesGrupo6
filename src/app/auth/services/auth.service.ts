@@ -22,7 +22,7 @@ export class AuthService {
 
     if (token && role) {
       this._token.set(token);
-      this._role.set(role);
+      this._role.set(role.toUpperCase());
       this._authStatus.set('authenticated');
     } else {
       this._token.set(null);
@@ -52,10 +52,13 @@ export class AuthService {
       .pipe(
         tap((response) => {
           this._authStatus.set('authenticated');
-          this._role.set(response.role);
+          const roleUpper = (response.role ?? '').toUpperCase();
+          this._role.set(roleUpper || null);
           this._token.set(response.response);
           localStorage.setItem('token', response.response);
-          localStorage.setItem('role', response.role);
+          if (roleUpper) {
+            localStorage.setItem('role', roleUpper);
+          }
         }),
         switchMap(() => {
           const token = this._token();

@@ -6,6 +6,7 @@ import { AulasComponent } from './components/aulas/aulas.component';
 import { MaterialesComponent } from './components/materiales/materiales.component';
 import { EquiposComponent } from './components/equipos/equipos.component';
 import { authGuard } from './auth/guards/auth.guard';
+import { PanelOrganizadorComponent } from './components/panel-organizador/panel-organizador.component';
 
 export const routes: Routes = [
   { path: 'auth', loadChildren: () => import('./auth/auth.routes') },
@@ -18,7 +19,7 @@ export const routes: Routes = [
       { path: 'eventos', component: EventosComponent },
       { path: 'equipos', component: EquiposComponent },
       { path: 'perfil', component: PerfilComponent },
-      { path: 'materiales', component: MaterialesComponent },
+      { path: 'organizador', component: PanelOrganizadorComponent },
       {
         path: 'eventos/:idEvento/resultados',
         redirectTo: '/eventos',
