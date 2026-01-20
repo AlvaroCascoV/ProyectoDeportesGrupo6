@@ -5,7 +5,6 @@ import { InscripcionesService } from '../../services/inscripciones/inscripciones
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import Swal from 'sweetalert2';
 import { firstValueFrom } from 'rxjs';
-import { MiembroEquipoRole } from '../../services/equipos/equipos.service';
 import { EquiposSelectorComponent } from '../equipos-selector/equipos-selector.component';
 
 @Component({
@@ -129,7 +128,6 @@ export class InscripcionComponent implements OnInit {
     }
 
     // 2) Equipo (crear/unirse) delegando en el componente
-    const role: MiembroEquipoRole = 'ALUMNO';
     if (!this.equiposSelector) {
       await Swal.fire({
         title: 'Error',
@@ -141,6 +139,6 @@ export class InscripcionComponent implements OnInit {
       return false;
     }
 
-    return await this.equiposSelector.submit(role);
+    return await this.equiposSelector.submit();
   }
 }

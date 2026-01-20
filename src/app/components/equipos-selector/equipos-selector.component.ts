@@ -13,10 +13,7 @@ import { firstValueFrom } from 'rxjs';
 import { Equipo } from '../../models/Equipo';
 import { Color } from '../../models/Color';
 import { MiembroEquipo } from '../../models/MiembroEquipo';
-import {
-  EquiposService,
-  MiembroEquipoRole,
-} from '../../services/equipos/equipos.service';
+import { EquiposService } from '../../services/equipos/equipos.service';
 import { ColoresService } from '../../services/colores/colores.service';
 import { PerfilService } from '../../services/perfil/perfil.service';
 
@@ -33,7 +30,6 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
   @Input({ required: true }) idEventoActividad!: number;
   @Input({ required: true }) minimoJugadores!: number;
 
-  @Input() role: MiembroEquipoRole = 'ALUMNO';
   @Input() showConfirmButton: boolean = true;
 
   public equipos: Equipo[] = [];
@@ -86,10 +82,10 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
   }
 
   async confirmar(): Promise<boolean> {
-    return this.submit(this.role);
+    return this.submit();
   }
 
-  async submit(role: MiembroEquipoRole): Promise<boolean> {
+  async submit(): Promise<boolean> {
     if (!this.hasValidContext()) {
       await Swal.fire({
         title: 'Falta informacion',
@@ -179,8 +175,6 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     }
 
     let idEquipoObjetivo: number;
-    let roleFinal: MiembroEquipoRole = role;
-
     if (quiereCrearEquipo) {
       const equipoPayload = new Equipo(
         0,
@@ -219,7 +213,6 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
       }
 
       idEquipoObjetivo = created.idEquipo;
-      roleFinal = 'ALUMNO';
     } else {
       idEquipoObjetivo = selectedEquipoIdNum!;
     }
@@ -227,12 +220,9 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     const miembroPayload = new MiembroEquipo(0, idEquipoObjetivo, idUsuario);
 
     try {
-      await firstValueFrom(
-        this._equiposService.joinEquipo('ALUMNO', miembroPayload)
-      );
+      await firstValueFrom(this._equiposService.joinEquipo(miembroPayload));
     } catch (e: any) {
-      const maybeMsg =
-        e?.error?.message || e?.error?.title || e?.error || null;
+      const maybeMsg = e?.error?.message || e?.error?.title || e?.error || null;
 
       await Swal.fire({
         title: 'Error',

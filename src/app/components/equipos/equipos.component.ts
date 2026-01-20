@@ -6,7 +6,6 @@ import { Evento } from '../../models/Evento';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { EquiposSelectorComponent } from '../equipos-selector/equipos-selector.component';
-import { MiembroEquipoRole } from '../../services/equipos/equipos.service';
 
 @Component({
   selector: 'app-equipos',
@@ -22,8 +21,6 @@ export class EquiposComponent implements OnInit {
   public actividadesEvento: ActividadesEvento[] = [];
   public idEventoActividad: number = 0;
   public actividadSeleccionada: ActividadesEvento | null = null;
-
-  public role: MiembroEquipoRole = 'ALUMNO';
 
   constructor(private _eventosService: EventosService) {}
 
