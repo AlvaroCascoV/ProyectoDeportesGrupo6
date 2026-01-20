@@ -17,6 +17,7 @@ import { UsuarioEquipo } from '../../models/UsuarioEquipo';
 import { EquiposService } from '../../services/equipos/equipos.service';
 import { ColoresService } from '../../services/colores/colores.service';
 import { PerfilService } from '../../services/perfil/perfil.service';
+import { UserRoles } from '../../auth/constants/user-roles';
 
 @Component({
   selector: 'app-equipos-selector',
@@ -61,7 +62,8 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     const role = (localStorage.getItem('role') ?? '').toUpperCase();
-    this.canCreateEquipos = role === 'CAPITAN' || role === 'ADMINISTRADOR';
+    this.canCreateEquipos =
+      role === UserRoles.CAPITAN || role === UserRoles.ADMINISTRADOR;
     this.cargarColores();
     this.cargarCursoUsuario();
   }
