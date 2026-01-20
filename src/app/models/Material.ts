@@ -5,6 +5,7 @@ export class Material {
         public idUsuario: number,
         public nombreMaterial: string,
         public pendiente: boolean,
-        public fechaSolicitud: string
+        public fechaSolicitud: string,
+        public idUsuarioAportacion: number
     ){}
 }

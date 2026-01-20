@@ -100,7 +100,8 @@ export class MaterialesComponent implements OnInit{
       parseInt(localStorage.getItem("userID") || "0"),
       this.materialNombre,
       true,
-      new Date().toISOString()
+      new Date().toISOString(),
+      -1
     )
     console.log("EventoActividad: "+idEventoActividad)
     console.log("Material: "+JSON.stringify(material))
@@ -157,12 +158,51 @@ export class MaterialesComponent implements OnInit{
     this.modalSolicitarMaterial = false;
   }
 
-  aportarMaterial(
-    idMaterial:number,
-    idEventoActividad:number,
-    nombreMaterial: string,
-  ): void{
-   //HACER EL RESTO DE LA FUNCION PARA EL BOTON DE APORTAR MATERIALES
+  aportarMaterial(idMaterial:number): void{
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Confirmas que quieres aportar este material?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, aportar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#1976d2',
+      cancelButtonColor: '#d32f2f'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        let idAlumno = parseInt(localStorage.getItem("userID") || "0");
+        this._servicioMateriales.aportarMaterial(idMaterial, idAlumno).subscribe({
+          next: (response) => {
+            // Actualizar el material en la UI sin refrescar
+            for (const actividadId in this.materialesPorActividad) {
+              const materiales = this.materialesPorActividad[actividadId];
+              const material = materiales.find(m => m.idMaterial === idMaterial);
+              if (material) {
+                material.pendiente = false;
+                break;
+              }
+            }
 
+            Swal.fire({
+              title: '¡Material aportado!',
+              text: 'Tu material ha sido registrado correctamente.',
+              icon: 'success',
+              confirmButtonText: 'Aceptar',
+              confirmButtonColor: '#1976d2'
+            });
+          },
+          error: (error) => {
+            console.error('Error al aportar material: ', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'No se pudo registrar tu aportación. Por favor, intenta nuevamente.',
+              icon: 'error',
+              confirmButtonText: 'Aceptar',
+              confirmButtonColor: '#d32f2f'
+            });
+          }
+        });
+      }
+    });
   }
 }

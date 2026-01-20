@@ -15,8 +15,8 @@ export class MaterialesService {
       return this._http.get<Material[]>(`${this.url}api/materiales/materialesactividad/${idEventoActividad}`)
   }
 
-  aportarMaterial(material: Material): Observable<any>{
-    return this._http.put<any>(`${this.url}api/materiales/update`, material)
+  aportarMaterial(idMaterial: number, idAlumno:number): Observable<any>{
+    return this._http.put<any>(`${this.url}api/materiales/aportarmaterial/${idMaterial}/${idAlumno}`,{});
   }
 
   solicitarMaterial(material: Material):Observable<any>{
