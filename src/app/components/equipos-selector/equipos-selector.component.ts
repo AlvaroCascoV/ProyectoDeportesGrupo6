@@ -126,15 +126,24 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     }
   }
 
+  private validateCreateEquipoPermission(): boolean {
+    if (this.canCreateEquipos) {
+      return true;
+    }
+
+    void Swal.fire({
+      title: 'No autorizado',
+      text: 'Solo CAPITAN o ADMINISTRADOR puede crear equipos.',
+      icon: 'warning',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#3085d6',
+    });
+
+    return false;
+  }
+
   toggleCrearEquipo(): void {
-    if (!this.canCreateEquipos) {
-      void Swal.fire({
-        title: 'No autorizado',
-        text: 'Solo CAPITAN o ADMINISTRADOR puede crear equipos.',
-        icon: 'warning',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#3085d6',
-      });
+    if (!this.validateCreateEquipoPermission()) {
       return;
     }
     this.mostrarCrearEquipo = !this.mostrarCrearEquipo;
