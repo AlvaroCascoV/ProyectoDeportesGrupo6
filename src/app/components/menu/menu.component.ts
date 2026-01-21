@@ -11,8 +11,8 @@ import { AuthService } from '../../auth/services/auth.service';
 })
 export class MenuComponent {
   public authService = inject(AuthService);
+  public roleId = this.authService.roleId;
   private router = inject(Router);
-  public idrole: number = parseInt(localStorage.getItem("idRole") || "0")
 
   logout(): void {
     this.authService.logout();
