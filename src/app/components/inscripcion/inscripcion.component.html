@@ -22,14 +22,4 @@
       }
     </select>
   </div>
-
-  @if (actividadSeleccionada) {
-  <app-equipos-selector
-    [idEvento]="idEvento"
-    [idActividad]="actividadSeleccionada.idActividad"
-    [idEventoActividad]="actividadSeleccionada.idEventoActividad"
-    [minimoJugadores]="actividadSeleccionada.minimoJugadores"
-    [showConfirmButton]="false"
-  ></app-equipos-selector>
-  }
 </form>
