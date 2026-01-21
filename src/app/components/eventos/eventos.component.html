@@ -2,16 +2,18 @@
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold text-gray-800">Eventos</h1>
     @if(esOrganizador){
-      <button
-        (click)="abrirModal()"
-        class="bg-blue-400 text-black px-6 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold"
-      >
-        Crear Evento
-      </button>
+    <button
+      (click)="abrirModal()"
+      class="bg-blue-400 text-black px-6 py-2 rounded hover:bg-blue-500 cursor-pointer font-semibold"
+    >
+      Crear Evento
+    </button>
     }
   </div>
 
-  <div class="flex flex-wrap items-center gap-3 mb-6 bg-white/70 border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+  <div
+    class="flex flex-wrap items-center gap-3 mb-6 bg-white/70 border border-gray-200 rounded-lg px-4 py-3 shadow-sm"
+  >
     <h3 class="text-sm font-semibold text-gray-700">Filtrar por:</h3>
     <div class="flex flex-wrap gap-2">
       <button
@@ -25,7 +27,9 @@
         [class.hover\:bg-gray-100]="filtroActivo !== 'todos'"
         [class.hover\:border-blue-200]="filtroActivo !== 'todos'"
         (click)="filtrarTodos()"
-      >Todos</button>
+      >
+        Todos
+      </button>
       <button
         class="px-4 py-2 rounded-full border text-sm font-semibold transition-colors"
         [class.bg-blue-400]="filtroActivo === 'proximos'"
@@ -37,7 +41,9 @@
         [class.hover\:bg-gray-100]="filtroActivo !== 'proximos'"
         [class.hover\:border-blue-200]="filtroActivo !== 'proximos'"
         (click)="filtrarProximos()"
-      >Próximos</button>
+      >
+        Próximos
+      </button>
       <button
         class="px-4 py-2 rounded-full border text-sm font-semibold transition-colors"
         [class.bg-blue-400]="filtroActivo === 'pasados'"
@@ -49,7 +55,9 @@
         [class.hover\:bg-gray-100]="filtroActivo !== 'pasados'"
         [class.hover\:border-blue-200]="filtroActivo !== 'pasados'"
         (click)="filtrarPasados()"
-      >Pasados</button>
+      >
+        Pasados
+      </button>
     </div>
   </div>
 
@@ -156,41 +164,34 @@
           />
         </div>
 
-        <div class="mb-6">
-          <label
-            for="idProfesor"
-            class="block text-sm font-semibold text-gray-700 mb-2"
-          >
-            ID Profesor
-          </label>
-          <input
-            type="number"
-            id="idProfesor"
-            [(ngModel)]="nuevoEvento.idProfesor"
-            name="idProfesor"
-            required
-            min="1"
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
-          />
+        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p class="text-sm text-blue-800">
+            <strong>Nota:</strong> Un profesor será asignado automáticamente de
+            forma aleatoria, priorizando aquellos que aún no tienen eventos
+            asignados.
+          </p>
         </div>
 
         @if(actividades && actividades.length > 0) {
         <div class="actividades-section">
           <label>Seleccionar Actividades</label>
           @for(actividad of actividades; track actividad.idActividad){
-            <div class="checkbox-wrapper">
-              <input
-                type="checkbox"
-                [id]="'actividad-' + actividad.idActividad"
-                [value]="actividad.idActividad"
-                (change)="onActividadSeleccionada(actividad, $event)"
-                class="custom-checkbox"
-              />
-              <label [for]="'actividad-' + actividad.idActividad" class="checkbox-label">
-                <div class="checkbox-custom"></div>
-                <span class="checkbox-text">{{actividad.nombre}}</span>
-              </label>
-            </div>
+          <div class="checkbox-wrapper">
+            <input
+              type="checkbox"
+              [id]="'actividad-' + actividad.idActividad"
+              [value]="actividad.idActividad"
+              (change)="onActividadSeleccionada(actividad, $event)"
+              class="custom-checkbox"
+            />
+            <label
+              [for]="'actividad-' + actividad.idActividad"
+              class="checkbox-label"
+            >
+              <div class="checkbox-custom"></div>
+              <span class="checkbox-text">{{ actividad.nombre }}</span>
+            </label>
+          </div>
           }
         </div>
         }

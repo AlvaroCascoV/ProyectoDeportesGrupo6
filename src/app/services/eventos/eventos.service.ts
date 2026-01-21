@@ -20,7 +20,7 @@ export class EventosService {
 
   getProximoEvento(): Observable<Evento> {
     return this.getEventos().pipe(
-      map(eventos => {
+      map((eventos) => {
         const proximoEvento = eventos
           .filter((evento) => {
             let fechaEventoDate = new Date(evento.fechaEvento);
@@ -29,9 +29,10 @@ export class EventosService {
           })
           .sort(
             (a, b) =>
-              new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime()
+              new Date(a.fechaEvento).getTime() -
+              new Date(b.fechaEvento).getTime()
           )[0];
-        console.log("Próximo evento: " + JSON.stringify(proximoEvento));
+        console.log('Próximo evento: ' + JSON.stringify(proximoEvento));
         return proximoEvento;
       })
     );
@@ -47,6 +48,35 @@ export class EventosService {
     return this._http.get<any>(
       `${this.url}api/ProfesEventos/FindProfe?idprofesor=${idProfesor}`
     );
+  }
+
+  // Obtiene todos los profesores activos del año actual
+  getProfesoresActivos(): Observable<any[]> {
+    return this._http.get<any[]>(`${this.url}api/ProfesEventos/ProfesActivos`);
+  }
+
+  // Obtiene los profesores que no tienen eventos asignados
+  getProfesoresSinEventos(): Observable<any[]> {
+    return this._http.get<any[]>(
+      `${this.url}api/ProfesEventos/ProfesSinEventos`
+    );
+  }
+
+  // Obtiene los profesores que ya tienen eventos asignados
+  getProfesoresConEventos(): Observable<any[]> {
+    return this._http.get<any[]>(
+      `${this.url}api/ProfesEventos/ProfesConEventos`
+    );
+  }
+
+  // Elimina la asociación de un profesor con un evento
+  eliminarProfesorEvento(idEvento: number): Observable<any> {
+    const url = `${this.url}api/ProfesEventos/EliminarProfesorEvento/${idEvento}`;
+    let header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.delete<any>(url, { headers: header });
   }
 
   getEventosActividades(): Observable<Evento[]> {
@@ -73,19 +103,35 @@ export class EventosService {
     // Codificar la fecha para la URL (los caracteres especiales necesitan encoding)
     const fechaEncoded = encodeURIComponent(fechaEvento);
     const url = `${this.url}api/Eventos/create/${fechaEncoded}`;
-    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
-    console.log(`Bearer ${localStorage.getItem("token")}`)
-    return this._http.post<any>(url, null, {headers: header});
+    let header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    console.log(`Bearer ${localStorage.getItem('token')}`);
+    return this._http.post<any>(url, null, { headers: header });
   }
 
   asociarProfesorEvento(idEvento: number, idProfesor: number): Observable<any> {
     const url = `${this.url}api/ProfesEventos/AsociarProfesorEvento/${idEvento}/${idProfesor}`;
-    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
-    return this._http.post<any>(url, null, {headers: header});
+    let header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.post<any>(url, null, { headers: header });
   }
 
-  insertarActividadesEvento(idEvento:number, idActividad:number): Observable<any>{
-    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
-    return this._http.post<any>(`${this.url}api/ActividadesEvento/create?idevento=${idEvento}&idactividad=${idActividad}`,null, {headers: header})
+  insertarActividadesEvento(
+    idEvento: number,
+    idActividad: number
+  ): Observable<any> {
+    let header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.post<any>(
+      `${this.url}api/ActividadesEvento/create?idevento=${idEvento}&idactividad=${idActividad}`,
+      null,
+      { headers: header }
+    );
   }
 }
