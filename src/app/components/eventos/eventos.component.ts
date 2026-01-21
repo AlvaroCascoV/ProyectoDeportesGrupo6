@@ -7,6 +7,7 @@ import { DetallesComponent } from '../detalles/detalles.component';
 import { ActividadesService } from '../../services/actividades/actividades.service';
 import { Actividad } from '../../models/Actividad';
 import Swal from 'sweetalert2';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-eventos',
@@ -24,10 +25,9 @@ export class EventosComponent implements OnInit {
   public mostrarModalDetalles = false;
   public mostrarFormularioInmediato = false;
   public eventoSeleccionado!: Evento;
-  public esOrganizador: boolean = false; 
+  public esOrganizador: boolean = false;
   public nuevoEvento = {
     fechaEvento: '',
-    idProfesor: 0,
   };
   public actividades: Actividad[] = [];
   public actividadesSeleccionadas: Actividad[] = [];
@@ -42,10 +42,11 @@ export class EventosComponent implements OnInit {
 
   cerrarModal(): void {
     this.mostrarModal = false;
-    this.nuevoEvento = { fechaEvento: '', idProfesor: 0 };
+    this.nuevoEvento = { fechaEvento: '' };
   }
 
   crearEvento(): void {
+    // Validar que se haya seleccionado una fecha
     if (!this.nuevoEvento.fechaEvento) {
       Swal.fire({
         title: 'Error',
@@ -57,42 +58,59 @@ export class EventosComponent implements OnInit {
       return;
     }
 
-    // Validar profesor primero si se proporcionó un ID
-    if (this.nuevoEvento.idProfesor > 0) {
-      this._servicioEventos
-        .getProfesorById(this.nuevoEvento.idProfesor)
-        .subscribe({
-          next: (profesor) => {
-            // Si es profesor válido, crear el evento
-            if (profesor && profesor.role?.toUpperCase() === 'PROFESOR') {
-              this.crearEventoConFecha();
-            } else {
-              Swal.fire({
-                title: 'Error',
-                text: 'El usuario asignado no es un profesor',
-                icon: 'error',
-                confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#d33',
-              });
-            }
-          },
-          error: () => {
-            Swal.fire({
-              title: 'Error',
-              text: 'El usuario asignado no es un profesor',
-              icon: 'error',
-              confirmButtonText: 'Aceptar',
-              confirmButtonColor: '#d33',
-            });
-          },
+    // Obtener profesores sin eventos y con eventos para asignar aleatoriamente
+    // Usamos forkJoin para hacer ambas peticiones en paralelo
+    forkJoin({
+      sinEventos: this._servicioEventos.getProfesoresSinEventos(),
+      conEventos: this._servicioEventos.getProfesoresConEventos(),
+    }).subscribe({
+      next: (result) => {
+        let profesoresDisponibles: any[] = [];
+
+        // Priorizar profesores sin eventos para distribuir la carga equitativamente
+        if (result.sinEventos && result.sinEventos.length > 0) {
+          profesoresDisponibles = result.sinEventos;
+        } else if (result.conEventos && result.conEventos.length > 0) {
+          // Si todos tienen eventos, usar profesores con eventos como fallback
+          profesoresDisponibles = result.conEventos;
+        }
+
+        // Validar que haya profesores disponibles
+        if (profesoresDisponibles.length === 0) {
+          Swal.fire({
+            title: 'Error',
+            text: 'No hay profesores disponibles para asignar al evento',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#d33',
+          });
+          return;
+        }
+
+        // Seleccionar un profesor aleatorio de la lista disponible
+        const indiceAleatorio = Math.floor(
+          Math.random() * profesoresDisponibles.length
+        );
+        const profesorAleatorio = profesoresDisponibles[indiceAleatorio];
+        const idProfesor = profesorAleatorio.idUsuario;
+
+        // Crear el evento con el profesor asignado aleatoriamente
+        this.crearEventoConFecha(idProfesor);
+      },
+      error: () => {
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudieron obtener los profesores disponibles',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33',
         });
-    } else {
-      // Si no hay profesor, crear evento sin profesor
-      this.crearEventoConFecha();
-    }
+      },
+    });
   }
 
-  crearEventoConFecha(): void {
+  // Crea el evento con la fecha seleccionada y asocia el profesor asignado aleatoriamente
+  crearEventoConFecha(idProfesor: number): void {
     // Convertir la fecha a formato ISO (2026-01-15T09:47:13.513Z)
     const fechaISO = new Date(this.nuevoEvento.fechaEvento).toISOString();
 
@@ -101,7 +119,7 @@ export class EventosComponent implements OnInit {
         const idEvento = response.idEvento || response.id;
         console.log('Evento añadido: ' + idEvento);
 
-        // Insertar actividades si las hay
+        // Insertar actividades seleccionadas si las hay
         if (idEvento && this.actividadesSeleccionadas.length > 0) {
           this.actividadesSeleccionadas.forEach((act) => {
             console.log('Añadiendo actividad: ' + act.nombre);
@@ -118,17 +136,17 @@ export class EventosComponent implements OnInit {
           });
         }
 
-        // Asociar profesor al evento recién creado
-        if (idEvento && this.nuevoEvento.idProfesor > 0) {
+        // Asociar el profesor seleccionado aleatoriamente al evento recién creado
+        if (idEvento && idProfesor > 0) {
           this._servicioEventos
-            .asociarProfesorEvento(idEvento, this.nuevoEvento.idProfesor)
+            .asociarProfesorEvento(idEvento, idProfesor)
             .subscribe({
               next: () => {
                 this.cerrarModal();
-                // Evento creado con éxito
+                // Evento creado con éxito y profesor asignado
                 Swal.fire({
                   title: '¡Evento Creado!',
-                  text: 'El evento se ha creado correctamente',
+                  text: 'El evento se ha creado correctamente con un profesor asignado aleatoriamente',
                   icon: 'success',
                   confirmButtonText: 'Aceptar',
                   confirmButtonColor: '#3085d6',
@@ -139,7 +157,7 @@ export class EventosComponent implements OnInit {
                 });
               },
               error: () => {
-                // Evento creado pero error asociando profesor
+                // Evento creado pero error al asociar el profesor
                 Swal.fire({
                   title: 'Evento Creado',
                   text: 'El evento se creó, pero hubo un error al asignar el profesor',
@@ -154,7 +172,7 @@ export class EventosComponent implements OnInit {
               },
             });
         } else {
-          // Evento creado sin profesor
+          // Evento creado sin profesor (caso de fallback, no debería ocurrir normalmente)
           this.cerrarModal();
           Swal.fire({
             title: '¡Evento Creado!',
@@ -268,7 +286,7 @@ export class EventosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (parseInt(localStorage.getItem("idRole") || "0") == 4){
+    if (parseInt(localStorage.getItem('idRole') || '0') == 4) {
       this.esOrganizador = true;
     }
     this._servicioEventos.getEventos().subscribe((response) => {
