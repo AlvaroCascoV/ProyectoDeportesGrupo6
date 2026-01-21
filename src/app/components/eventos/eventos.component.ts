@@ -268,7 +268,7 @@ export class EventosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (localStorage.getItem("role") == "ORGANIZADOR"){
+    if (parseInt(localStorage.getItem("idRole") || "0") == 4){
       this.esOrganizador = true;
     }
     this._servicioEventos.getEventos().subscribe((response) => {

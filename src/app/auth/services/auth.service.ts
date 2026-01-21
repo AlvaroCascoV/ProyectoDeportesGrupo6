@@ -58,6 +58,7 @@ export class AuthService {
           localStorage.setItem('token', response.response);
           if (roleUpper) {
             localStorage.setItem('role', roleUpper);
+            localStorage.setItem('idRole', response.idrole.toString())
           }
         }),
         switchMap(() => {

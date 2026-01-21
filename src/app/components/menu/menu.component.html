@@ -65,7 +65,7 @@
 
     <!-- Perfil + Logout derecha -->
     <div class="flex items-center gap-2">
-      @if (authService.role() === "ORGANIZADOR") {
+      @if (idrole === 4) {
         <a
           routerLink="/organizador"
           routerLinkActive="bg-blue-500 font-bold"
