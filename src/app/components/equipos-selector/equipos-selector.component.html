@@ -92,10 +92,10 @@
     }
   </div>
   } } @else {
-  <p class="text-sm text-gray-600">No hay equipos todavía.</p>
+  <p class="text-sm text-gray-600">No hay equipos creados.</p>
   @if (!canCreateEquipos) {
   <p class="text-xs text-gray-500">
-    Habla con el capitán de esta actividad para que cree un equipo.
+    Habla con el capitan de la actividad para que cree uno.
   </p>
   } @else {
   <p class="text-xs text-gray-500">
@@ -136,7 +136,8 @@
       </select>
     </div>
   </div>
-  } @if (showConfirmButton) {
+  } @if (showConfirmButton && !cargandoEquipos && (mostrarCrearEquipo ||
+  (equipos && equipos.length > 0))) {
   <div class="pt-2 border-t border-gray-200 flex justify-end">
     <button
       type="button"

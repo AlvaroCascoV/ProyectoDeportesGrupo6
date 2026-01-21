@@ -50,7 +50,7 @@ export class DetallesComponent implements OnInit, OnChanges {
           this.cargarProfesor(this.evento.idProfesor);
         }
       }
-      
+
       if (this.mostrarFormularioInmediato) {
         this.mostrarFormulario = false;
       } else {
@@ -81,13 +81,30 @@ export class DetallesComponent implements OnInit, OnChanges {
 
   async submitInscripcion(): Promise<void> {
     if (this.inscripcionComponent) {
-      const ok = await this.inscripcionComponent.inscribirUsuario();
-      if (!ok) return;
+      const result = await this.inscripcionComponent.inscribirUsuario();
+      if (!result.ok) return;
 
       this.cerrarModal();
+
+      // Si se redirige a /equipos, no mostramos un modal extra aquí.
+      if (result.redirectedToEquipos) {
+        return;
+      }
+
+      if (result.alreadyInscribed) {
+        await Swal.fire({
+          title: 'Ya estás inscrito',
+          text: 'Ya estabas inscrito en esta actividad.',
+          icon: 'info',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        });
+        return;
+      }
+
       await Swal.fire({
         title: '¡Inscripción Confirmada!',
-        text: 'Te has inscrito correctamente al evento y te has unido a un equipo.',
+        text: 'Te has inscrito correctamente a la actividad.',
         icon: 'success',
         confirmButtonText: 'Aceptar',
         confirmButtonColor: '#3085d6',
