@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Actividad } from '../../models/Actividad';
@@ -16,7 +16,8 @@ export class ActividadesService {
   }
 
   insertActividad(actividad: any): Observable<Actividad> {
-    return this._http.post<Actividad>(`${this.url}api/actividades/create`, actividad);
+    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
+    return this._http.post<Actividad>(`${this.url}api/actividades/create`, actividad, {headers:header});
   }
 
 }

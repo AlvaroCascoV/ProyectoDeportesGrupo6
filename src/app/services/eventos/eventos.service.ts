@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment.development';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Evento } from '../../models/Evento';
@@ -73,15 +73,19 @@ export class EventosService {
     // Codificar la fecha para la URL (los caracteres especiales necesitan encoding)
     const fechaEncoded = encodeURIComponent(fechaEvento);
     const url = `${this.url}api/Eventos/create/${fechaEncoded}`;
-    return this._http.post<any>(url, null);
+    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
+    console.log(`Bearer ${localStorage.getItem("token")}`)
+    return this._http.post<any>(url, null, {headers: header});
   }
 
   asociarProfesorEvento(idEvento: number, idProfesor: number): Observable<any> {
     const url = `${this.url}api/ProfesEventos/AsociarProfesorEvento/${idEvento}/${idProfesor}`;
-    return this._http.post<any>(url, null);
+    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
+    return this._http.post<any>(url, null, {headers: header});
   }
 
   insertarActividadesEvento(idEvento:number, idActividad:number): Observable<any>{
-    return this._http.post<any>(`${this.url}api/ActividadesEvento/create?idevento=${idEvento}&idactividad=${idActividad}`,null)
+    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
+    return this._http.post<any>(`${this.url}api/ActividadesEvento/create?idevento=${idEvento}&idactividad=${idActividad}`,null, {headers: header})
   }
 }
