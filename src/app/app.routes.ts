@@ -20,6 +20,7 @@ export const routes: Routes = [
       { path: 'equipos', component: EquiposComponent },
       { path: 'perfil', component: PerfilComponent },
       { path: 'organizador', component: PanelOrganizadorComponent },
+      { path: 'materiales', component: MaterialesComponent },
       {
         path: 'eventos/:idEvento/resultados',
         redirectTo: '/eventos',
