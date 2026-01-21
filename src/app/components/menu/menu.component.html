@@ -65,15 +65,15 @@
 
     <!-- Perfil + Logout derecha -->
     <div class="flex items-center gap-2">
-      @if (idrole === 4) {
-        <a
-          routerLink="/organizador"
-          routerLinkActive="bg-blue-500 font-bold"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
-        >
-          Panel de Organizador
-        </a>
+      @if (idrole === 3 || idrole === 4) {
+      <a
+        routerLink="/organizador"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer"
+      >
+        Panel de Organizador
+      </a>
       }
       <a
         routerLink="/perfil"

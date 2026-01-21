@@ -12,7 +12,9 @@ import { AuthService } from '../../auth/services/auth.service';
 export class MenuComponent {
   public authService = inject(AuthService);
   private router = inject(Router);
-  public idrole: number = parseInt(localStorage.getItem("idRole") || "0")
+  get idrole(): number {
+    return Number(localStorage.getItem('idRole') ?? '0');
+  }
 
   logout(): void {
     this.authService.logout();

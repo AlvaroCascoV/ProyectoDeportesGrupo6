@@ -58,7 +58,7 @@ export class AuthService {
           localStorage.setItem('token', response.response);
           if (roleUpper) {
             localStorage.setItem('role', roleUpper);
-            localStorage.setItem('idRole', response.idrole.toString())
+            localStorage.setItem('idRole', response.idrole.toString());
           }
         }),
         switchMap(() => {
@@ -94,6 +94,7 @@ export class AuthService {
           this._authStatus.set('not-authenticated');
           localStorage.removeItem('token');
           localStorage.removeItem('role');
+          localStorage.removeItem('idRole');
           localStorage.removeItem('userID');
           return of(false);
         })
@@ -106,6 +107,7 @@ export class AuthService {
     this._authStatus.set('not-authenticated');
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('idRole');
     localStorage.removeItem('userID');
   }
 }
