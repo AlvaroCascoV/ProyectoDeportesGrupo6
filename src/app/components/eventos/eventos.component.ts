@@ -31,6 +31,7 @@ export class EventosComponent implements OnInit {
   };
   public actividades: Actividad[] = [];
   public actividadesSeleccionadas: Actividad[] = [];
+  public preciosActividades: { [key: number]: number } = {};
   constructor(
     private _servicioEventos: EventosService,
     private _servicioActividades: ActividadesService
@@ -43,6 +44,11 @@ export class EventosComponent implements OnInit {
   cerrarModal(): void {
     this.mostrarModal = false;
     this.nuevoEvento = { fechaEvento: '' };
+    this.preciosActividades = {};
+  }
+
+  actividadEstaPrecioSeleccionada(idActividad: number): boolean {
+    return this.actividadesSeleccionadas.some(a => a.idActividad === idActividad);
   }
 
   crearEvento(): void {
@@ -128,6 +134,23 @@ export class EventosComponent implements OnInit {
               .subscribe({
                 next: (response) => {
                   console.log(response);
+                  // Obtener el idEventoActividad de la respuesta
+                  const idEventoActividad = response.idActividadesEvento || response.id;
+                  // Obtener el precio de la actividad
+                  const precio = this.preciosActividades[act.idActividad] || 0;
+                  // Insertar el precio de la actividad si se ha definido
+                  if (idEventoActividad && precio > 0) {
+                    this._servicioActividades
+                      .insertarPrecioActividad(precio, idEventoActividad)
+                      .subscribe({
+                        next: (precioResponse) => {
+                          console.log('Precio insertado:', precioResponse);
+                        },
+                        error: (error) => {
+                          console.error('Error al insertar precio:', error);
+                        },
+                      });
+                  }
                 },
                 error: (error) => {
                   console.error('Error al insertar actividad:', error);
@@ -154,6 +177,7 @@ export class EventosComponent implements OnInit {
                   this.ngOnInit();
                   this.cerrarModal();
                   this.actividadesSeleccionadas = [];
+                  this.preciosActividades = {};
                 });
               },
               error: () => {
@@ -168,6 +192,7 @@ export class EventosComponent implements OnInit {
                   this.ngOnInit();
                   this.cerrarModal();
                   this.actividadesSeleccionadas = [];
+                  this.preciosActividades = {};
                 });
               },
             });
@@ -184,6 +209,7 @@ export class EventosComponent implements OnInit {
             this.ngOnInit();
             this.cerrarModal();
             this.actividadesSeleccionadas = [];
+            this.preciosActividades = {};
           });
         }
       },
@@ -262,6 +288,8 @@ export class EventosComponent implements OnInit {
       this.actividadesSeleccionadas = this.actividadesSeleccionadas.filter(
         (a) => a.idActividad !== actividad.idActividad
       );
+      // Limpiar el precio de la actividad deseleccionada
+      delete this.preciosActividades[actividad.idActividad];
     }
     console.log('Actividades seleccionadas:', this.actividadesSeleccionadas);
   }
