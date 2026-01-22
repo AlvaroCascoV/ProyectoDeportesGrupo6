@@ -135,7 +135,7 @@ export class EventosComponent implements OnInit {
                 next: (response) => {
                   console.log(response);
                   // Obtener el idEventoActividad de la respuesta
-                  const idEventoActividad = response.idActividadesEvento || response.id;
+                  const idEventoActividad = response.idEventoActividad || response.id;
                   // Obtener el precio de la actividad
                   const precio = this.preciosActividades[act.idActividad] || 0;
                   // Insertar el precio de la actividad si se ha definido
@@ -144,6 +144,7 @@ export class EventosComponent implements OnInit {
                       .insertarPrecioActividad(precio, idEventoActividad)
                       .subscribe({
                         next: (precioResponse) => {
+                          console.log("Precio: "+precioResponse);
                           console.log('Precio insertado:', precioResponse);
                         },
                         error: (error) => {
