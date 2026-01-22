@@ -36,6 +36,7 @@ export class DetallesComponent implements OnInit, OnChanges {
   public profesorActual: { id: number; nombre: string } | null = null;
   public cargandoProfesor: boolean = false;
   public mostrarFormulario: boolean = true;
+  public preciosActividades: { [key: number]: number } = {};
 
   constructor(private _servicioEventos: EventosService) {}
 
@@ -60,6 +61,7 @@ export class DetallesComponent implements OnInit, OnChanges {
     if (changes['mostrar'] && !changes['mostrar'].currentValue) {
       this.mostrarFormulario = true;
       this.actividadesEvento = [];
+      this.preciosActividades = [];
       this.profesorActual = null;
       this.cargandoActividades = false;
       this.cargandoProfesor = false;

@@ -20,4 +20,18 @@ export class ActividadesService {
     return this._http.post<Actividad>(`${this.url}api/actividades/create`, actividad, {headers:header});
   }
 
+  insertarPrecioActividad(precio:number, idEventoActividad:number): Observable<any>{
+    let precioActividad = {
+      "idPrecioActividad": 0,
+      "idEventoActividad": idEventoActividad,
+      "precioTotal": precio
+    }
+    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`);
+    return this._http.post<any>(`${this.url}api/precioactividad/create`, precioActividad, {headers:header});
+  }
+
+  getPrecioActividades(idPrecioActividad: number): Observable<any>{
+    return this._http.get<any>(`${this.url}api/precioactividades/${idPrecioActividad}`);
+  }
+  
 }

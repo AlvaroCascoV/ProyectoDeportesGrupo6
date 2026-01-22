@@ -176,21 +176,37 @@
         <div class="actividades-section">
           <label>Seleccionar Actividades</label>
           @for(actividad of actividades; track actividad.idActividad){
-          <div class="checkbox-wrapper">
-            <input
-              type="checkbox"
-              [id]="'actividad-' + actividad.idActividad"
-              [value]="actividad.idActividad"
-              (change)="onActividadSeleccionada(actividad, $event)"
-              class="custom-checkbox"
-            />
-            <label
-              [for]="'actividad-' + actividad.idActividad"
-              class="checkbox-label"
-            >
-              <div class="checkbox-custom"></div>
-              <span class="checkbox-text">{{ actividad.nombre }}</span>
-            </label>
+          <div class="checkbox-wrapper flex items-center gap-2">
+            <div class="flex items-center flex-1">
+              <input
+                type="checkbox"
+                [id]="'actividad-' + actividad.idActividad"
+                [value]="actividad.idActividad"
+                (change)="onActividadSeleccionada(actividad, $event)"
+                class="custom-checkbox"
+              />
+              <label
+                [for]="'actividad-' + actividad.idActividad"
+                class="checkbox-label"
+              >
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-text">{{ actividad.nombre }}</span>
+              </label>
+            </div>
+            @if(actividadEstaPrecioSeleccionada(actividad.idActividad)){
+            <div class="flex items-center gap-2">
+              <label class="text-sm font-semibold text-gray-700">Precio (€):</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                [(ngModel)]="preciosActividades[actividad.idActividad]"
+                [name]="'precio-' + actividad.idActividad"
+                placeholder="0.00"
+                class="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              />
+            </div>
+            }
           </div>
           }
         </div>
