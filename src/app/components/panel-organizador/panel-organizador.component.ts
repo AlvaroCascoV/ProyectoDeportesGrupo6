@@ -358,40 +358,42 @@ export class PanelOrganizadorComponent implements OnInit {
           title: '¿Estás seguro?',
           text: 'Esta acción no se podrá deshacer...',
           icon: 'question',
+          showCancelButton: true,
           cancelButtonText: 'Cancelar',
           cancelButtonColor: '#595d60',
           confirmButtonText: 'Eliminar',
           confirmButtonColor: '#c60000',
-        }).then(() => {
-          
-          this._servicioEventos.deleteEvento(this.idEventoAEliminar).subscribe({
-            next: (response) => {
-              
-              Swal.fire({
-                title: 'Evento Eliminado!',
-                text: 'El evento se ha eliminado correctamente',
-                icon: 'success',
-                confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#3085d6',
-              }).then(() => {
-                this.cerrarModalDeleteEvento();
-                // Recargar eventos
-                this._servicioEventos.getEventos().subscribe(response => {
-                  this.eventos = response;
-                })
-              });
-            },
-            error: (response) => {
-              console.log(response)
-              Swal.fire({
-                title: 'Error',
-                text: 'No se pudo eliminar el evento. Por favor, intenta nuevamente',
-                icon: 'error',
-                confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#d33',
-              });
-            },
-          })
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this._servicioEventos.deleteEvento(this.idEventoAEliminar).subscribe({
+              next: (response) => {
+                
+                Swal.fire({
+                  title: 'Evento Eliminado!',
+                  text: 'El evento se ha eliminado correctamente',
+                  icon: 'success',
+                  confirmButtonText: 'Aceptar',
+                  confirmButtonColor: '#3085d6',
+                }).then(() => {
+                  this.cerrarModalDeleteEvento();
+                  // Recargar eventos
+                  this._servicioEventos.getEventos().subscribe(response => {
+                    this.eventos = response;
+                  })
+                });
+              },
+              error: (response) => {
+                console.log(response)
+                Swal.fire({
+                  title: 'Error',
+                  text: 'No se pudo eliminar el evento. Por favor, intenta nuevamente',
+                  icon: 'error',
+                  confirmButtonText: 'Aceptar',
+                  confirmButtonColor: '#d33',
+                });
+              },
+            })
+          }
         });
       }
 
