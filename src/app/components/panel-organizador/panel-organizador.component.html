@@ -7,15 +7,39 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
     <button
       (click)="abrirModalEvento()"
-      class="bg-blue-400 text-black px-8 py-4 rounded-lg hover:bg-blue-500 cursor-pointer font-semibold text-lg transition-colors"
+      class="bg-blue-400 text-black px-8 py-4 rounded-lg hover:bg-blue-500 cursor-pointer font-semibold text-lg transition-colors flex items-center justify-center gap-2"
     >
-      + Crear Nuevo Evento
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Crear Nuevo Evento
     </button>
     <button
       (click)="abrirModalActividad()"
-      class="bg-green-400 text-black px-8 py-4 rounded-lg hover:bg-green-500 cursor-pointer font-semibold text-lg transition-colors"
+      class="bg-green-400 text-black px-8 py-4 rounded-lg hover:bg-green-500 cursor-pointer font-semibold text-lg transition-colors flex items-center justify-center gap-2"
     >
-      + Crear Nueva Actividad
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+      Crear Nueva Actividad
+    </button>
+    <button
+      (click)="abrirModalDeleteEvento()"
+      class="bg-red-400 text-black px-8 py-4 rounded-lg hover:bg-red-500 cursor-pointer font-semibold text-lg transition-colors flex items-center justify-center gap-2"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+      </svg>
+      Eliminar Evento
+    </button>
+    <button
+      (click)="abrirModalDeleteActividad()"
+      class="bg-red-400 text-black px-8 py-4 rounded-lg hover:bg-red-500 cursor-pointer font-semibold text-lg transition-colors flex items-center justify-center gap-2"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+      </svg>
+      Eliminar Actividad
     </button>
   </div>
 
@@ -75,7 +99,7 @@
             class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 p-3 rounded-lg"
           >
             @for(actividad of actividades; track actividad.idActividad){
-            <div class="flex items-center">
+            <div class="flex items-center gap-2">
               <input
                 type="checkbox"
                 [id]="'actividad-' + actividad.idActividad"
@@ -85,10 +109,24 @@
               />
               <label
                 [for]="'actividad-' + actividad.idActividad"
-                class="ml-2 text-sm text-gray-700 cursor-pointer"
+                class="text-sm text-gray-700 cursor-pointer flex-1"
               >
                 {{ actividad.nombre }} (Mín: {{ actividad.minimoJugadores }})
               </label>
+              @if(actividadEstaPrecioSeleccionada(actividad.idActividad)){
+              <div class="flex items-center gap-2">
+                <label class="text-sm font-semibold text-gray-700">Precio (€):</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [(ngModel)]="preciosActividades[actividad.idActividad]"
+                  [name]="'precio-' + actividad.idActividad"
+                  placeholder="0.00"
+                  class="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                />
+              </div>
+              }
             </div>
             }
           </div>
@@ -191,5 +229,124 @@
       </form>
     </div>
   </div>
+  }
+
+  @if(mostrarModalDeleteEvento){
+    <div
+      class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+      (click)="cerrarModalDeleteEvento()"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200"
+        (click)="$event.stopPropagation()"
+        style="background-color: white"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Eliminar Evento</h2>
+          <button
+            (click)="cerrarModalDeleteEvento()"
+            class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          >
+            ×
+          </button>
+        </div>
+
+        <form (ngSubmit)="deleteEvento()">
+          <div class="mb-4">
+            <label
+              for="selectEventos"
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Selecciona el evento a eliminar
+            </label>
+            <select
+              [(ngModel)]="idEventoAEliminar"
+              name="eventoAEliminar"
+              id="selectEventos"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-300 focus:border-transparent bg-white text-gray-800"
+            >
+              @for(evento of eventos; track evento){
+                <option [ngValue]="evento.idEvento">Evento #{{evento.idEvento}} - {{formatearFecha(evento.fechaEvento)}}</option>
+              }
+            </select>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              type="button"
+              (click)="cerrarModalDeleteEvento()"
+              class="flex-1 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="flex-1 bg-red-400 text-black px-4 py-2 rounded hover:bg-red-500 font-semibold"
+            >
+              Eliminar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+  @if(mostrarModalDeleteActividad){
+    <div
+      class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+      (click)="cerrarModalDeleteActividad()"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200"
+        (click)="$event.stopPropagation()"
+        style="background-color: white"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Eliminar Actividad</h2>
+          <button
+            (click)="cerrarModalDeleteActividad()"
+            class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          >
+            ×
+          </button>
+        </div>
+
+        <form (ngSubmit)="deleteActividad()">
+          <div class="mb-4">
+            <label
+              for="selectActividades"
+              class="block text-sm font-semibold text-gray-700 mb-2"
+            >
+              Selecciona la actividad a eliminar
+            </label>
+            <select
+              [(ngModel)]="idActividadAEliminar"
+              name="actividadAEliminar"
+              id="selectActividades"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-300 focus:border-transparent bg-white text-gray-800"
+            >
+              @for(actividad of actividades; track actividad){
+                <option [ngValue]="actividad.idActividad">{{actividad.nombre}}</option>
+              }
+            </select>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              type="button"
+              (click)="cerrarModalDeleteActividad()"
+              class="flex-1 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="flex-1 bg-red-400 text-black px-4 py-2 rounded hover:bg-red-500 font-semibold"
+            >
+              Eliminar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   }
 </div>

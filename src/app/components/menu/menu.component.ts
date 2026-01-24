@@ -13,9 +13,18 @@ export class MenuComponent {
   public authService = inject(AuthService);
   public roleId = this.authService.roleId;
   private router = inject(Router);
+  public isMenuOpen = false;
 
   logout(): void {
     this.authService.logout();
     this.router.navigateByUrl('/auth/login');
+  }
+
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  closeMenu(): void {
+    this.isMenuOpen = false;
   }
 }
