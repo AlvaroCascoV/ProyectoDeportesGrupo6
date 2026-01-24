@@ -325,7 +325,7 @@
               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-300 focus:border-transparent bg-white text-gray-800"
             >
               @for(actividad of actividades; track actividad){
-                <option value="{{actividad.idActividad}}">{{actividad.nombre}}</option>
+                <option [ngValue]="actividad.idActividad">{{actividad.nombre}}</option>
               }
             </select>
           </div>
