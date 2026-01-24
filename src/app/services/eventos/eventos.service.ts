@@ -129,9 +129,18 @@ export class EventosService {
       `Bearer ${localStorage.getItem('token')}`
     );
     return this._http.post<any>(
-      `${this.url}api/ActividadesEvento/create?idevento=${idEvento}&idactividad=${idActividad}`,
+      `${this.url}api/ActividadesEvento/create/${idEvento}/${idActividad}`,
       null,
       { headers: header }
     );
   }
+
+  deleteEvento(idEvento:number): Observable<any>{
+    let header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.delete<any>(`${this.url}api/eventos/${idEvento}`, {headers: header});
+  }
+    
 }

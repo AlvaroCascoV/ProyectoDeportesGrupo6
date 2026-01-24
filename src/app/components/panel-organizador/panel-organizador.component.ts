@@ -19,13 +19,18 @@ export class PanelOrganizadorComponent implements OnInit {
   // Estados para modales
   public mostrarModalEvento = false;
   public mostrarModalActividad = false;
-
+  public mostrarModalDeleteEvento = false;
+  public mostrarModalDeleteActividad = false;
+  public eventos: Evento[] = [];
+  public idEventoAEliminar!: number;
+  public idActividadAEliminar!: number;
   // Datos para formulario de evento
   public nuevoEvento = {
     fechaEvento: '',
   };
   public actividades: Actividad[] = [];
   public actividadesSeleccionadas: Actividad[] = [];
+  public preciosActividades: { [key: number]: number } = {};
 
   // Datos para formulario de actividad
   public nuevaActividad = {
@@ -43,6 +48,9 @@ export class PanelOrganizadorComponent implements OnInit {
       this.actividades = response;
       console.log('Actividades:', this.actividades);
     });
+    this._servicioEventos.getEventos().subscribe(response => {
+      this.eventos = response;
+    })
   }
 
   // ====== MÉTODOS PARA MODAL DE EVENTO ======
@@ -54,6 +62,7 @@ export class PanelOrganizadorComponent implements OnInit {
     this.mostrarModalEvento = false;
     this.nuevoEvento = { fechaEvento: '' };
     this.actividadesSeleccionadas = [];
+    this.preciosActividades = {};
   }
 
   crearEvento(): void {
@@ -139,6 +148,24 @@ export class PanelOrganizadorComponent implements OnInit {
               .subscribe({
                 next: (response) => {
                   console.log(response);
+                  // Obtener el idEventoActividad de la respuesta
+                  const idEventoActividad = response.idEventoActividad || response.id;
+                  // Obtener el precio de la actividad
+                  const precio = this.preciosActividades[act.idActividad] || 0;
+                  // Insertar el precio de la actividad si se ha definido
+                  if (idEventoActividad && precio > 0) {
+                    this._servicioActividades
+                      .insertarPrecioActividad(precio, idEventoActividad)
+                      .subscribe({
+                        next: (precioResponse) => {
+                          console.log("Precio: "+precioResponse);
+                          console.log('Precio insertado:', precioResponse);
+                        },
+                        error: (error) => {
+                          console.error('Error al insertar precio:', error);
+                        },
+                      });
+                  }
                 },
                 error: (error) => {
                   console.error('Error al insertar actividad:', error);
@@ -164,6 +191,7 @@ export class PanelOrganizadorComponent implements OnInit {
                 }).then(() => {
                   this.cerrarModalEvento();
                   this.actividadesSeleccionadas = [];
+                  this.preciosActividades = {};
                 });
               },
               error: () => {
@@ -177,6 +205,7 @@ export class PanelOrganizadorComponent implements OnInit {
                 }).then(() => {
                   this.cerrarModalEvento();
                   this.actividadesSeleccionadas = [];
+                  this.preciosActividades = {};
                 });
               },
             });
@@ -190,8 +219,13 @@ export class PanelOrganizadorComponent implements OnInit {
             confirmButtonText: 'Aceptar',
             confirmButtonColor: '#3085d6',
           }).then(() => {
-            this.cerrarModalEvento();
+            
+            this._servicioEventos.getEventos().subscribe(response => {
+              this.eventos = response;
+              this.cerrarModalEvento();
+            })
             this.actividadesSeleccionadas = [];
+            this.preciosActividades = {};
           });
         }
       },
@@ -221,7 +255,15 @@ export class PanelOrganizadorComponent implements OnInit {
       this.actividadesSeleccionadas = this.actividadesSeleccionadas.filter(
         (a) => a.idActividad !== actividad.idActividad
       );
+      // Limpiar el precio cuando se deselecciona
+      delete this.preciosActividades[actividad.idActividad];
     }
+  }
+
+  actividadEstaPrecioSeleccionada(idActividad: number): boolean {
+    return this.actividadesSeleccionadas.some(
+      (a) => a.idActividad === idActividad
+    );
   }
 
   // ====== MÉTODOS PARA MODAL DE ACTIVIDAD ======
@@ -291,4 +333,116 @@ export class PanelOrganizadorComponent implements OnInit {
       },
     });
   }
+
+  formatearFecha(fecha: string): string {
+    let fechaEvento = new Date(fecha);
+    const dia = String(fechaEvento.getDate()).padStart(2, '0');
+    const mes = String(fechaEvento.getMonth() + 1).padStart(2, '0');
+    const anio = fechaEvento.getFullYear();
+    const fechaFormateada = `${dia}/${mes}/${anio}`;
+    return fechaFormateada;
+  }
+  abrirModalDeleteEvento(){
+    this.mostrarModalDeleteEvento = true;
+    this._servicioEventos.getEventos().subscribe(response => {
+      this.eventos = response
+    })
+  }
+  cerrarModalDeleteEvento(){
+    this.mostrarModalDeleteEvento = false;
+    this.idEventoAEliminar = 0;
+  }
+  deleteEvento(){
+
+    Swal.fire({
+          title: '¿Estás seguro?',
+          text: 'Esta acción no se podrá deshacer...',
+          icon: 'question',
+          cancelButtonText: 'Cancelar',
+          cancelButtonColor: '#595d60',
+          confirmButtonText: 'Eliminar',
+          confirmButtonColor: '#c60000',
+        }).then(() => {
+          
+          this._servicioEventos.deleteEvento(this.idEventoAEliminar).subscribe({
+            next: (response) => {
+              
+              Swal.fire({
+                title: 'Evento Eliminado!',
+                text: 'El evento se ha eliminado correctamente',
+                icon: 'success',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#3085d6',
+              }).then(() => {
+                this.cerrarModalDeleteEvento();
+                // Recargar eventos
+                this._servicioEventos.getEventos().subscribe(response => {
+                  this.eventos = response;
+                })
+              });
+            },
+            error: (response) => {
+              console.log(response)
+              Swal.fire({
+                title: 'Error',
+                text: 'No se pudo eliminar el evento. Por favor, intenta nuevamente',
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#d33',
+              });
+            },
+          })
+        });
+      }
+
+  abrirModalDeleteActividad(){
+    this.mostrarModalDeleteActividad = true;
+  }
+  cerrarModalDeleteActividad(){
+    this.mostrarModalDeleteActividad = false;
+    this.idActividadAEliminar = 0;
+  }
+  deleteActividad(){
+
+    Swal.fire({
+          title: '¿Estás seguro?',
+          text: 'Esta acción no se podrá deshacer...',
+          icon: 'question',
+          cancelButtonText: 'Cancelar',
+          cancelButtonColor: '#595d60',
+          confirmButtonText: 'Eliminar',
+          confirmButtonColor: '#c60000',
+        }).then(() => {
+          
+          this._servicioActividades.deleteActividad(this.idActividadAEliminar).subscribe({
+            next: (response) => {
+              
+              Swal.fire({
+                title: 'Actividad Eliminada!',
+                text: 'La actividad se ha eliminado correctamente',
+                icon: 'success',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#3085d6',
+              }).then(() => {
+                this.cerrarModalDeleteActividad();
+                // Recargar actividades
+                this._servicioActividades.getActividades().subscribe(response => {
+                  this.actividades = response;
+                })
+              });
+            },
+            error: (response) => {
+              console.log(response)
+              Swal.fire({
+                title: 'Error',
+                text: 'No se pudo eliminar la actividad. Por favor, intenta nuevamente',
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+                confirmButtonColor: '#d33',
+              });
+            },
+          })
+        });
+      }
+      
 }

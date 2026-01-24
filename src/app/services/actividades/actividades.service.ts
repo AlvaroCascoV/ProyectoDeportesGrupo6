@@ -31,7 +31,12 @@ export class ActividadesService {
   }
 
   getPrecioActividades(idPrecioActividad: number): Observable<any>{
-    return this._http.get<any>(`${this.url}api/precioactividades/${idPrecioActividad}`);
+    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
+    return this._http.get<any>(`${this.url}api/precioactividades/${idPrecioActividad}`, {headers: header});
   }
   
+  deleteActividad(idActividad:number): Observable<any>{
+    let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
+    return this._http.get<any>(`${this.url}api/actividades/${idActividad}`, {headers: header});
+  }
 }
