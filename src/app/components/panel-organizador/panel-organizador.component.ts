@@ -408,40 +408,42 @@ export class PanelOrganizadorComponent implements OnInit {
           title: '¿Estás seguro?',
           text: 'Esta acción no se podrá deshacer...',
           icon: 'question',
+          showCancelButton: true,
           cancelButtonText: 'Cancelar',
           cancelButtonColor: '#595d60',
           confirmButtonText: 'Eliminar',
           confirmButtonColor: '#c60000',
-        }).then(() => {
-          
-          this._servicioActividades.deleteActividad(this.idActividadAEliminar).subscribe({
-            next: (response) => {
-              
-              Swal.fire({
-                title: 'Actividad Eliminada!',
-                text: 'La actividad se ha eliminado correctamente',
-                icon: 'success',
-                confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#3085d6',
-              }).then(() => {
-                this.cerrarModalDeleteActividad();
-                // Recargar actividades
-                this._servicioActividades.getActividades().subscribe(response => {
-                  this.actividades = response;
-                })
-              });
-            },
-            error: (response) => {
-              console.log(response)
-              Swal.fire({
-                title: 'Error',
-                text: 'No se pudo eliminar la actividad. Por favor, intenta nuevamente',
-                icon: 'error',
-                confirmButtonText: 'Aceptar',
-                confirmButtonColor: '#d33',
-              });
-            },
-          })
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this._servicioActividades.deleteActividad(this.idActividadAEliminar).subscribe({
+              next: (response) => {
+                
+                Swal.fire({
+                  title: 'Actividad Eliminada!',
+                  text: 'La actividad se ha eliminado correctamente',
+                  icon: 'success',
+                  confirmButtonText: 'Aceptar',
+                  confirmButtonColor: '#3085d6',
+                }).then(() => {
+                  this.cerrarModalDeleteActividad();
+                  // Recargar actividades
+                  this._servicioActividades.getActividades().subscribe(response => {
+                    this.actividades = response;
+                  })
+                });
+              },
+              error: (response) => {
+                console.log(response)
+                Swal.fire({
+                  title: 'Error',
+                  text: 'No se pudo eliminar la actividad. Por favor, intenta nuevamente',
+                  icon: 'error',
+                  confirmButtonText: 'Aceptar',
+                  confirmButtonColor: '#d33',
+                });
+              },
+            })
+          }
         });
       }
       
