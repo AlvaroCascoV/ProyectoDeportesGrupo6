@@ -37,6 +37,6 @@ export class ActividadesService {
   
   deleteActividad(idActividad:number): Observable<any>{
     let header = new HttpHeaders().set("Authorization", `Bearer ${localStorage.getItem("token")}`)
-    return this._http.get<any>(`${this.url}api/actividades/${idActividad}`, {headers: header});
+    return this._http.delete<any>(`${this.url}api/actividades/${idActividad}`, {headers: header});
   }
 }
