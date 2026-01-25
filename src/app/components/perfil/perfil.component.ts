@@ -99,6 +99,9 @@ export class PerfilComponent implements OnInit {
       this._servicioCapitanes.getCapitanByEventoActividad(inscripcion.idEventoActividad)
     );
 
+    if (requests.length === 0) {
+      return;
+    }
     forkJoin(requests).subscribe({
       next: (capitanes) => {
         capitanes.forEach((capitan, index) => {
