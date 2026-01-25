@@ -232,19 +232,35 @@
         </div>
 
         <!-- Estado de Capitanía -->
-        <div
-          class="flex items-center justify-between p-3 bg-linear-to-r from-orange-50 to-amber-50 rounded-lg border-l-4 border-orange-400"
-        >
-          <span class="text-sm font-semibold text-gray-700">Capitán:</span>
-          <span
-            class="px-3 py-1 rounded-full text-xs font-bold"
-            [class.bg-green-200]="inscripcion.quiereSerCapitan"
-            [class.text-green-800]="inscripcion.quiereSerCapitan"
-            [class.bg-gray-200]="!inscripcion.quiereSerCapitan"
-            [class.text-gray-800]="!inscripcion.quiereSerCapitan"
+        <div class="space-y-2">
+          <div
+            class="flex items-center justify-between p-3 bg-linear-to-r from-orange-50 to-amber-50 rounded-lg border-l-4 border-orange-400"
           >
-            {{ inscripcion.quiereSerCapitan ? "Sí" : "No" }}
-          </span>
+            <span class="text-sm font-semibold text-gray-700">Quiere ser capitán:</span>
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold"
+              [class.bg-green-200]="inscripcion.quiereSerCapitan"
+              [class.text-green-800]="inscripcion.quiereSerCapitan"
+              [class.bg-gray-200]="!inscripcion.quiereSerCapitan"
+              [class.text-gray-800]="!inscripcion.quiereSerCapitan"
+            >
+              {{ inscripcion.quiereSerCapitan ? "Sí" : "No" }}
+            </span>
+          </div>
+          <div
+            class="flex items-center justify-between p-3 bg-linear-to-r from-blue-50 to-indigo-50 rounded-lg border-l-4 border-blue-400"
+          >
+            <span class="text-sm font-semibold text-gray-700">Es capitán:</span>
+            <span
+              class="px-3 py-1 rounded-full text-xs font-bold"
+              [class.bg-green-200]="esCapitanActividad(inscripcion.idEventoActividad)"
+              [class.text-green-800]="esCapitanActividad(inscripcion.idEventoActividad)"
+              [class.bg-gray-200]="!esCapitanActividad(inscripcion.idEventoActividad)"
+              [class.text-gray-800]="!esCapitanActividad(inscripcion.idEventoActividad)"
+            >
+              {{ esCapitanActividad(inscripcion.idEventoActividad) ? "Sí" : "No" }}
+            </span>
+          </div>
         </div>
       </div>
       }

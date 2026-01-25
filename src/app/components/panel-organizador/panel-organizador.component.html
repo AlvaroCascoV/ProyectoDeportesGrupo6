@@ -41,6 +41,15 @@
       </svg>
       Eliminar Actividad
     </button>
+    <button
+      (click)="abrirModalCapitanes()"
+      class="bg-purple-400 text-black px-8 py-4 rounded-lg hover:bg-purple-500 cursor-pointer font-semibold text-lg transition-colors flex items-center justify-center gap-2"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+      </svg>
+      Gestión de Capitanes
+    </button>
   </div>
 
   <!-- Modal para crear evento -->
@@ -348,5 +357,229 @@
         </form>
       </div>
     </div>
+  }
+
+  <!-- Modal para gestión de capitanes -->
+  @if (mostrarModalCapitanes) {
+  <div
+    class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+    (click)="cerrarModalCapitanes()"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl mx-4 relative z-10 border border-gray-200 max-h-[90vh] overflow-y-auto"
+      (click)="$event.stopPropagation()"
+      style="background-color: white"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">Gestión de Capitanes</h2>
+        <button
+          (click)="cerrarModalCapitanes()"
+          class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <p class="text-sm text-blue-800">
+          <strong>Nota:</strong> Se muestran todas las actividades con su número de jugadores registrados.
+        </p>
+      </div>
+
+      @if (cargandoCapitanes) {
+      <div class="flex items-center justify-center py-8">
+        <div class="loader-small mr-2"></div>
+        <span class="text-gray-600">Cargando actividades...</span>
+      </div>
+      } @else if (actividadesConMinimo.length === 0) {
+      <div class="text-center py-8">
+        <p class="text-gray-600">No hay actividades disponibles.</p>
+      </div>
+      } @else {
+      <div class="space-y-4">
+        @for (actividad of actividadesConMinimo; track actividad.idEventoActividad) {
+        <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-800">
+                {{ actividad.nombreActividad }}
+              </h3>
+              <div class="flex items-center gap-4 mt-1">
+                <p class="text-sm text-gray-600">
+                  Evento #{{ actividad.idEvento }}
+                </p>
+                <p class="text-sm font-semibold" 
+                   [class.text-green-600]="tieneMinimoJugadores(actividad) && !estaCargandoJugadores(actividad.idEventoActividad)"
+                   [class.text-red-600]="!tieneMinimoJugadores(actividad) && !estaCargandoJugadores(actividad.idEventoActividad)"
+                   [class.text-gray-500]="estaCargandoJugadores(actividad.idEventoActividad)">
+                  @if (estaCargandoJugadores(actividad.idEventoActividad)) {
+                    <span class="italic">Cargando jugadores...</span>
+                  } @else {
+                    Jugadores: {{ getJugadoresCount(actividad.idEventoActividad) }} / {{ actividad.minimoJugadores }}
+                  }
+                </p>
+              </div>
+            </div>
+            <div class="flex flex-col gap-2 items-end">
+              @if (estaCargandoJugadores(actividad.idEventoActividad)) {
+              <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">
+                Cargando...
+              </span>
+              } @else if (tieneMinimoJugadores(actividad)) {
+              <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                ✓ Mínimo alcanzado
+              </span>
+              } @else {
+              <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
+                ⚠ Faltan jugadores
+              </span>
+              }
+              @if (tieneCapitan(actividad.idEventoActividad)) {
+              <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                ✓ Tiene capitán
+              </span>
+              } @else {
+              <span class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-semibold">
+                Sin capitán
+              </span>
+              }
+            </div>
+          </div>
+
+          @if (tieneCapitan(actividad.idEventoActividad)) {
+          <div class="mb-3 p-2 bg-green-50 border border-green-200 rounded">
+            <p class="text-sm text-gray-700">
+              <span class="font-semibold">Capitán actual:</span>
+              <span class="ml-2">{{ getCapitanNombre(actividad.idEventoActividad) }}</span>
+            </p>
+          </div>
+          }
+
+          <div class="flex flex-wrap gap-2">
+            <button
+              (click)="seleccionarCapitanAleatorio(actividad)"
+              [disabled]="!tieneMinimoJugadores(actividad)"
+              [class.opacity-50]="!tieneMinimoJugadores(actividad)"
+              [class.cursor-not-allowed]="!tieneMinimoJugadores(actividad)"
+              class="bg-blue-400 text-black px-4 py-2 rounded hover:bg-blue-500 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Seleccionar Aleatorio
+            </button>
+            <button
+              (click)="abrirModalAsignarCapitan(actividad)"
+              [disabled]="!tieneMinimoJugadores(actividad)"
+              [class.opacity-50]="!tieneMinimoJugadores(actividad)"
+              [class.cursor-not-allowed]="!tieneMinimoJugadores(actividad)"
+              class="bg-green-400 text-black px-4 py-2 rounded hover:bg-green-500 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Asignar Manualmente
+            </button>
+            @if (tieneCapitan(actividad.idEventoActividad)) {
+            <button
+              (click)="eliminarCapitan(actividad)"
+              class="bg-red-400 text-black px-4 py-2 rounded hover:bg-red-500 font-semibold text-sm"
+            >
+              Eliminar Capitán
+            </button>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Modal para asignar capitán manualmente -->
+  @if (mostrarModalAsignarCapitan && actividadSeleccionadaParaCapitan) {
+  <div
+    class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+    (click)="cerrarModalAsignarCapitan()"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200 max-h-[80vh] overflow-y-auto"
+      (click)="$event.stopPropagation()"
+      style="background-color: white"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-gray-800">Asignar Capitán</h2>
+        <button
+          (click)="cerrarModalAsignarCapitan()"
+          class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="mb-4">
+        <p class="text-sm text-gray-700 mb-3">
+          <strong>Actividad:</strong> {{ actividadSeleccionadaParaCapitan.nombreActividad }}
+        </p>
+        <p class="text-sm text-gray-600 mb-4">
+          Selecciona un usuario para asignar como capitán:
+        </p>
+      </div>
+
+      @if (cargandoUsuarios) {
+      <div class="flex items-center justify-center py-8">
+        <div class="loader-small mr-2"></div>
+        <span class="text-gray-600">Cargando usuarios...</span>
+      </div>
+      } @else if (usuariosDisponibles.length === 0) {
+      <div class="text-center py-4">
+        <p class="text-gray-600">No hay usuarios registrados para esta actividad.</p>
+        <p class="text-xs text-gray-500 mt-2">
+          Evento: {{ actividadSeleccionadaParaCapitan.idEvento }}, 
+          Actividad: {{ actividadSeleccionadaParaCapitan.idActividad }}
+        </p>
+      </div>
+      } @else {
+      <div class="space-y-2 max-h-64 overflow-y-auto">
+        @for (usuario of usuariosDisponibles; track usuario.idUsuario) {
+        @if (actividadSeleccionadaParaCapitan && tieneCapitan(actividadSeleccionadaParaCapitan.idEventoActividad)) {
+          @if (capitanesActividades.get(actividadSeleccionadaParaCapitan.idEventoActividad)?.idUsuario === usuario.idUsuario) {
+          <div class="w-full text-left p-3 bg-green-50 border-2 border-green-300 rounded-lg">
+            <p class="font-semibold text-green-800">
+              {{ getUsuarioNombre(usuario) }} (Capitán actual)
+            </p>
+            <p class="text-xs text-green-600">{{ usuario.email }}</p>
+          </div>
+          } @else {
+          <button
+            (click)="asignarCapitanManual(usuario)"
+            class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors"
+          >
+            <p class="font-semibold text-gray-800">
+              {{ getUsuarioNombre(usuario) }}
+            </p>
+            <p class="text-xs text-gray-600">{{ usuario.email }}</p>
+          </button>
+          }
+        } @else {
+        <button
+          (click)="asignarCapitanManual(usuario)"
+          class="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg transition-colors"
+        >
+          <p class="font-semibold text-gray-800">
+            {{ getUsuarioNombre(usuario) }}
+          </p>
+          <p class="text-xs text-gray-600">{{ usuario.email }}</p>
+        </button>
+        }
+        }
+      </div>
+      }
+
+      <div class="mt-4">
+        <button
+          (click)="cerrarModalAsignarCapitan()"
+          class="w-full bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 font-semibold"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
   }
 </div>

@@ -22,6 +22,7 @@ export class InscripcionComponent implements OnInit {
 
   public actividadSeleccionada: ActividadesEvento | null = null;
   public actividadEsPorEquipos: boolean = false;
+  public quiereSerCapitan: boolean = false;
 
   constructor(
     private _servicioEventos: EventosService,
@@ -107,8 +108,7 @@ export class InscripcionComponent implements OnInit {
       idInscripcion: 0,
       idUsuario,
       idEventoActividad: this.idEventoActividad,
-      // Captains are handled elsewhere; not needed here now.
-      quiereSerCapitan: false,
+      quiereSerCapitan: this.quiereSerCapitan,
       fechaInscripcion: new Date(),
     };
 
