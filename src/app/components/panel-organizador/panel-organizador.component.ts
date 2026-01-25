@@ -710,15 +710,8 @@ export class PanelOrganizadorComponent implements OnInit {
       );
       
       if (capitan) {
+        // Update cached captain details for this activity
         this.capitanesActividades.set(idEventoActividad, capitan);
-        // Get the idCapitanActividad
-        const todos = await firstValueFrom(
-          this._servicioCapitanes.getAllCapitanActividades()
-        );
-        const encontrado = todos.find(c => c.idEventoActividad === idEventoActividad);
-        if (encontrado) {
-          this.capitanesIds.set(idEventoActividad, encontrado.idCapitanActividad);
-        }
       } else {
         // Remove if no longer captain
         this.capitanesActividades.delete(idEventoActividad);
