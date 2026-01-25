@@ -885,18 +885,31 @@ export class PanelOrganizadorComponent implements OnInit {
       });
   }
 
+  private async verificarMinimoJugadoresYMostrarAlerta(
+    actividad: ActividadesEvento
+  ): Promise<boolean> {
+    if (this.tieneMinimoJugadores(actividad)) {
+      return true;
+    }
+
+    await Swal.fire({
+      title: 'Mínimo no alcanzado',
+      text: `Esta actividad necesita ${actividad.minimoJugadores} jugadores. Actualmente tiene ${this.getJugadoresCount(actividad.idEventoActividad)}.`,
+      icon: 'warning',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#ff9800',
+    });
+
+    return false;
+  }
+
   async asignarCapitanManual(usuario: Alumno): Promise<void> {
     if (!this.actividadSeleccionadaParaCapitan) return;
 
-    // Check if minimum players is met
-    if (!this.tieneMinimoJugadores(this.actividadSeleccionadaParaCapitan)) {
-      await Swal.fire({
-        title: 'Mínimo no alcanzado',
-        text: `Esta actividad necesita ${this.actividadSeleccionadaParaCapitan.minimoJugadores} jugadores. Actualmente tiene ${this.getJugadoresCount(this.actividadSeleccionadaParaCapitan.idEventoActividad)}.`,
-        icon: 'warning',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#ff9800',
-      });
+    const minimoAlcanzado = await this.verificarMinimoJugadoresYMostrarAlerta(
+      this.actividadSeleccionadaParaCapitan
+    );
+    if (!minimoAlcanzado) {
       return;
     }
 
