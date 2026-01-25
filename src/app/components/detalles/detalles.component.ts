@@ -142,6 +142,9 @@ export class DetallesComponent implements OnInit, OnChanges {
       this._servicioCapitanes.getCapitanByEventoActividad(actividad.idEventoActividad)
     );
 
+    if (requests.length === 0) {
+      return;
+    }
     forkJoin(requests).subscribe({
       next: (capitanes) => {
         capitanes.forEach((capitan, index) => {
