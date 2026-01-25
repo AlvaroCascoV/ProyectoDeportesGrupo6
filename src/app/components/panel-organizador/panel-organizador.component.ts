@@ -773,41 +773,19 @@ export class PanelOrganizadorComponent implements OnInit {
       const randomIndex = Math.floor(Math.random() * candidatos.length);
       const selectedUser = candidatos[randomIndex];
 
+      const userName = (selectedUser as any).usuario || selectedUser.nombre || 'Usuario';
+
       // Check if this user is already the captain
-      const currentCaptain = this.capitanesActividades.get(actividad.idEventoActividad);
-      
-      if (currentCaptain && currentCaptain.idUsuario === selectedUser.idUsuario) {
-        await Swal.fire({
-          title: 'Ya es capitán',
-          text: `${(selectedUser as any).usuario || selectedUser.nombre || 'Usuario'} ya es el capitán de esta actividad.`,
-          icon: 'info',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#3085d6',
-        });
+      if (await this.checkIfUserIsAlreadyCaptain(actividad.idEventoActividad, selectedUser.idUsuario, userName)) {
         return;
       }
 
       // Check if captain already exists and ask for confirmation to change
-      const existingId = this.capitanesIds.get(actividad.idEventoActividad);
-      
-      if (existingId && currentCaptain) {
-        const result = await Swal.fire({
-          title: '¿Cambiar capitán?',
-          html: `El capitán actual es <strong>${this.getCapitanNombre(actividad.idEventoActividad)}</strong>.<br>
-                 ¿Deseas cambiarlo por <strong>${(selectedUser as any).usuario || selectedUser.nombre || 'Usuario'}</strong>?`,
-          icon: 'question',
-          showCancelButton: true,
-          cancelButtonText: 'Cancelar',
-          cancelButtonColor: '#595d60',
-          confirmButtonText: 'Sí, cambiar',
-          confirmButtonColor: '#3085d6',
-        });
-
-        if (!result.isConfirmed) {
-          return;
-        }
+      if (!await this.confirmCaptainChange(actividad.idEventoActividad, userName)) {
+        return;
       }
       
+      const existingId = this.capitanesIds.get(actividad.idEventoActividad);
       const capitan: CapitanActividad = {
         idCapitanActividad: existingId || 0,
         idEventoActividad: actividad.idEventoActividad,
@@ -900,46 +878,29 @@ export class PanelOrganizadorComponent implements OnInit {
       return;
     }
 
+    const userName = this.getUsuarioNombre(usuario);
+
     // Check if this user is already the captain
-    const currentCaptain = this.capitanesActividades.get(
-      this.actividadSeleccionadaParaCapitan.idEventoActividad
-    );
-    
-    if (currentCaptain && currentCaptain.idUsuario === usuario.idUsuario) {
-      await Swal.fire({
-        title: 'Ya es capitán',
-        text: `${this.getUsuarioNombre(usuario)} ya es el capitán de esta actividad.`,
-        icon: 'info',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#3085d6',
-      });
+    if (await this.checkIfUserIsAlreadyCaptain(
+      this.actividadSeleccionadaParaCapitan.idEventoActividad,
+      usuario.idUsuario,
+      userName
+    )) {
       return;
     }
 
     // If there's already a captain, ask for confirmation to change
-    const existingId = this.capitanesIds.get(
-      this.actividadSeleccionadaParaCapitan.idEventoActividad
-    );
-
-    if (existingId && currentCaptain) {
-      const result = await Swal.fire({
-        title: '¿Cambiar capitán?',
-        html: `El capitán actual es <strong>${this.getCapitanNombre(this.actividadSeleccionadaParaCapitan.idEventoActividad)}</strong>.<br>
-               ¿Deseas cambiarlo por <strong>${this.getUsuarioNombre(usuario)}</strong>?`,
-        icon: 'question',
-        showCancelButton: true,
-        cancelButtonText: 'Cancelar',
-        cancelButtonColor: '#595d60',
-        confirmButtonText: 'Sí, cambiar',
-        confirmButtonColor: '#3085d6',
-      });
-
-      if (!result.isConfirmed) {
-        return;
-      }
+    if (!await this.confirmCaptainChange(
+      this.actividadSeleccionadaParaCapitan.idEventoActividad,
+      userName
+    )) {
+      return;
     }
 
     try {
+      const existingId = this.capitanesIds.get(
+        this.actividadSeleccionadaParaCapitan.idEventoActividad
+      );
       const capitan: CapitanActividad = {
         idCapitanActividad: existingId || 0,
         idEventoActividad: this.actividadSeleccionadaParaCapitan.idEventoActividad,
@@ -1033,6 +994,62 @@ export class PanelOrganizadorComponent implements OnInit {
 
   getUsuarioNombre(usuario: Alumno): string {
     return (usuario as any).usuario || usuario.nombre || 'Usuario';
+  }
+
+  /**
+   * Checks if a user is already the captain of an activity.
+   * Shows an info dialog if they are.
+   * @returns true if user is already captain, false otherwise
+   */
+  private async checkIfUserIsAlreadyCaptain(
+    idEventoActividad: number,
+    idUsuario: number,
+    userName: string
+  ): Promise<boolean> {
+    const currentCaptain = this.capitanesActividades.get(idEventoActividad);
+    
+    if (currentCaptain && currentCaptain.idUsuario === idUsuario) {
+      await Swal.fire({
+        title: 'Ya es capitán',
+        text: `${userName} ya es el capitán de esta actividad.`,
+        icon: 'info',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6',
+      });
+      return true;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Asks for confirmation to change the current captain.
+   * @returns true if user confirmed the change, false otherwise
+   */
+  private async confirmCaptainChange(
+    idEventoActividad: number,
+    newCaptainName: string
+  ): Promise<boolean> {
+    const existingId = this.capitanesIds.get(idEventoActividad);
+    const currentCaptain = this.capitanesActividades.get(idEventoActividad);
+    
+    if (existingId && currentCaptain) {
+      const result = await Swal.fire({
+        title: '¿Cambiar capitán?',
+        html: `El capitán actual es <strong>${this.getCapitanNombre(idEventoActividad)}</strong>.<br>
+               ¿Deseas cambiarlo por <strong>${newCaptainName}</strong>?`,
+        icon: 'question',
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar',
+        cancelButtonColor: '#595d60',
+        confirmButtonText: 'Sí, cambiar',
+        confirmButtonColor: '#3085d6',
+      });
+
+      return result.isConfirmed;
+    }
+    
+    return true; // No existing captain, so proceed
   }
 
   getJugadoresCount(idEventoActividad: number): number | null {
