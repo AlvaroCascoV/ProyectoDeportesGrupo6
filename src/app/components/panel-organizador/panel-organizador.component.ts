@@ -880,7 +880,14 @@ export class PanelOrganizadorComponent implements OnInit {
           console.error('Error loading users:', error);
           this.usuariosDisponibles = [];
           this.cargandoUsuarios = false;
-          this._cdr.detectChanges();
+          Swal.fire({
+            title: 'Error al cargar usuarios',
+            text: 'No se pudo cargar la lista de usuarios disponibles. Por favor, inténtalo de nuevo más tarde.',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+          }).finally(() => {
+            this._cdr.detectChanges();
+          });
         },
       });
   }
