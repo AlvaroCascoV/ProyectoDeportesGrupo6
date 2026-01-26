@@ -278,16 +278,22 @@ export class GestionCapitanesComponent implements OnInit {
         if (capitan) {
           this.capitanesActividades.set(idEventoActividad, capitan);
         } else {
-          // Eliminar si ya no es capitán
+          // Eliminar si ya no es capitán (204 o 404)
           this.capitanesActividades.delete(idEventoActividad);
           this.capitanesIds.delete(idEventoActividad);
         }
         this._cdr.detectChanges();
       },
-      error: () => {
-        // Si hay error (como 204), eliminar capitán
-        this.capitanesActividades.delete(idEventoActividad);
-        this.capitanesIds.delete(idEventoActividad);
+      error: (error: any) => {
+        const status = error?.status;
+        // Solo eliminar si es un código que indica que no existe (204, 404)
+        // No eliminar en caso de errores de red/CORS (status === 0) o errores sin status
+        if (status === 204 || status === 404) {
+          this.capitanesActividades.delete(idEventoActividad);
+          this.capitanesIds.delete(idEventoActividad);
+        }
+        // Si es error de red (status === 0) o error sin status, no hacer nada
+        // para no perder datos en caso de problemas de conexión temporales
         this._cdr.detectChanges();
       },
     });
@@ -467,33 +473,15 @@ export class GestionCapitanesComponent implements OnInit {
       this.cambiosRealizados.emit();
     } catch (error: any) {
       console.error('Error al asignar capitán:', error);
-      // Solo mostrar error si es un error real (status >= 400)
-      // Si el status es 2xx, la operación fue exitosa (puede ser un problema de parseo JSON)
-      if (error?.status && error.status >= 400) {
-        const errorMessage = error?.error?.message || error?.message || 'No se pudo asignar el capitán';
-        await Swal.fire({
-          title: 'Error',
-          text: errorMessage,
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#d33',
-        });
-      } else if (selectedUser && selectedUserName) {
-        // Si es 2xx y tenemos los datos del usuario, la operación fue exitosa
-        await Swal.fire({
-          title: '¡Capitán Asignado!',
-          text: `Se ha asignado ${selectedUserName} como capitán`,
-          icon: 'success',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#3085d6',
-        });
-        // Actualizar detalles del capitán inmediatamente desde el usuario seleccionado
-        this.capitanesActividades.set(actividad.idEventoActividad, selectedUser as any);
-        // Refrescar detalles del capitán en segundo plano para asegurar consistencia
-        this.refrescarCapitanActividad(actividad.idEventoActividad);
-        this.cambiosRealizados.emit();
-      }
-      // Si es 2xx pero no tenemos los datos del usuario, no hacer nada (ya se manejó en el servicio)
+      // Si llegamos aquí, es un error real (guardarCapitan ya filtra los 2xx)
+      const errorMessage = error?.error?.message || error?.message || 'No se pudo asignar el capitán';
+      await Swal.fire({
+        title: 'Error',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#d33',
+      });
     }
   }
 
@@ -532,18 +520,27 @@ export class GestionCapitanesComponent implements OnInit {
           this.cargandoUsuarios = false;
           this._cdr.detectChanges();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error loading users:', error);
+          const status = error?.status;
           this.usuariosDisponibles = [];
           this.cargandoUsuarios = false;
-          Swal.fire({
-            title: 'Error al cargar usuarios',
-            text: 'No se pudo cargar la lista de usuarios disponibles. Por favor, inténtalo de nuevo más tarde.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar',
-          }).finally(() => {
+          
+          // Solo mostrar error si es un error real (no 2xx)
+          // Errores de red/CORS (status === 0) o errores sin status también se muestran
+          if (status == null || status === 0 || status < 200 || status >= 300) {
+            Swal.fire({
+              title: 'Error al cargar usuarios',
+              text: 'No se pudo cargar la lista de usuarios disponibles. Por favor, inténtalo de nuevo más tarde.',
+              icon: 'error',
+              confirmButtonText: 'Aceptar',
+            }).finally(() => {
+              this._cdr.detectChanges();
+            });
+          } else {
+            // Si es 2xx, no mostrar error (aunque no debería llegar aquí normalmente)
             this._cdr.detectChanges();
-          });
+          }
         },
       });
   }
@@ -616,36 +613,15 @@ export class GestionCapitanesComponent implements OnInit {
       this.cerrarModalAsignarCapitan();
     } catch (error: any) {
       console.error('Error al asignar capitán manualmente:', error);
-      // Solo mostrar error si es un error real (status >= 400)
-      // Si el status es 2xx, la operación fue exitosa (puede ser un problema de parseo JSON)
-      if (error?.status && error.status >= 400) {
-        const errorMessage = error?.error?.message || error?.message || 'No se pudo asignar el capitán';
-        await Swal.fire({
-          title: 'Error',
-          text: errorMessage,
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#d33',
-        });
-      } else {
-        // Si es 2xx, la operación fue exitosa, mostrar mensaje de éxito
-        await Swal.fire({
-          title: '¡Capitán Asignado!',
-          text: `Se ha asignado ${usuarioNombre} como capitán`,
-          icon: 'success',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#3085d6',
-        });
-        // Actualizar detalles del capitán inmediatamente desde el usuario seleccionado
-        this.capitanesActividades.set(
-          this.actividadSeleccionadaParaCapitan.idEventoActividad,
-          usuario as any
-        );
-        // Refrescar detalles del capitán para asegurar consistencia (no bloqueante)
-        this.refrescarCapitanActividad(this.actividadSeleccionadaParaCapitan.idEventoActividad);
-        this.cambiosRealizados.emit();
-        this.cerrarModalAsignarCapitan();
-      }
+      // Si llegamos aquí, es un error real (guardarCapitan ya filtra los 2xx)
+      const errorMessage = error?.error?.message || error?.message || 'No se pudo asignar el capitán';
+      await Swal.fire({
+        title: 'Error',
+        text: errorMessage,
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#d33',
+      });
     }
   }
 
@@ -669,6 +645,11 @@ export class GestionCapitanesComponent implements OnInit {
         await firstValueFrom(
           this._servicioCapitanes.deleteCapitanActividad(idCapitanActividad)
         );
+        // Eliminar de los mapas inmediatamente
+        this.capitanesActividades.delete(actividad.idEventoActividad);
+        this.capitanesIds.delete(actividad.idEventoActividad);
+        this.cambiosRealizados.emit();
+        
         await Swal.fire({
           title: 'Capitán Eliminado',
           text: 'El capitán ha sido eliminado correctamente',
@@ -676,36 +657,17 @@ export class GestionCapitanesComponent implements OnInit {
           confirmButtonText: 'Aceptar',
           confirmButtonColor: '#3085d6',
         });
-        // Eliminar de los mapas inmediatamente
-        this.capitanesActividades.delete(actividad.idEventoActividad);
-        this.capitanesIds.delete(actividad.idEventoActividad);
-        this.cambiosRealizados.emit();
       } catch (error: any) {
         console.error('Error al eliminar capitán:', error);
-        // Solo mostrar error si es un error real (status >= 400)
-        // Si es 204 o 2xx, considerar éxito
-        if (error?.status && error.status >= 400) {
-          const errorMessage = error?.error?.message || error?.message || 'No se pudo eliminar el capitán';
-          await Swal.fire({
-            title: 'Error',
-            text: errorMessage,
-            icon: 'error',
-            confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#d33',
-          });
-        } else {
-          // Si es 204 o 2xx, considerar éxito y actualizar UI
-          this.capitanesActividades.delete(actividad.idEventoActividad);
-          this.capitanesIds.delete(actividad.idEventoActividad);
-          this.cambiosRealizados.emit();
-          await Swal.fire({
-            title: 'Capitán Eliminado',
-            text: 'El capitán ha sido eliminado correctamente',
-            icon: 'success',
-            confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#3085d6',
-          });
-        }
+        // Si llegamos aquí, es un error real (el servicio ya filtra los 2xx)
+        const errorMessage = error?.error?.message || error?.message || 'No se pudo eliminar el capitán';
+        await Swal.fire({
+          title: 'Error',
+          text: errorMessage,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33',
+        });
       }
     }
   }
