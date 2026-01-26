@@ -75,14 +75,9 @@ export class CapitanActividadesService {
       headers
     }).pipe(
       catchError((error: any) => {
-        // Si es 204 No Content o cualquier código 2xx, considerar éxito
-        // Esto puede ocurrir cuando la API devuelve éxito pero sin cuerpo o con error de parseo JSON
+        // Si es 204 No Content o cualquier código 2xx (incluyendo errores de parseo JSON), considerar éxito
         const status = error?.status || error?.error?.status;
         if (status === 204 || (status >= 200 && status < 300)) {
-          return of(capitan);
-        }
-        // Si es un error de parseo JSON pero el status es 2xx, también considerar éxito
-        if (error?.name === 'HttpErrorResponse' && status >= 200 && status < 300) {
           return of(capitan);
         }
         // Solo lanzar error si es un código de error real (>= 400)
