@@ -71,9 +71,24 @@ export class CapitanActividadesService {
       'Authorization': `Bearer ${localStorage.getItem('token')}`,
       'Content-Type': 'application/json'
     });
-    // Try with /create suffix first (matches pattern in codebase)
-    // If this doesn't work, user should confirm the exact endpoint
-    return this._http.post<CapitanActividad>(`${this.url}api/CapitanActividades/create`, capitan, { headers });
+    return this._http.post<CapitanActividad>(`${this.url}api/CapitanActividades/create`, capitan, { 
+      headers
+    }).pipe(
+      catchError((error: any) => {
+        // Si es 204 No Content o cualquier código 2xx, considerar éxito
+        // Esto puede ocurrir cuando la API devuelve éxito pero sin cuerpo o con error de parseo JSON
+        const status = error?.status || error?.error?.status;
+        if (status === 204 || (status >= 200 && status < 300)) {
+          return of(capitan);
+        }
+        // Si es un error de parseo JSON pero el status es 2xx, también considerar éxito
+        if (error?.name === 'HttpErrorResponse' && status >= 200 && status < 300) {
+          return of(capitan);
+        }
+        // Solo lanzar error si es un código de error real (>= 400)
+        throw error;
+      })
+    );
   }
 
   updateCapitanActividad(capitan: CapitanActividad): Observable<CapitanActividad> {
@@ -81,14 +96,42 @@ export class CapitanActividadesService {
       'Authorization': `Bearer ${localStorage.getItem('token')}`,
       'Content-Type': 'application/json'
     });
-    // Try with /update suffix (matches pattern in codebase like inscripciones/update)
-    return this._http.put<CapitanActividad>(`${this.url}api/CapitanActividades/update`, capitan, { headers });
+    return this._http.put<CapitanActividad>(`${this.url}api/CapitanActividades/update`, capitan, { 
+      headers
+    }).pipe(
+      catchError((error: any) => {
+        // Si es 204 No Content o cualquier código 2xx, considerar éxito
+        // Esto puede ocurrir cuando la API devuelve éxito pero sin cuerpo o con error de parseo JSON
+        const status = error?.status || error?.error?.status;
+        if (status === 204 || (status >= 200 && status < 300)) {
+          return of(capitan);
+        }
+        // Si es un error de parseo JSON pero el status es 2xx, también considerar éxito
+        if (error?.name === 'HttpErrorResponse' && status >= 200 && status < 300) {
+          return of(capitan);
+        }
+        // Solo lanzar error si es un código de error real (>= 400)
+        throw error;
+      })
+    );
   }
 
-  deleteCapitanActividad(idCapitanActividad: number): Observable<any> {
+  deleteCapitanActividad(idCapitanActividad: number): Observable<void> {
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     });
-    return this._http.delete<any>(`${this.url}api/CapitanActividades/${idCapitanActividad}`, { headers });
+    return this._http.delete<void>(`${this.url}api/CapitanActividades/${idCapitanActividad}`, { 
+      headers,
+      observe: 'response'
+    }).pipe(
+      map(() => undefined),
+      catchError(error => {
+        // Si es 204 o 200, considerar éxito
+        if (error.status === 204 || (error.status >= 200 && error.status < 300)) {
+          return of(undefined);
+        }
+        throw error;
+      })
+    );
   }
 }
