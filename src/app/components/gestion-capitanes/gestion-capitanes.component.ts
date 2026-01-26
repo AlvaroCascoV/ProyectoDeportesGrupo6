@@ -8,8 +8,7 @@ import { EventosService } from '../../services/eventos/eventos.service';
 import { CapitanActividadesService } from '../../services/capitan-actividades/capitan-actividades.service';
 import { InscripcionesService } from '../../services/inscripciones/inscripciones.service';
 import Swal from 'sweetalert2';
-import { forkJoin, firstValueFrom, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { forkJoin, firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-gestion-capitanes',
