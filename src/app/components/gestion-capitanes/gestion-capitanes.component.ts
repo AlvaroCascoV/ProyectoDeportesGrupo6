@@ -353,14 +353,19 @@ export class GestionCapitanesComponent implements OnInit {
         }
       }
     } catch (error: any) {
-      // Solo lanzar error si es un error real (status >= 400)
-      // El servicio ya maneja códigos 2xx como éxito, así que si llegamos aquí con un 2xx,
-      // puede ser un problema de parseo JSON que debemos ignorar
-      if (error?.status && error.status >= 400) {
+      // Solo ignorar errores cuando el status HTTP indica éxito (2xx/204),
+      // por ejemplo problemas de parseo JSON con una respuesta exitosa.
+      const status = error?.status;
+
+      // Considerar como error real:
+      // - Errores de red/CORS (status === 0)
+      // - Códigos fuera del rango 2xx (status < 200 o status >= 300)
+      // - Errores sin código de estado definido
+      if (status === 0 || status == null || status < 200 || status >= 300) {
         throw error;
       }
-      // Si es 204 o 2xx, la operación fue exitosa, no lanzar error
-      // Esto puede ocurrir si hay un problema de parseo JSON pero el status es exitoso
+      // Si es 204 o cualquier 2xx, asumimos que la operación fue exitosa
+      // y que cualquier problema es de parseo u otro no crítico.
     }
   }
 
