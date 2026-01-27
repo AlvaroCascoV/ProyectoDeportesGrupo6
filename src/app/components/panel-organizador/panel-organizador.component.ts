@@ -172,6 +172,9 @@ export class PanelOrganizadorComponent implements OnInit {
           let delayMs = 0;
           const incrementoDelay = 200; // 200 ms entre llamadas; ajustable si hace falta
 
+          // Activar el loader mientras se insertan las actividades
+          this.insertandoActividades = true;
+
           this.actividadesSeleccionadas.forEach((act) => {
             console.log('Programando inserción de actividad: ' + act.nombre);
             setTimeout(() => {
@@ -212,14 +215,13 @@ export class PanelOrganizadorComponent implements OnInit {
             }, delayMs);
 
             delayMs += incrementoDelay;
-          // Activar el loader
-          this.insertandoActividades = true;
-          // Procesar actividades secuencialmente con delay
-          this.insertarActividadesSecuencialmente(idEvento, 0, () => {
-            // Una vez terminadas todas las inserciones, asociar el profesor
+          });
+
+          // Cuando hayan pasado todos los delays, asociar el profesor y desactivar el loader
+          setTimeout(() => {
             this.insertandoActividades = false;
             this.asociarProfesorYFinalizar(idEvento, idProfesor);
-          });
+          }, delayMs + 500);
         } else {
           // Si no hay actividades, asociar el profesor directamente
           this.asociarProfesorYFinalizar(idEvento, idProfesor);
