@@ -25,7 +25,7 @@ export class EquiposService {
   }
 
   createEquipo(equipo: Equipo): Observable<Equipo> {
-    return this._http.post<Equipo>(`${this.url}api/equipos/create`, equipo, {
+    return this._http.post<Equipo>(`${this.url}api/Equipos/create`, equipo, {
       headers: this.getOptionalAuthHeaders(),
     });
   }
@@ -49,11 +49,19 @@ export class EquiposService {
     );
   }
 
+  joinEquipoNew(idEquipo: number): Observable<any>{
+    const header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.post<any>(`${this.url}api/UsuariosDeportes/ApuntarmeEquipo/${idEquipo}`, null, {headers: header});
+  }
+
   private getOptionalAuthHeaders(): HttpHeaders | undefined {
     const token = localStorage.getItem('token');
     if (!token) return undefined;
     return new HttpHeaders({
-      Authorization: `bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     });
   }
 }
