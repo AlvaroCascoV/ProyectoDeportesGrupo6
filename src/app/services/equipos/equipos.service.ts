@@ -25,7 +25,7 @@ export class EquiposService {
   }
 
   createEquipo(equipo: Equipo): Observable<Equipo> {
-    return this._http.post<Equipo>(`${this.url}api/equipos/create`, equipo, {
+    return this._http.post<Equipo>(`${this.url}api/Equipos/create`, equipo, {
       headers: this.getOptionalAuthHeaders(),
     });
   }
@@ -61,7 +61,7 @@ export class EquiposService {
     const token = localStorage.getItem('token');
     if (!token) return undefined;
     return new HttpHeaders({
-      Authorization: `bearer ${token}`,
+      Authorization: `Bearer ${token}`,
     });
   }
 }
