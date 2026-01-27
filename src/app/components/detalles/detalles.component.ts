@@ -13,6 +13,7 @@ import { Evento } from '../../models/Evento';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { InscripcionComponent } from '../inscripcion/inscripcion.component';
 import { EventosService } from '../../services/eventos/eventos.service';
+import { ProfesoresService } from '../../services/profesores/profesores.service';
 import { CapitanActividadesService } from '../../services/capitan-actividades/capitan-actividades.service';
 import { Alumno } from '../../models/Alumno';
 import Swal from 'sweetalert2';
@@ -44,6 +45,7 @@ export class DetallesComponent implements OnInit, OnChanges {
 
   constructor(
     private _servicioEventos: EventosService,
+    private _servicioProfesores: ProfesoresService,
     private _servicioCapitanes: CapitanActividadesService
   ) {}
 
@@ -177,7 +179,7 @@ export class DetallesComponent implements OnInit, OnChanges {
 
     this.cargandoProfesor = true;
 
-    this._servicioEventos.getProfesorById(idProfesor).subscribe({
+    this._servicioProfesores.getProfesorById(idProfesor).subscribe({
       next: (profesor) => {
         if (
           profesor &&

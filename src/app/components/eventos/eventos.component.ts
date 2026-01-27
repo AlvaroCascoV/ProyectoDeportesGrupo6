@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Evento } from '../../models/Evento';
 import { EventosService } from '../../services/eventos/eventos.service';
+import { ProfesoresService } from '../../services/profesores/profesores.service';
 import { DetallesComponent } from '../detalles/detalles.component';
 import { ActividadesService } from '../../services/actividades/actividades.service';
 import { Actividad } from '../../models/Actividad';
@@ -34,6 +35,7 @@ export class EventosComponent implements OnInit {
   public preciosActividades: { [key: number]: number } = {};
   constructor(
     private _servicioEventos: EventosService,
+    private _servicioProfesores: ProfesoresService,
     private _servicioActividades: ActividadesService
   ) {}
 
@@ -67,8 +69,8 @@ export class EventosComponent implements OnInit {
     // Obtener profesores sin eventos y con eventos para asignar aleatoriamente
     // Usamos forkJoin para hacer ambas peticiones en paralelo
     forkJoin({
-      sinEventos: this._servicioEventos.getProfesoresSinEventos(),
-      conEventos: this._servicioEventos.getProfesoresConEventos(),
+      sinEventos: this._servicioProfesores.getProfesoresSinEventos(),
+      conEventos: this._servicioProfesores.getProfesoresConEventos(),
     }).subscribe({
       next: (result) => {
         let profesoresDisponibles: any[] = [];
@@ -162,7 +164,7 @@ export class EventosComponent implements OnInit {
 
         // Asociar el profesor seleccionado aleatoriamente al evento recién creado
         if (idEvento && idProfesor > 0) {
-          this._servicioEventos
+          this._servicioProfesores
             .asociarProfesorEvento(idEvento, idProfesor)
             .subscribe({
               next: () => {

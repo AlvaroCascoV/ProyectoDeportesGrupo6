@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Evento } from '../../models/Evento';
 import { Actividad } from '../../models/Actividad';
 import { EventosService } from '../../services/eventos/eventos.service';
+import { ProfesoresService } from '../../services/profesores/profesores.service';
 import { ActividadesService } from '../../services/actividades/actividades.service';
 import { InscripcionesService } from '../../services/inscripciones/inscripciones.service';
 import { GestionCapitanesComponent } from '../gestion-capitanes/gestion-capitanes.component';
@@ -42,6 +43,7 @@ export class PanelOrganizadorComponent implements OnInit {
 
   constructor(
     private _servicioEventos: EventosService,
+    private _servicioProfesores: ProfesoresService,
     private _servicioActividades: ActividadesService,
     private _servicioInscripciones: InscripcionesService,
     private _cdr: ChangeDetectorRef,
@@ -85,8 +87,8 @@ export class PanelOrganizadorComponent implements OnInit {
     // Obtener profesores sin eventos y con eventos para asignar aleatoriamente
     // Usamos forkJoin para hacer ambas peticiones en paralelo
     forkJoin({
-      sinEventos: this._servicioEventos.getProfesoresSinEventos(),
-      conEventos: this._servicioEventos.getProfesoresConEventos(),
+      sinEventos: this._servicioProfesores.getProfesoresSinEventos(),
+      conEventos: this._servicioProfesores.getProfesoresConEventos(),
     }).subscribe({
       next: (result) => {
         let profesoresDisponibles: any[] = [];
@@ -181,7 +183,7 @@ export class PanelOrganizadorComponent implements OnInit {
 
         // Asociar el profesor seleccionado aleatoriamente al evento recién creado
         if (idEvento && idProfesor > 0) {
-          this._servicioEventos
+          this._servicioProfesores
             .asociarProfesorEvento(idEvento, idProfesor)
             .subscribe({
               next: () => {

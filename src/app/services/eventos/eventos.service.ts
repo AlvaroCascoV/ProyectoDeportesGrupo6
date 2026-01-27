@@ -44,41 +44,6 @@ export class EventosService {
     );
   }
 
-  getProfesorById(idProfesor: number): Observable<any> {
-    return this._http.get<any>(
-      `${this.url}api/ProfesEventos/FindProfe?idprofesor=${idProfesor}`
-    );
-  }
-
-  // Obtiene todos los profesores activos del año actual
-  getProfesoresActivos(): Observable<any[]> {
-    return this._http.get<any[]>(`${this.url}api/ProfesEventos/ProfesActivos`);
-  }
-
-  // Obtiene los profesores que no tienen eventos asignados
-  getProfesoresSinEventos(): Observable<any[]> {
-    return this._http.get<any[]>(
-      `${this.url}api/ProfesEventos/ProfesSinEventos`
-    );
-  }
-
-  // Obtiene los profesores que ya tienen eventos asignados
-  getProfesoresConEventos(): Observable<any[]> {
-    return this._http.get<any[]>(
-      `${this.url}api/ProfesEventos/ProfesConEventos`
-    );
-  }
-
-  // Elimina la asociación de un profesor con un evento
-  eliminarProfesorEvento(idEvento: number): Observable<any> {
-    const url = `${this.url}api/ProfesEventos/EliminarProfesorEvento/${idEvento}`;
-    let header = new HttpHeaders().set(
-      'Authorization',
-      `Bearer ${localStorage.getItem('token')}`
-    );
-    return this._http.delete<any>(url, { headers: header });
-  }
-
   getEventosActividades(): Observable<Evento[]> {
     // para cada evento sacamos las actividades
     // metemos las actividades en la propiedad listaActividades de los eventos
@@ -108,15 +73,6 @@ export class EventosService {
       `Bearer ${localStorage.getItem('token')}`
     );
     console.log(`Bearer ${localStorage.getItem('token')}`);
-    return this._http.post<any>(url, null, { headers: header });
-  }
-
-  asociarProfesorEvento(idEvento: number, idProfesor: number): Observable<any> {
-    const url = `${this.url}api/ProfesEventos/AsociarProfesorEvento/${idEvento}/${idProfesor}`;
-    let header = new HttpHeaders().set(
-      'Authorization',
-      `Bearer ${localStorage.getItem('token')}`
-    );
     return this._http.post<any>(url, null, { headers: header });
   }
 
