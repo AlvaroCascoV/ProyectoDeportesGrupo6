@@ -86,15 +86,15 @@ export class PanelOrganizadorComponent implements OnInit {
 
     // Validar que todas las actividades seleccionadas tengan precio mayor a 0
     if (this.actividadesSeleccionadas.length > 0) {
-      const actividadesSinPrecio = this.actividadesSeleccionadas.filter(
-        (act) => !this.preciosActividades[act.idActividad] || this.preciosActividades[act.idActividad] <= 0
+      const actividadesPrecioNegativo = this.actividadesSeleccionadas.filter(
+        (act) => this.preciosActividades[act.idActividad] < 0
       );
 
-      if (actividadesSinPrecio.length > 0) {
-        const nombresActividades = actividadesSinPrecio.map(a => a.nombre).join(', ');
+      if (actividadesPrecioNegativo.length > 0) {
+        const nombresActividades = actividadesPrecioNegativo.map(a => a.nombre).join(', ');
         Swal.fire({
           title: 'Error',
-          text: `Por favor, ingresa un precio válido (mayor a 0) para: ${nombresActividades}`,
+          text: `Por favor, ingresa un precio válido (mayor o igual a 0) para: ${nombresActividades}`,
           icon: 'error',
           confirmButtonText: 'Aceptar',
           confirmButtonColor: '#d33',
@@ -212,7 +212,7 @@ export class PanelOrganizadorComponent implements OnInit {
           const precio = this.preciosActividades[act.idActividad] || 0;
 
           // Si hay precio, insertarlo con delay
-          if (idEventoActividad && precio > 0) {
+          if (idEventoActividad && precio >= 0) {
             setTimeout(() => {
               console.log(`Insertando precio ${precio}€ para ${act.nombre}`);
               this._servicioActividades
