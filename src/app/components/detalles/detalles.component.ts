@@ -16,6 +16,7 @@ import { EventosService } from '../../services/eventos/eventos.service';
 import { ProfesoresService } from '../../services/profesores/profesores.service';
 import { CapitanActividadesService } from '../../services/capitan-actividades/capitan-actividades.service';
 import { InscripcionesService } from '../../services/inscripciones/inscripciones.service';
+import { PrecioActividadService } from '../../services/precio-actividad/precio-actividad.service';
 import { Alumno } from '../../models/Alumno';
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
@@ -44,12 +45,14 @@ export class DetallesComponent implements OnInit, OnChanges {
   public preciosActividades: { [key: number]: number } = {};
   public capitanesActividades: Map<number, Alumno> = new Map();
   public inscritosPorActividad: { [idEventoActividad: number]: number } = {};
+  public preciosPorActividad: { [idEventoActividad: number]: number } = {};
 
   constructor(
     private _servicioEventos: EventosService,
     private _servicioProfesores: ProfesoresService,
     private _servicioCapitanes: CapitanActividadesService,
-    private _servicioInscripciones: InscripcionesService
+    private _servicioInscripciones: InscripcionesService,
+    private _servicioPrecioActividad: PrecioActividadService
   ) {}
 
   ngOnInit(): void {}
@@ -79,6 +82,7 @@ export class DetallesComponent implements OnInit, OnChanges {
       this.cargandoProfesor = false;
       this.capitanesActividades.clear();
       this.inscritosPorActividad = {};
+      this.preciosPorActividad = {};
     }
   }
 
@@ -134,6 +138,7 @@ export class DetallesComponent implements OnInit, OnChanges {
       next: (response) => {
         this.actividadesEvento = response;
         this.cargarInscritosPorActividad();
+        this.cargarPreciosPorActividad();
         this.cargarCapitanes();
         this.cargandoActividades = false;
       },
@@ -167,6 +172,32 @@ export class DetallesComponent implements OnInit, OnChanges {
       },
       error: () => {
         // Si falla, dejamos los contadores en 0 sin bloquear la vista
+      },
+    });
+  }
+
+  private cargarPreciosPorActividad(): void {
+    this.preciosPorActividad = {};
+
+    if (!this.actividadesEvento || this.actividadesEvento.length === 0) {
+      return;
+    }
+
+    // Obtenemos todos los precios y filtramos solo los de las actividades de este evento.
+    this._servicioPrecioActividad.getPreciosActividad().subscribe({
+      next: (precios) => {
+        const idsEventoActividad = new Set(
+          this.actividadesEvento.map((a) => a.idEventoActividad)
+        );
+
+        precios.forEach((p) => {
+          if (idsEventoActividad.has(p.idEventoActividad) && p.precioTotal > 0) {
+            this.preciosPorActividad[p.idEventoActividad] = p.precioTotal;
+          }
+        });
+      },
+      error: () => {
+        // Si falla, dejamos los precios vacíos sin bloquear la vista
       },
     });
   }

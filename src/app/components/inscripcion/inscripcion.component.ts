@@ -20,6 +20,7 @@ export class InscripcionComponent implements OnInit {
   public actividadesEvento: ActividadesEvento[] = [];
   @Input() idEvento!: number;
   @Input() inscritosPorActividad: { [idEventoActividad: number]: number } = {};
+  @Input() preciosPorActividad: { [idEventoActividad: number]: number } = {};
 
   public actividadSeleccionada: ActividadesEvento | null = null;
   public actividadEsPorEquipos: boolean = false;

@@ -12,14 +12,20 @@
       <option [ngValue]="0" disabled selected class="text-gray-400 italic">
         -- Elige una actividad --
       </option>
-      @for(actividad of actividadesEvento; track actividad){
-      <option
-        [ngValue]="actividad.idEventoActividad"
-        class="text-gray-800 font-medium py-2"
-      >
-        {{ actividad.nombreActividad }}
-        ({{ inscritosPorActividad[actividad.idEventoActividad] || 0 }} inscritos)
-      </option>
+      @for (actividad of actividadesEvento; track actividad) {
+        <option
+          [ngValue]="actividad.idEventoActividad"
+          class="text-gray-800 font-medium py-2"
+        >
+          {{ actividad.nombreActividad }}
+          ({{
+            inscritosPorActividad[actividad.idEventoActividad] || 0
+          }}
+          inscritos)
+          @if (preciosPorActividad[actividad.idEventoActividad]) {
+            - {{ preciosPorActividad[actividad.idEventoActividad] }} € Total
+          }
+        </option>
       }
     </select>
   </div>
