@@ -24,6 +24,7 @@ export class PanelOrganizadorComponent implements OnInit {
   public mostrarModalActividad = false;
   public mostrarModalDeleteEvento = false;
   public mostrarModalDeleteActividad = false;
+  public insertandoActividades = false;
   public eventos: Evento[] = [];
   public idEventoAEliminar!: number;
   public idActividadAEliminar!: number;
@@ -66,6 +67,7 @@ export class PanelOrganizadorComponent implements OnInit {
 
   cerrarModalEvento(): void {
     this.mostrarModalEvento = false;
+    this.insertandoActividades = false;
     this.nuevoEvento = { fechaEvento: '' };
     this.actividadesSeleccionadas = [];
     this.preciosActividades = {};
@@ -82,6 +84,25 @@ export class PanelOrganizadorComponent implements OnInit {
         confirmButtonColor: '#d33',
       });
       return;
+    }
+
+    // Validar que todas las actividades seleccionadas tengan precio mayor a 0
+    if (this.actividadesSeleccionadas.length > 0) {
+      const actividadesPrecioNegativo = this.actividadesSeleccionadas.filter(
+        (act) => this.preciosActividades[act.idActividad] < 0
+      );
+
+      if (actividadesPrecioNegativo.length > 0) {
+        const nombresActividades = actividadesPrecioNegativo.map(a => a.nombre).join(', ');
+        Swal.fire({
+          title: 'Error',
+          text: `Por favor, ingresa un precio válido (mayor o igual a 0) para: ${nombresActividades}`,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33',
+        });
+        return;
+      }
     }
 
     // Obtener profesores sin eventos y con eventos para asignar aleatoriamente
@@ -147,42 +168,90 @@ export class PanelOrganizadorComponent implements OnInit {
 
         // Insertar actividades seleccionadas si las hay
         if (idEvento && this.actividadesSeleccionadas.length > 0) {
-          this.actividadesSeleccionadas.forEach((act) => {
-            console.log('Añadiendo actividad: ' + act.nombre);
-            this._servicioEventos
-              .insertarActividadesEvento(idEvento, act.idActividad)
-              .subscribe({
-                next: (response) => {
-                  console.log(response);
-                  // Obtener el idEventoActividad de la respuesta
-                  const idEventoActividad =
-                    response.idEventoActividad || response.id;
-                  // Obtener el precio de la actividad
-                  const precio = this.preciosActividades[act.idActividad] || 0;
-                  // Insertar el precio de la actividad si se ha definido
-                  if (idEventoActividad && precio > 0) {
-                    this._servicioActividades
-                      .insertarPrecioActividad(precio, idEventoActividad)
-                      .subscribe({
-                        next: (precioResponse) => {
-                          console.log('Precio: ' + precioResponse);
-                          console.log('Precio insertado:', precioResponse);
-                        },
-                        error: (error) => {
-                          console.error('Error al insertar precio:', error);
-                        },
-                      });
-                  }
-                },
-                error: (error) => {
-                  console.error('Error al insertar actividad:', error);
-                },
-              });
+          // Activar el loader
+          this.insertandoActividades = true;
+          // Procesar actividades secuencialmente con delay
+          this.insertarActividadesSecuencialmente(idEvento, 0, () => {
+            // Una vez terminadas todas las inserciones, asociar el profesor
+            this.insertandoActividades = false;
+            this.asociarProfesorYFinalizar(idEvento, idProfesor);
           });
+        } else {
+          // Si no hay actividades, asociar el profesor directamente
+          this.asociarProfesorYFinalizar(idEvento, idProfesor);
         }
+      },
+      error: () => {
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo crear el evento. Por favor, intenta nuevamente',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33',
+        });
+      },
+    });
+  }
 
-        // Asociar el profesor seleccionado aleatoriamente al evento recién creado
-        if (idEvento && idProfesor > 0) {
+  // Método recursivo para insertar actividades una por una con delay
+  insertarActividadesSecuencialmente(idEvento: number, index: number, onComplete: () => void): void {
+    // Si ya procesamos todas las actividades, ejecutar el callback
+    if (index >= this.actividadesSeleccionadas.length) {
+      onComplete();
+      return;
+    }
+
+    const act = this.actividadesSeleccionadas[index];
+    console.log(`Añadiendo actividad ${index + 1}/${this.actividadesSeleccionadas.length}: ${act.nombre}`);
+
+    // Insertar la actividad en el evento
+    this._servicioEventos
+      .insertarActividadesEvento(idEvento, act.idActividad)
+      .subscribe({
+        next: (response) => {
+          console.log(response);
+          const idEventoActividad = response.idEventoActividad || response.id;
+          const precio = this.preciosActividades[act.idActividad] || 0;
+
+          // Si hay precio, insertarlo con delay
+          if (idEventoActividad && precio >= 0) {
+            setTimeout(() => {
+              console.log(`Insertando precio ${precio}€ para ${act.nombre}`);
+              this._servicioActividades
+                .insertarPrecioActividad(precio, idEventoActividad)
+                .subscribe({
+                  next: (precioResponse) => {
+                    console.log('Precio insertado:', precioResponse);
+                    // Continuar con la siguiente actividad después de 500ms
+                    setTimeout(() => {
+                      this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
+                    }, 500);
+                  },
+                  error: (error) => {
+                    console.error('Error al insertar precio:', error);
+                    // Continuar con la siguiente aunque falle
+                    setTimeout(() => {
+                      this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
+                    }, 500);
+                  },
+                });
+            }, 500);
+          } else {
+            // Si no hay precio, continuar directamente
+            this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
+          }
+        },
+        error: (error) => {
+          console.error('Error al insertar actividad:', error);
+          // Continuar con la siguiente aunque falle
+          this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
+        },
+      });
+  }
+
+  // Método para asociar el profesor y finalizar la creación
+  asociarProfesorYFinalizar(idEvento: number, idProfesor: number): void {
+    if (idEvento && idProfesor > 0) {
           this._servicioProfesores
             .asociarProfesorEvento(idEvento, idProfesor)
             .subscribe({
@@ -224,35 +293,23 @@ export class PanelOrganizadorComponent implements OnInit {
                 });
               },
             });
-        } else {
-          // Evento creado sin profesor (caso de fallback, no debería ocurrir normalmente)
-          this.cerrarModalEvento();
-          Swal.fire({
-            title: '¡Evento Creado!',
-            text: 'El evento se ha creado correctamente',
-            icon: 'success',
-            confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#3085d6',
-          }).then(() => {
-            this._servicioEventos.getEventos().subscribe((response) => {
-              this.eventos = response;
-              this.cerrarModalEvento();
-            });
-            this.actividadesSeleccionadas = [];
-            this.preciosActividades = {};
-          });
-        }
-      },
-      error: () => {
-        Swal.fire({
-          title: 'Error',
-          text: 'No se pudo crear el evento. Por favor, intenta nuevamente',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-          confirmButtonColor: '#d33',
+    } else {
+      // Evento creado sin profesor (caso de fallback)
+      this.cerrarModalEvento();
+      Swal.fire({
+        title: '¡Evento Creado!',
+        text: 'El evento se ha creado correctamente',
+        icon: 'success',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6',
+      }).then(() => {
+        this._servicioEventos.getEventos().subscribe((response) => {
+          this.eventos = response;
         });
-      },
-    });
+        this.actividadesSeleccionadas = [];
+        this.preciosActividades = {};
+      });
+    }
   }
 
   onActividadSeleccionada(actividad: Actividad, event: Event): void {
