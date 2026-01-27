@@ -1,0 +1,90 @@
+<div>
+  <button
+    (click)="abrirModalPagos()"
+    class="bg-amber-400 text-black px-8 py-4 rounded-lg hover:bg-amber-500 cursor-pointer font-semibold text-lg transition-colors flex items-center justify-center gap-2"
+  >
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2h-2m-2-4H7a2 2 0 00-2 2v6a2 2 0 002 2h2m-6-4v2"
+      ></path>
+    </svg>
+    Gestión de Pagos
+  </button>
+
+  @if (mostrarModalPagos) {
+    <div
+      class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+      (click)="cerrarModalPagos()"
+    >
+      <div
+        class="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl mx-4 relative z-10 border border-gray-200 max-h-[90vh] overflow-y-auto"
+        (click)="$event.stopPropagation()"
+        style="background-color: white"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-bold text-gray-800">Gestión de Pagos</h2>
+          <button
+            (click)="cerrarModalPagos()"
+            class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          >
+            ×
+          </button>
+        </div>
+
+        <p class="text-sm text-gray-600 mb-4">
+          Cursos y estado de pago.
+        </p>
+
+        @if (cargandoPagos) {
+          <div class="flex items-center justify-center py-8">
+            <div class="loader-small mr-2"></div>
+            <span class="text-gray-600">Cargando pagos...</span>
+          </div>
+        } @else if (pagos.length === 0) {
+          <div class="text-center py-8">
+            <p class="text-gray-600">No hay pagos para mostrar.</p>
+          </div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table
+              class="w-full border border-gray-200 rounded-lg overflow-hidden"
+            >
+              <thead
+                class="bg-gray-100 text-left text-sm font-semibold text-gray-700"
+              >
+                <tr>
+                  <th class="px-4 py-3 border-b border-gray-200">ID</th>
+                  <th class="px-4 py-3 border-b border-gray-200">Curso</th>
+                  <th class="px-4 py-3 border-b border-gray-200">Cantidad</th>
+                  <th class="px-4 py-3 border-b border-gray-200">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (pago of pagos; track pago.idPago + '-' + pago.idCurso + '-' + pago.idEventoActividad) {
+                  <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <td class="px-4 py-3 text-gray-800">{{ pago.idPago }}</td>
+                    <td class="px-4 py-3 text-gray-800">{{ pago.curso }}</td>
+                    <td class="px-4 py-3 text-gray-800">
+                      {{ pago.cantidadPagada }} €
+                    </td>
+                    <td class="px-4 py-3">
+                      <span
+                        class="px-3 py-1 rounded-full text-xs font-semibold"
+                        [ngClass]="getEstadoClass(pago.estado)"
+                      >
+                        {{ pago.estado }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
