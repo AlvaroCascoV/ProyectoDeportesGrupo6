@@ -6,7 +6,7 @@ import { InscripcionesService } from '../../services/inscripciones/inscripciones
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { PerfilService } from '../../services/perfil/perfil.service';
 import Swal from 'sweetalert2';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-inscripcion',
@@ -23,6 +23,7 @@ export class InscripcionComponent implements OnInit {
   public actividadSeleccionada: ActividadesEvento | null = null;
   public actividadEsPorEquipos: boolean = false;
   public quiereSerCapitan: boolean = false;
+  public inscritosPorActividad: { [idEventoActividad: number]: number } = {};
 
   constructor(
     private _servicioEventos: EventosService,
@@ -32,11 +33,69 @@ export class InscripcionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('[InscripcionComponent] idEvento recibido:', this.idEvento);
     this._servicioEventos
       .getActividadesEvento(this.idEvento)
       .subscribe((response) => {
+        console.log(
+          '[InscripcionComponent] Actividades del evento cargadas:',
+          response
+        );
         this.actividadesEvento = response;
+        this.cargarInscritosPorActividad();
       });
+  }
+
+  private cargarInscritosPorActividad(): void {
+    console.log(
+      '[InscripcionComponent] Iniciando carga de inscritos por actividad. Actividades:',
+      this.actividadesEvento
+    );
+    this.inscritosPorActividad = {};
+
+    if (!this.actividadesEvento || this.actividadesEvento.length === 0) {
+      console.warn(
+        '[InscripcionComponent] No hay actividades para este evento, no se cargan inscritos.'
+      );
+      return;
+    }
+
+    const peticiones = this.actividadesEvento.map((actividad) =>
+      this._servicioInscripciones.getUsuariosEventoActividad(
+        actividad.idEvento,
+        actividad.idActividad
+      )
+    );
+
+    forkJoin(peticiones).subscribe({
+      next: (respuestas) => {
+        console.log(
+          '[InscripcionComponent] Respuestas de inscritos por actividad:',
+          respuestas
+        );
+        respuestas.forEach((usuarios, index) => {
+          const actividad = this.actividadesEvento[index];
+          this.inscritosPorActividad[actividad.idEventoActividad] =
+            usuarios?.length ?? 0;
+          console.log(
+            `[InscripcionComponent] Actividad "${actividad.nombreActividad}" (idEventoActividad=${actividad.idEventoActividad}) tiene`,
+            usuarios?.length ?? 0,
+            'inscritos.'
+          );
+        });
+        console.log(
+          '[InscripcionComponent] Mapa final inscritosPorActividad:',
+          this.inscritosPorActividad
+        );
+      },
+      error: (err) => {
+        console.error(
+          '[InscripcionComponent] Error al cargar inscritos por actividad:',
+          err
+        );
+        // En caso de error, dejamos el contador a 0 sin bloquear la inscripción
+      },
+    });
   }
 
   onActividadChange(): void {
