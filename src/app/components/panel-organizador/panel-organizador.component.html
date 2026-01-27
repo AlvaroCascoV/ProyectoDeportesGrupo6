@@ -48,7 +48,7 @@
   @if (mostrarModalEvento) {
   <div
     class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
-    (click)="cerrarModalEvento()"
+    
   >
     <div
       class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200"
@@ -64,6 +64,15 @@
           ×
         </button>
       </div>
+
+      <!-- Loader mientras se insertan actividades -->
+      @if(insertandoActividades) {
+      <div class="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mb-4"></div>
+        <p class="text-gray-700 font-semibold text-lg">Insertando actividades...</p>
+        <p class="text-gray-500 text-sm mt-2">Por favor, espera un momento</p>
+      </div>
+      }
 
       <form (ngSubmit)="crearEvento()">
         <div class="mb-4">

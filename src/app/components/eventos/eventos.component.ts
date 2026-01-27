@@ -27,6 +27,7 @@ export class EventosComponent implements OnInit {
   public mostrarFormularioInmediato = false;
   public eventoSeleccionado!: Evento;
   public esOrganizador: boolean = false;
+  public insertandoActividades: boolean = false;
   public nuevoEvento = {
     fechaEvento: '',
   };
@@ -45,6 +46,7 @@ export class EventosComponent implements OnInit {
 
   cerrarModal(): void {
     this.mostrarModal = false;
+    this.insertandoActividades = false;
     this.nuevoEvento = { fechaEvento: '' };
     this.preciosActividades = {};
   }
@@ -64,6 +66,25 @@ export class EventosComponent implements OnInit {
         confirmButtonColor: '#d33',
       });
       return;
+    }
+
+    // Validar que todas las actividades seleccionadas tengan precio mayor a 0
+    if (this.actividadesSeleccionadas.length > 0) {
+      const actividadesPrecioNegativo = this.actividadesSeleccionadas.filter(
+        (act) => this.preciosActividades[act.idActividad] < 0
+      );
+
+      if (actividadesPrecioNegativo.length > 0) {
+        const nombresActividades = actividadesPrecioNegativo.map(a => a.nombre).join(', ');
+        Swal.fire({
+          title: 'Error',
+          text: `Por favor, ingresa un precio válido (mayor o igual a 0) para: ${nombresActividades}`,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33',
+        });
+        return;
+      }
     }
 
     // Obtener profesores sin eventos y con eventos para asignar aleatoriamente
@@ -97,7 +118,7 @@ export class EventosComponent implements OnInit {
 
         // Seleccionar un profesor aleatorio de la lista disponible
         const indiceAleatorio = Math.floor(
-          Math.random() * profesoresDisponibles.length
+          Math.random() * profesoresDisponibles.length,
         );
         const profesorAleatorio = profesoresDisponibles[indiceAleatorio];
         const idProfesor = profesorAleatorio.idUsuario;
@@ -119,7 +140,7 @@ export class EventosComponent implements OnInit {
 
   // Crea el evento con la fecha seleccionada y asocia el profesor asignado aleatoriamente
   crearEventoConFecha(idProfesor: number): void {
-    // Convertir la fecha a formato ISO (2026-01-15T09:47:13.513Z)
+    // Convertir la fecha a formato ISO
     const fechaISO = new Date(this.nuevoEvento.fechaEvento).toISOString();
 
     this._servicioEventos.insertEvento(fechaISO).subscribe({
@@ -173,61 +194,17 @@ export class EventosComponent implements OnInit {
             }, delayMs);
 
             delayMs += incrementoDelay;
+          // Activar el loader
+          this.insertandoActividades = true;
+          // Procesar actividades secuencialmente con delay
+          this.insertarActividadesSecuencialmente(idEvento, 0, () => {
+            // Una vez terminadas todas las inserciones, asociar el profesor
+            this.insertandoActividades = false;
+            this.asociarProfesorYFinalizar(idEvento, idProfesor);
           });
-        }
-
-        // Asociar el profesor seleccionado aleatoriamente al evento recién creado
-        if (idEvento && idProfesor > 0) {
-          this._servicioProfesores
-            .asociarProfesorEvento(idEvento, idProfesor)
-            .subscribe({
-              next: () => {
-                this.cerrarModal();
-                // Evento creado con éxito y profesor asignado
-                Swal.fire({
-                  title: '¡Evento Creado!',
-                  text: 'El evento se ha creado correctamente con un profesor asignado aleatoriamente',
-                  icon: 'success',
-                  confirmButtonText: 'Aceptar',
-                  confirmButtonColor: '#3085d6',
-                }).then(() => {
-                  this.ngOnInit();
-                  this.cerrarModal();
-                  this.actividadesSeleccionadas = [];
-                  this.preciosActividades = {};
-                });
-              },
-              error: () => {
-                // Evento creado pero error al asociar el profesor
-                Swal.fire({
-                  title: 'Evento Creado',
-                  text: 'El evento se creó, pero hubo un error al asignar el profesor',
-                  icon: 'warning',
-                  confirmButtonText: 'Aceptar',
-                  confirmButtonColor: '#ff9800',
-                }).then(() => {
-                  this.ngOnInit();
-                  this.cerrarModal();
-                  this.actividadesSeleccionadas = [];
-                  this.preciosActividades = {};
-                });
-              },
-            });
         } else {
-          // Evento creado sin profesor (caso de fallback, no debería ocurrir normalmente)
-          this.cerrarModal();
-          Swal.fire({
-            title: '¡Evento Creado!',
-            text: 'El evento se ha creado correctamente',
-            icon: 'success',
-            confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#3085d6',
-          }).then(() => {
-            this.ngOnInit();
-            this.cerrarModal();
-            this.actividadesSeleccionadas = [];
-            this.preciosActividades = {};
-          });
+          // Si no hay actividades, asociar el profesor directamente
+          this.asociarProfesorYFinalizar(idEvento, idProfesor);
         }
       },
       error: () => {
@@ -242,6 +219,126 @@ export class EventosComponent implements OnInit {
     });
   }
 
+  // Método recursivo para insertar actividades una por una con delay
+  insertarActividadesSecuencialmente(idEvento: number, index: number, onComplete: () => void): void {
+    // Si ya procesamos todas las actividades, ejecutar el callback
+    if (index >= this.actividadesSeleccionadas.length) {
+      onComplete();
+      return;
+    }
+
+    const act = this.actividadesSeleccionadas[index];
+    console.log(`Añadiendo actividad ${index + 1}/${this.actividadesSeleccionadas.length}: ${act.nombre}`);
+
+    // Insertar la actividad en el evento
+    this._servicioEventos
+      .insertarActividadesEvento(idEvento, act.idActividad)
+      .subscribe({
+        next: (response) => {
+          console.log(response);
+          const idEventoActividad = response.idEventoActividad || response.id;
+          const precio = this.preciosActividades[act.idActividad] || 0;
+
+          // Si hay precio, insertarlo con delay
+          if (idEventoActividad && precio >= 0) {
+            setTimeout(() => {
+              console.log(`Insertando precio ${precio}€ para ${act.nombre}`);
+              this._servicioActividades
+                .insertarPrecioActividad(precio, idEventoActividad)
+                .subscribe({
+                  next: (precioResponse) => {
+                    console.log('Precio insertado:', precioResponse);
+                    // Continuar con la siguiente actividad después de 500ms
+                    setTimeout(() => {
+                      this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
+                    }, 500);
+                  },
+                  error: (error) => {
+                    console.error('Error al insertar precio:', error);
+                    // Continuar con la siguiente aunque falle
+                    setTimeout(() => {
+                      this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
+                    }, 500);
+                  },
+                });
+            }, 500);
+          } else {
+            // Si no hay precio, continuar directamente
+            this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
+          }
+        },
+        error: (error) => {
+          console.error('Error al insertar actividad:', error);
+          // Continuar con la siguiente aunque falle
+          this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
+        },
+      });
+  }
+
+  
+    // Método para asociar el profesor y finalizar la creación
+    asociarProfesorYFinalizar(idEvento: number, idProfesor: number): void {
+      if (idEvento && idProfesor > 0) {
+            this._servicioProfesores
+              .asociarProfesorEvento(idEvento, idProfesor)
+              .subscribe({
+                next: () => {
+                  this.cerrarModal();
+                  // Refrescar lista de eventos
+                  this._servicioEventos.getEventos().subscribe((response) => {
+                    this.eventos = response;
+                  });
+                  // Evento creado con éxito y profesor asignado
+                  Swal.fire({
+                    title: '¡Evento Creado!',
+                    text: 'El evento se ha creado correctamente con un profesor asignado aleatoriamente',
+                    icon: 'success',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#3085d6',
+                  }).then(() => {
+                    this.cerrarModal();
+                    this.actividadesSeleccionadas = [];
+                    this.preciosActividades = {};
+                  });
+                },
+                error: () => {
+                  // Refrescar lista de eventos incluso en caso de error
+                  this._servicioEventos.getEventos().subscribe((response) => {
+                    this.eventos = response;
+                  });
+                  // Evento creado pero error al asociar el profesor
+                  Swal.fire({
+                    title: 'Evento Creado',
+                    text: 'El evento se creó, pero hubo un error al asignar el profesor',
+                    icon: 'warning',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#ff9800',
+                  }).then(() => {
+                    this.cerrarModal();
+                    this.actividadesSeleccionadas = [];
+                    this.preciosActividades = {};
+                  });
+                },
+              });
+      } else {
+        // Evento creado sin profesor (caso de fallback)
+        this.cerrarModal();
+        Swal.fire({
+          title: '¡Evento Creado!',
+          text: 'El evento se ha creado correctamente',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          this._servicioEventos.getEventos().subscribe((response) => {
+            this.eventos = response;
+          });
+          this.actividadesSeleccionadas = [];
+          this.preciosActividades = {};
+        });
+      }
+    }
+  
   //pasar la fecha al formato dd/mm/yyyy
   formatearFecha(fecha: string): string {
     let fechaEvento = new Date(fecha);
