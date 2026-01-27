@@ -6,6 +6,7 @@ import { EventosService } from '../../services/eventos/eventos.service';
 import { ProfesoresService } from '../../services/profesores/profesores.service';
 import { DetallesComponent } from '../detalles/detalles.component';
 import { ActividadesService } from '../../services/actividades/actividades.service';
+import { PrecioActividadService } from '../../services/precio-actividad/precio-actividad.service';
 import { Actividad } from '../../models/Actividad';
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
@@ -37,7 +38,8 @@ export class EventosComponent implements OnInit {
   constructor(
     private _servicioEventos: EventosService,
     private _servicioProfesores: ProfesoresService,
-    private _servicioActividades: ActividadesService
+    private _servicioActividades: ActividadesService,
+    private _servicioPrecioActividad: PrecioActividadService
   ) {}
 
   abrirModal(): void {
@@ -174,7 +176,7 @@ export class EventosComponent implements OnInit {
                       this.preciosActividades[act.idActividad] || 0;
                     // Insertar el precio de la actividad si se ha definido
                     if (idEventoActividad && precio > 0) {
-                      this._servicioActividades
+                      this._servicioPrecioActividad
                         .insertarPrecioActividad(precio, idEventoActividad)
                         .subscribe({
                           next: (precioResponse) => {
@@ -245,7 +247,7 @@ export class EventosComponent implements OnInit {
           if (idEventoActividad && precio >= 0) {
             setTimeout(() => {
               console.log(`Insertando precio ${precio}€ para ${act.nombre}`);
-              this._servicioActividades
+              this._servicioPrecioActividad
                 .insertarPrecioActividad(precio, idEventoActividad)
                 .subscribe({
                   next: (precioResponse) => {

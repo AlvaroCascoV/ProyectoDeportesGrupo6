@@ -6,6 +6,7 @@ import { Actividad } from '../../models/Actividad';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { ProfesoresService } from '../../services/profesores/profesores.service';
 import { ActividadesService } from '../../services/actividades/actividades.service';
+import { PrecioActividadService } from '../../services/precio-actividad/precio-actividad.service';
 import { InscripcionesService } from '../../services/inscripciones/inscripciones.service';
 import { GestionCapitanesComponent } from '../gestion-capitanes/gestion-capitanes.component';
 import Swal from 'sweetalert2';
@@ -46,6 +47,7 @@ export class PanelOrganizadorComponent implements OnInit {
     private _servicioEventos: EventosService,
     private _servicioProfesores: ProfesoresService,
     private _servicioActividades: ActividadesService,
+    private _servicioPrecioActividad: PrecioActividadService,
     private _servicioInscripciones: InscripcionesService,
     private _cdr: ChangeDetectorRef,
   ) {}
@@ -192,7 +194,7 @@ export class PanelOrganizadorComponent implements OnInit {
                       this.preciosActividades[act.idActividad] || 0;
                     // Insertar el precio de la actividad si se ha definido
                     if (idEventoActividad && precio > 0) {
-                      this._servicioActividades
+                      this._servicioPrecioActividad
                         .insertarPrecioActividad(precio, idEventoActividad)
                         .subscribe({
                           next: (precioResponse) => {
@@ -263,7 +265,7 @@ export class PanelOrganizadorComponent implements OnInit {
           if (idEventoActividad && precio >= 0) {
             setTimeout(() => {
               console.log(`Insertando precio ${precio}€ para ${act.nombre}`);
-              this._servicioActividades
+              this._servicioPrecioActividad
                 .insertarPrecioActividad(precio, idEventoActividad)
                 .subscribe({
                   next: (precioResponse) => {
