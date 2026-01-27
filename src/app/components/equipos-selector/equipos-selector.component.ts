@@ -408,25 +408,6 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     //   await firstValueFrom(
     //     this._equiposService.joinEquipo(idUsuario, idEquipoObjetivo)
     //   );
-    // } catch (e: any) {
-    //   const maybeMsg = e?.error?.message || e?.error?.title || e?.error || null;
-    //   const fallbackMsg = quiereCrearEquipo
-    //     ? 'El equipo se creó, pero no se pudo añadirte como miembro.'
-    //     : 'No se pudo añadirte como miembro del equipo.';
-
-    //   await Swal.fire({
-    //     title: 'Error',
-    //     text:
-    //       typeof maybeMsg === 'string' && maybeMsg.trim().length > 0
-    //         ? maybeMsg
-    //         : fallbackMsg,
-    //     icon: 'error',
-    //     confirmButtonText: 'Aceptar',
-    //     confirmButtonColor: '#d33',
-    //   });
-    //   return false;
-    // }
-
     // Mantener la UI consistente: selecciona el equipo unido/creado y sale del modo de creación
     this.selectedEquipoId = idEquipoObjetivo;
     this.mostrarCrearEquipo = false;
