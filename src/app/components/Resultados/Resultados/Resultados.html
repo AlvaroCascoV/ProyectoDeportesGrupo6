@@ -1,0 +1,114 @@
+<div
+  class="min-h-screen bg-gradient-to-br from-white via-blue-50 to-blue-100 p-6 md:p-12"
+>
+  <header class="max-w-7xl mx-auto mb-12 text-center">
+    <h1
+      class="text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400 uppercase italic tracking-tighter"
+    >
+      RESULTADOS DE PARTIDOS
+    </h1>
+    <div class="h-1 w-32 bg-blue-500 mx-auto mt-2 rounded-full"></div>
+  </header>
+
+  <main class="max-w-7xl mx-auto">
+    @if (isLoading()) {
+    <div class="flex justify-center items-center h-64">
+      <div
+        class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"
+      ></div>
+    </div>
+    } @else { @for (fecha of getEventosNombres(); track fecha) {
+    <div class="mb-16">
+      <div class="flex items-center mb-6">
+        <span
+          class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg"
+        >
+          Jornada: {{ fecha }}
+        </span>
+        <div class="flex-grow h-[1px] bg-blue-300 ml-4"></div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        @for (partido of partidosAgrupados()[fecha]; track partido.id) {
+
+        <div
+          class="relative group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-white"
+        >
+          <div
+            class="h-2 w-full bg-gradient-to-r from-blue-300 via-blue-500 to-blue-100"
+          ></div>
+
+          <div class="p-8">
+            <div class="flex justify-between items-center space-x-2">
+              <div class="flex flex-col items-center flex-1">
+                <span
+                  class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2"
+                  >Local</span
+                >
+                <h3
+                  class="text-sm font-black text-gray-700 h-10 text-center flex items-center mb-2"
+                >
+                  {{ partido.equipoLocal }}
+                </h3>
+                <span
+                  class="text-5xl font-black text-blue-600 group-hover:scale-110 transition-transform"
+                >
+                  {{ partido.puntosLocal }}
+                </span>
+              </div>
+
+              <div class="flex flex-col items-center">
+                <span class="text-xs font-black text-blue-200 italic">VS</span>
+              </div>
+
+              <div class="flex flex-col items-center flex-1">
+                <span
+                  class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2"
+                  >Visitante</span
+                >
+                <h3
+                  class="text-sm font-black text-gray-700 h-10 text-center flex items-center mb-2"
+                >
+                  {{ partido.equipoVisitante }}
+                </h3>
+                <span
+                  class="text-5xl font-black text-blue-600 group-hover:scale-110 transition-transform"
+                >
+                  {{ partido.puntosVisitante }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-slate-50 border-t border-gray-100 px-6 py-3 flex justify-between items-center"
+          >
+            <span class="text-[10px] font-bold text-gray-400 uppercase"
+              >ID: #{{partido.id}}</span
+            >
+            <div class="flex items-center">
+              <div
+                class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"
+              ></div>
+              <span
+                class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter"
+                >Finalizado</span
+              >
+            </div>
+          </div>
+        </div>
+
+        }
+      </div>
+    </div>
+    } @empty {
+    <div
+      class="bg-white p-20 rounded-3xl shadow-inner text-center border-2 border-dashed border-blue-200"
+    >
+      <p class="text-blue-400 font-medium italic">
+        No hay resultados disponibles en este momento.
+      </p>
+    </div>
+    } }
+  </main>
+</div>

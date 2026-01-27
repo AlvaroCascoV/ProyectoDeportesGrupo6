@@ -8,6 +8,7 @@ import { EquiposComponent } from './components/equipos/equipos.component';
 import { authGuard } from './auth/guards/auth.guard';
 import { PanelOrganizadorComponent } from './components/panel-organizador/panel-organizador.component';
 import { roleIdGuard } from './auth/guards/role-id.guard';
+import { Resultados } from './components/Resultados/Resultados/Resultados';
 
 export const routes: Routes = [
   { path: 'auth', loadChildren: () => import('./auth/auth.routes') },
@@ -20,6 +21,7 @@ export const routes: Routes = [
       { path: 'eventos', component: EventosComponent },
       { path: 'equipos', component: EquiposComponent },
       { path: 'perfil', component: PerfilComponent },
+      {path: 'resultados', component: Resultados  },
       {
         path: 'organizador',
         component: PanelOrganizadorComponent,
