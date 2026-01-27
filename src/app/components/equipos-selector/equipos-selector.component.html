@@ -130,7 +130,9 @@
         </option>
         @if (cargandoColores) {
         <option [ngValue]="null" disabled>Cargando colores...</option>
-        } @else { @for (color of colores; track color.idColor) {
+        } @else if (coloresDisponibles.length === 0) {
+        <option [ngValue]="null" disabled>No hay colores disponibles</option>
+        } @else { @for (color of coloresDisponibles; track color.idColor) {
         <option [ngValue]="color.idColor">{{ color.nombreColor }}</option>
         } }
       </select>
@@ -139,13 +141,26 @@
   } @if (showConfirmButton && !cargandoEquipos && (mostrarCrearEquipo ||
   (equipos && equipos.length > 0))) {
   <div class="pt-2 border-t border-gray-200 flex justify-end">
-    <button
+    @if(mostrarCrearEquipo){
+      <button
       type="button"
       (click)="confirmar()"
       class="bg-green-400 text-black px-4 py-2 rounded hover:bg-green-500 font-semibold text-sm"
     >
-      Confirmar equipo
+      Crear equipo
     </button>
-  </div>
+  
+    } @else{
+
+      <button
+        type="button"
+        (click)="inscribirte()"
+        class="bg-green-400 text-black px-4 py-2 rounded hover:bg-green-500 font-semibold text-sm"
+      >
+        Inscribirte a equipo
+      </button>
+    }
+    
+    </div>
   }
 </div>

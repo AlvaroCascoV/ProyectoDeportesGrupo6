@@ -17,7 +17,8 @@ import { UsuarioEquipo } from '../../models/UsuarioEquipo';
 import { EquiposService } from '../../services/equipos/equipos.service';
 import { ColoresService } from '../../services/colores/colores.service';
 import { PerfilService } from '../../services/perfil/perfil.service';
-import { UserRoles } from '../../auth/constants/user-roles';
+import { UserIdRoles, UserRoles } from '../../auth/constants/user-roles';
+import { Inscripcion } from '../../models/Inscripcion';
 
 @Component({
   selector: 'app-equipos-selector',
@@ -54,6 +55,8 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
 
   private idCursoUsuario: number | null = null;
 
+  public actividadesUsuario: Inscripcion[] = [];
+
   constructor(
     private _equiposService: EquiposService,
     private _coloresService: ColoresService,
@@ -61,9 +64,9 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    const role = (localStorage.getItem('role') ?? '').toUpperCase();
+    const role = (localStorage.getItem('idRole') ?? '').toUpperCase();
     this.canCreateEquipos =
-      role === UserRoles.CAPITAN || role === UserRoles.ADMINISTRADOR;
+      role === UserIdRoles.CAPITAN || role === UserIdRoles.ADMINISTRADOR || role === UserIdRoles.ORGANIZADOR;
     this.cargarColores();
     this.cargarCursoUsuario();
   }
@@ -85,6 +88,87 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     }
   }
 
+  async inscribirte(){
+    console.log(this.selectedEquipoId);
+
+    // Determinar equipo seleccionado
+    const idEquipo = this.selectedEquipoId ?? 0;
+
+    // Verificar si ya está inscrito
+    const verificacion = await this.usuarioYaEstaEnEquipo(parseInt(localStorage.getItem("userID")||"0"));
+
+      const enEvento = await this.yaEstaEnEvento();
+      const inscritoOtraActividadMismoEvento = enEvento.enEvento && enEvento.idActividad !== this.idActividad;
+
+      // Bloquear si ya tiene equipo, o si está inscrito en otra actividad del mismo evento
+      if (verificacion.estaEnEquipo || inscritoOtraActividadMismoEvento) {
+      Swal.fire({
+        title: 'Ya estás en un equipo',
+          text: inscritoOtraActividadMismoEvento
+            ? `Ya estás inscrito en este evento en la actividad "${enEvento.actividadNombre ?? 'otra actividad'}". Solo puedes estar en un equipo dentro de un mismo evento.`
+            : `Ya eres miembro de un equipo. No puedes unirte a otro equipo.`,
+        icon: 'info',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+
+    
+
+    // Si no está en equipo, proceder a inscribir
+    console.log("entro");
+    this._equiposService.joinEquipoNew(idEquipo).subscribe({
+      next:(response)=>{
+        console.log(response);
+        Swal.fire({
+          title: 'Te has insertado en el equipo.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        });
+        this.refrescarEquipos();
+      }, 
+      error:()=>{
+        Swal.fire({
+          title: 'No se ha podido insertar al equipo',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        });
+      }
+    });
+  }
+
+  async inscripcionesUser(): Promise<Inscripcion[]> {
+    // Usa cache local para evitar múltiples llamadas
+    if (this.actividadesUsuario.length > 0) {
+      return this.actividadesUsuario;
+    }
+
+    const token = localStorage.getItem("token") || "";
+    try {
+      const response = await firstValueFrom(this._perfilService.getActividadesUser(token));
+      console.log("Actividades user:" + JSON.stringify(response));
+      this.actividadesUsuario = response ?? [];
+      return this.actividadesUsuario;
+    } catch {
+      this.actividadesUsuario = [];
+      return [];
+    }
+  }
+
+  async yaEstaEnEvento(): Promise<{ enEvento: boolean; actividadNombre?: string; idActividad?: number }> {    
+    const actividadesUser = await this.inscripcionesUser();
+    console.log("Evento 'yaEstaEnEvento': "+this.idEvento)
+    const encontrada = actividadesUser.find((actividad) => actividad.idEvento === this.idEvento);
+    return {
+      enEvento: !!encontrada,
+      actividadNombre: encontrada?.nombreActividad,
+      idActividad: encontrada?.idActividad,
+    };
+  }
+
   onEquipoSeleccionado(idEquipo: number): void {
     const idEquipoNum = Number(idEquipo);
     if (!Number.isFinite(idEquipoNum) || idEquipoNum <= 0) return;
@@ -98,6 +182,36 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     return (
       this.colores.find((c) => c.idColor === id)?.nombreColor ?? `Color ${id}`
     );
+  }
+
+  get coloresDisponibles(): Color[] {
+    // Obtener los IDs de colores ya usados por los equipos existentes
+    const coloresUsados = new Set(this.equipos.map(e => e.idColor));
+    // Filtrar solo los colores que no están en uso
+    return this.colores.filter(color => !coloresUsados.has(color.idColor));
+  }
+
+  private async usuarioYaEstaEnEquipo(idUsuario: number): Promise<{ estaEnEquipo: boolean; equipoNombre?: string; idEquipo?: number }> {
+    // Verificar en cada equipo si el usuario ya está inscrito
+    for (const equipo of this.equipos) {
+      try {
+        const jugadores = await firstValueFrom(
+          this._equiposService.getUsuariosEquipo(equipo.idEquipo)
+        );
+        const estaEnEsteEquipo = jugadores?.some(j => j.idUsuario === idUsuario);
+        if (estaEnEsteEquipo) {
+          return { 
+            estaEnEquipo: true, 
+            equipoNombre: equipo.nombreEquipo,
+            idEquipo: equipo.idEquipo
+          };
+        }
+      } catch {
+        // Continuar con el siguiente equipo si hay error
+        continue;
+      }
+    }
+    return { estaEnEquipo: false };
   }
 
   private validateCreateEquipoPermission(): boolean {
@@ -163,6 +277,24 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
         confirmButtonText: 'Aceptar',
         confirmButtonColor: '#d33',
       });
+      return false;
+    }
+
+    // Verificar si el usuario ya está en algún equipo
+    const verificacion = await this.usuarioYaEstaEnEquipo(idUsuario);
+    if (verificacion.estaEnEquipo) {
+      await Swal.fire({
+        title: 'Ya estás en un equipo',
+        text: `Ya eres miembro del equipo "${verificacion.equipoNombre}". No puedes unirte a otro equipo.`,
+        icon: 'info',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#3085d6',
+      });
+      // Seleccionar automáticamente el equipo al que ya pertenece
+      this.selectedEquipoId = verificacion.idEquipo || null;
+      if (this.selectedEquipoId) {
+        this.cargarJugadoresEquipo(this.selectedEquipoId);
+      }
       return false;
     }
 
@@ -272,28 +404,28 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
       idEquipoObjetivo = selectedEquipoIdNum!;
     }
 
-    try {
-      await firstValueFrom(
-        this._equiposService.joinEquipo(idUsuario, idEquipoObjetivo)
-      );
-    } catch (e: any) {
-      const maybeMsg = e?.error?.message || e?.error?.title || e?.error || null;
-      const fallbackMsg = quiereCrearEquipo
-        ? 'El equipo se creó, pero no se pudo añadirte como miembro.'
-        : 'No se pudo añadirte como miembro del equipo.';
+    // try {
+    //   await firstValueFrom(
+    //     this._equiposService.joinEquipo(idUsuario, idEquipoObjetivo)
+    //   );
+    // } catch (e: any) {
+    //   const maybeMsg = e?.error?.message || e?.error?.title || e?.error || null;
+    //   const fallbackMsg = quiereCrearEquipo
+    //     ? 'El equipo se creó, pero no se pudo añadirte como miembro.'
+    //     : 'No se pudo añadirte como miembro del equipo.';
 
-      await Swal.fire({
-        title: 'Error',
-        text:
-          typeof maybeMsg === 'string' && maybeMsg.trim().length > 0
-            ? maybeMsg
-            : fallbackMsg,
-        icon: 'error',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#d33',
-      });
-      return false;
-    }
+    //   await Swal.fire({
+    //     title: 'Error',
+    //     text:
+    //       typeof maybeMsg === 'string' && maybeMsg.trim().length > 0
+    //         ? maybeMsg
+    //         : fallbackMsg,
+    //     icon: 'error',
+    //     confirmButtonText: 'Aceptar',
+    //     confirmButtonColor: '#d33',
+    //   });
+    //   return false;
+    // }
 
     // Mantener la UI consistente: selecciona el equipo unido/creado y sale del modo de creación
     this.selectedEquipoId = idEquipoObjetivo;
@@ -309,7 +441,7 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
       await Swal.fire({
         title: 'Listo',
         text: quiereCrearEquipo
-          ? 'Equipo creado y te has unido correctamente.'
+          ? 'Equipo creado correctamente.'
           : 'Te has unido al equipo correctamente.',
         icon: 'success',
         confirmButtonText: 'Aceptar',
@@ -397,6 +529,7 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
     this.cargandoColores = true;
     this._coloresService.getColores().subscribe({
       next: (colores) => {
+        
         this.colores = colores ?? [];
         this.cargandoColores = false;
       },

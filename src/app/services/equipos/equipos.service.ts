@@ -49,6 +49,14 @@ export class EquiposService {
     );
   }
 
+  joinEquipoNew(idEquipo: number): Observable<any>{
+    let header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.post<any>(`${this.url}api/UsuariosDeportes/ApuntarmeEquipo/${idEquipo}`, null, {headers: header});
+  }
+
   private getOptionalAuthHeaders(): HttpHeaders | undefined {
     const token = localStorage.getItem('token');
     if (!token) return undefined;

@@ -7,7 +7,7 @@ import { Evento } from '../../models/Evento';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { EquiposSelectorComponent } from '../equipos-selector/equipos-selector.component';
-import { UserRoles } from '../../auth/constants/user-roles';
+import { UserIdRoles, UserRoles } from '../../auth/constants/user-roles';
 
 @Component({
   selector: 'app-equipos',
@@ -35,10 +35,11 @@ export class EquiposComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const role = (localStorage.getItem('role') ?? '').toUpperCase();
+    const role = (localStorage.getItem('idRole') ?? '').toUpperCase();
+    console.log(role)
     this.canCreateEquipos =
-      role === UserRoles.CAPITAN || role === UserRoles.ADMINISTRADOR;
-
+      role == UserIdRoles.CAPITAN || role == UserIdRoles.ADMINISTRADOR || role === UserIdRoles.ORGANIZADOR;
+    console.log(this.canCreateEquipos)
     const qp = this._route.snapshot.queryParamMap;
     const idEventoQ = Number.parseInt(qp.get('idEvento') ?? '', 10);
     const idEventoActividadQ = Number.parseInt(
