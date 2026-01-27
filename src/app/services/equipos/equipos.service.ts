@@ -50,7 +50,7 @@ export class EquiposService {
   }
 
   joinEquipoNew(idEquipo: number): Observable<any>{
-    let header = new HttpHeaders().set(
+    const header = new HttpHeaders().set(
       'Authorization',
       `Bearer ${localStorage.getItem('token')}`
     );
