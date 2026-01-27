@@ -9,13 +9,14 @@ import { ActividadesService } from '../../services/actividades/actividades.servi
 import { PrecioActividadService } from '../../services/precio-actividad/precio-actividad.service';
 import { InscripcionesService } from '../../services/inscripciones/inscripciones.service';
 import { GestionCapitanesComponent } from '../gestion-capitanes/gestion-capitanes.component';
+import { GestionPagosComponent } from '../gestion-pagos/gestion-pagos.component';
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-panel-organizador',
   standalone: true,
-  imports: [FormsModule, CommonModule, GestionCapitanesComponent],
+  imports: [FormsModule, CommonModule, GestionCapitanesComponent, GestionPagosComponent],
   templateUrl: './panel-organizador.component.html',
   styleUrl: './panel-organizador.component.css',
 })
