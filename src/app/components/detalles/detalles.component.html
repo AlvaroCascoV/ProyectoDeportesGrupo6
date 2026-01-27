@@ -106,7 +106,10 @@
         No hay actividades programadas para este evento
       </p>
       } @if (!mostrarFormulario && comprobarFechaProximaEvento(evento)) {
-      <app-inscripcion [idEvento]="evento.idEvento"></app-inscripcion>
+      <app-inscripcion
+        [idEvento]="evento.idEvento"
+        [inscritosPorActividad]="inscritosPorActividad"
+      ></app-inscripcion>
       }
     </div>
 
