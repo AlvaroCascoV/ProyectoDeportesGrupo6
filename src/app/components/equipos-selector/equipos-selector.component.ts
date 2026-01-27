@@ -398,22 +398,6 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
       return false;
     }
 
-    const validacion = await this.validarPuedeUnirseOInscribirse(idUsuario);
-    if (!validacion.canProceed) {
-      await Swal.fire({
-        title: validacion.title,
-        text: validacion.text,
-        icon: 'info',
-        confirmButtonText: 'Aceptar',
-        confirmButtonColor: '#3085d6',
-      });
-      if (validacion.idEquipoToSelect != null) {
-        this.selectedEquipoId = validacion.idEquipoToSelect;
-        this.cargarJugadoresEquipo(validacion.idEquipoToSelect);
-      }
-      return false;
-    }
-
     const quiereCrearEquipo =
       this.mostrarCrearEquipo && this.nuevoEquipoNombre.trim().length > 0;
     const selectedEquipoIdNum =
@@ -431,7 +415,24 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
       return false;
     }
 
+    // Solo validar "ya en equipo" / "otra actividad mismo evento" cuando va a UNIRSE a un equipo existente.
+    // Al CREAR equipo no se aplica: el capitán puede crear aunque ya esté en otro equipo.
     if (quiereUnirseEquipoExistente) {
+      const validacion = await this.validarPuedeUnirseOInscribirse(idUsuario);
+      if (!validacion.canProceed) {
+        await Swal.fire({
+          title: validacion.title,
+          text: validacion.text,
+          icon: 'info',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        });
+        if (validacion.idEquipoToSelect != null) {
+          this.selectedEquipoId = validacion.idEquipoToSelect;
+          this.cargarJugadoresEquipo(validacion.idEquipoToSelect);
+        }
+        return false;
+      }
       if (!Number.isFinite(selectedEquipoIdNum) || selectedEquipoIdNum <= 0) {
         await Swal.fire({
           title: 'Falta informacion',
