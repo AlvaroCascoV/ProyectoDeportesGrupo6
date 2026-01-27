@@ -541,7 +541,7 @@ export class EquiposSelectorComponent implements OnInit, OnChanges {
         title: 'Listo',
         text: quiereCrearEquipo
           ? 'Equipo creado correctamente.'
-          : 'Te has unido al equipo correctamente.',
+          : 'Equipo seleccionado correctamente.',
         icon: 'success',
         confirmButtonText: 'Aceptar',
         confirmButtonColor: '#3085d6',
