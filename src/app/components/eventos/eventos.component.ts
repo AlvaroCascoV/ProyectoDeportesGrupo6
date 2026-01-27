@@ -235,7 +235,7 @@ export class EventosComponent implements OnInit {
     // Método para asociar el profesor y finalizar la creación
     asociarProfesorYFinalizar(idEvento: number, idProfesor: number): void {
       if (idEvento && idProfesor > 0) {
-            this._servicioEventos
+            this._servicioProfesores
               .asociarProfesorEvento(idEvento, idProfesor)
               .subscribe({
                 next: () => {
