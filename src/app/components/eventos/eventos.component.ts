@@ -149,7 +149,51 @@ export class EventosComponent implements OnInit {
         console.log('Evento añadido: ' + idEvento);
 
         // Insertar actividades seleccionadas si las hay
+        // Espaciamos ligeramente cada petición para evitar errores 500 por demasiadas llamadas simultáneas.
         if (idEvento && this.actividadesSeleccionadas.length > 0) {
+          let delayMs = 0;
+          const incrementoDelay = 200; // 200 ms entre llamadas; ajustable si hace falta
+
+          this.actividadesSeleccionadas.forEach((act) => {
+            console.log('Programando inserción de actividad: ' + act.nombre);
+            setTimeout(() => {
+              console.log('Añadiendo actividad: ' + act.nombre);
+              this._servicioEventos
+                .insertarActividadesEvento(idEvento, act.idActividad)
+                .subscribe({
+                  next: (response) => {
+                    console.log(response);
+                    // Obtener el idEventoActividad de la respuesta
+                    const idEventoActividad =
+                      response.idEventoActividad || response.id;
+                    // Obtener el precio de la actividad
+                    const precio =
+                      this.preciosActividades[act.idActividad] || 0;
+                    // Insertar el precio de la actividad si se ha definido
+                    if (idEventoActividad && precio > 0) {
+                      this._servicioActividades
+                        .insertarPrecioActividad(precio, idEventoActividad)
+                        .subscribe({
+                          next: (precioResponse) => {
+                            console.log('Precio: ' + precioResponse);
+                            console.log('Precio insertado:', precioResponse);
+                          },
+                          error: (error) => {
+                            console.error(
+                              'Error al insertar precio:',
+                              error,
+                            );
+                          },
+                        });
+                    }
+                  },
+                  error: (error) => {
+                    console.error('Error al insertar actividad:', error);
+                  },
+                });
+            }, delayMs);
+
+            delayMs += incrementoDelay;
           // Activar el loader
           this.insertandoActividades = true;
           // Procesar actividades secuencialmente con delay
