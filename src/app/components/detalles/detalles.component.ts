@@ -15,6 +15,7 @@ import { InscripcionComponent } from '../inscripcion/inscripcion.component';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { ProfesoresService } from '../../services/profesores/profesores.service';
 import { CapitanActividadesService } from '../../services/capitan-actividades/capitan-actividades.service';
+import { InscripcionesService } from '../../services/inscripciones/inscripciones.service';
 import { Alumno } from '../../models/Alumno';
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
@@ -42,11 +43,13 @@ export class DetallesComponent implements OnInit, OnChanges {
   public mostrarFormulario: boolean = true;
   public preciosActividades: { [key: number]: number } = {};
   public capitanesActividades: Map<number, Alumno> = new Map();
+  public inscritosPorActividad: { [idEventoActividad: number]: number } = {};
 
   constructor(
     private _servicioEventos: EventosService,
     private _servicioProfesores: ProfesoresService,
-    private _servicioCapitanes: CapitanActividadesService
+    private _servicioCapitanes: CapitanActividadesService,
+    private _servicioInscripciones: InscripcionesService
   ) {}
 
   ngOnInit(): void {}
@@ -75,6 +78,7 @@ export class DetallesComponent implements OnInit, OnChanges {
       this.cargandoActividades = false;
       this.cargandoProfesor = false;
       this.capitanesActividades.clear();
+      this.inscritosPorActividad = {};
     }
   }
 
@@ -129,11 +133,40 @@ export class DetallesComponent implements OnInit, OnChanges {
     this._servicioEventos.getActividadesEvento(idEvento).subscribe({
       next: (response) => {
         this.actividadesEvento = response;
+        this.cargarInscritosPorActividad();
         this.cargarCapitanes();
         this.cargandoActividades = false;
       },
       error: () => {
         this.cargandoActividades = false;
+      },
+    });
+  }
+
+  private cargarInscritosPorActividad(): void {
+    this.inscritosPorActividad = {};
+
+    if (!this.actividadesEvento || this.actividadesEvento.length === 0) {
+      return;
+    }
+
+    const peticiones = this.actividadesEvento.map((actividad) =>
+      this._servicioInscripciones.getUsuariosEventoActividad(
+        actividad.idEvento,
+        actividad.idActividad
+      )
+    );
+
+    forkJoin(peticiones).subscribe({
+      next: (respuestas) => {
+        respuestas.forEach((usuarios, index) => {
+          const actividad = this.actividadesEvento[index];
+          this.inscritosPorActividad[actividad.idEventoActividad] =
+            usuarios?.length ?? 0;
+        });
+      },
+      error: () => {
+        // Si falla, dejamos los contadores en 0 sin bloquear la vista
       },
     });
   }

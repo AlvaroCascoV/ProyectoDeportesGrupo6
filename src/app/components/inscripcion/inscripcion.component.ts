@@ -19,6 +19,7 @@ export class InscripcionComponent implements OnInit {
   public idEventoActividad: number = 0;
   public actividadesEvento: ActividadesEvento[] = [];
   @Input() idEvento!: number;
+  @Input() inscritosPorActividad: { [idEventoActividad: number]: number } = {};
 
   public actividadSeleccionada: ActividadesEvento | null = null;
   public actividadEsPorEquipos: boolean = false;
@@ -32,9 +33,14 @@ export class InscripcionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    console.log('[InscripcionComponent] idEvento recibido:', this.idEvento);
     this._servicioEventos
       .getActividadesEvento(this.idEvento)
       .subscribe((response) => {
+        console.log(
+          '[InscripcionComponent] Actividades del evento cargadas:',
+          response
+        );
         this.actividadesEvento = response;
       });
   }

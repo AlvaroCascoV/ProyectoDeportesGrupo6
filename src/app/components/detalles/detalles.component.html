@@ -84,6 +84,8 @@
               class="bg-blue-200 text-blue-800 px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-semibold"
             >
               {{ actividad.nombreActividad }}
+              ({{ inscritosPorActividad[actividad.idEventoActividad] || 0 }}
+              inscritos)
             </span>
           </div>
           @if (capitanesActividades.has(actividad.idEventoActividad)) {
@@ -104,7 +106,10 @@
         No hay actividades programadas para este evento
       </p>
       } @if (!mostrarFormulario && comprobarFechaProximaEvento(evento)) {
-      <app-inscripcion [idEvento]="evento.idEvento"></app-inscripcion>
+      <app-inscripcion
+        [idEvento]="evento.idEvento"
+        [inscritosPorActividad]="inscritosPorActividad"
+      ></app-inscripcion>
       }
     </div>
 

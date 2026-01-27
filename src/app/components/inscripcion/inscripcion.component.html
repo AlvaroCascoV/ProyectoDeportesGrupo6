@@ -18,6 +18,7 @@
         class="text-gray-800 font-medium py-2"
       >
         {{ actividad.nombreActividad }}
+        ({{ inscritosPorActividad[actividad.idEventoActividad] || 0 }} inscritos)
       </option>
       }
     </select>
