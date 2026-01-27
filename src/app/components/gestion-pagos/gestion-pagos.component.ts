@@ -29,7 +29,10 @@ export class GestionPagosComponent {
   public eventos: Evento[] = [];
   public cursos: Aula[] = [];
   public actividadesEvento: ActividadesEvento[] = [];
-  public preciosActividad: { idEventoActividad: number; precioTotal: number }[] = [];
+  public preciosActividad: {
+    idEventoActividad: number;
+    precioTotal: number;
+  }[] = [];
   public crearForm = {
     idEvento: 0,
     idEventoActividad: 0,
@@ -62,8 +65,8 @@ export class GestionPagosComponent {
 
   cargarPagos(): void {
     this.cargandoPagos = true;
-    this.pagos = [];
-
+    // No vaciar pagos aquí: se mantiene la lista actual hasta que lleguen los nuevos datos,
+    // evitando el parpadeo "No hay pagos para mostrar" durante un refresh (p. ej. tras crear uno).
     this._servicioAulas.getCursosActivos().subscribe({
       next: (cursos) => {
         if (!cursos?.length) {
@@ -76,9 +79,7 @@ export class GestionPagosComponent {
         );
         forkJoin(requests).subscribe({
           next: (arrays) => {
-            this.pagos = arrays
-              .flat()
-              .sort((a, b) => a.idPago - b.idPago);
+            this.pagos = arrays.flat().sort((a, b) => a.idPago - b.idPago);
             this.cargandoPagos = false;
           },
           error: () => {
@@ -96,7 +97,12 @@ export class GestionPagosComponent {
 
   abrirModalCrear(): void {
     this.mostrarModalCrear = true;
-    this.crearForm = { idEvento: 0, idEventoActividad: 0, idCurso: 0, cantidad: 0 };
+    this.crearForm = {
+      idEvento: 0,
+      idEventoActividad: 0,
+      idCurso: 0,
+      cantidad: 0,
+    };
     this.actividadesEvento = [];
     this.preciosActividad = [];
     forkJoin({
@@ -122,6 +128,8 @@ export class GestionPagosComponent {
   }
 
   cerrarModalCrear(): void {
+    if (this.guardando) return;
+    this.guardando = false;
     this.mostrarModalCrear = false;
   }
 
@@ -150,7 +158,9 @@ export class GestionPagosComponent {
       this.crearForm.cantidad = 0;
       return;
     }
-    const precio = this.preciosActividad.find((p) => p.idEventoActividad === id);
+    const precio = this.preciosActividad.find(
+      (p) => p.idEventoActividad === id,
+    );
     this.crearForm.cantidad = precio ? precio.precioTotal : 0;
   }
 
@@ -201,11 +211,10 @@ export class GestionPagosComponent {
 
   abrirModalEditar(pago: PagoConCurso): void {
     this.pagoEditando = pago;
-    const estadoActual = (pago.estado || '').trim().toUpperCase() || 'PENDIENTE';
+    const estadoActual =
+      (pago.estado || '').trim().toUpperCase() || 'PENDIENTE';
     const estadoValido =
-      ['PENDIENTE', 'PAGADO', 'ANULADO'].includes(estadoActual)
-        ? estadoActual
-        : 'PENDIENTE';
+      estadoActual === 'PAGADO' ? 'PAGADO' : 'PENDIENTE';
     this.editarForm = {
       cantidad: pago.cantidadPagada,
       estado: estadoValido,
@@ -214,6 +223,8 @@ export class GestionPagosComponent {
   }
 
   cerrarModalEditar(): void {
+    if (this.guardando) return;
+    this.guardando = false;
     this.mostrarModalEditar = false;
     this.pagoEditando = null;
   }
@@ -254,8 +265,8 @@ export class GestionPagosComponent {
   }
 
   togglePagado(pago: PagoConCurso): void {
-    const nuevoEstado =
-      (pago.estado || '').toUpperCase() === 'PAGADO' ? 'PENDIENTE' : 'PAGADO';
+    const estado = (pago.estado || '').toUpperCase();
+    const nuevoEstado = estado === 'PAGADO' ? 'PENDIENTE' : 'PAGADO';
     this.actualizandoEstado.add(pago.idPago);
     const body = {
       idPago: pago.idPago,
@@ -324,7 +335,6 @@ export class GestionPagosComponent {
     const e = (estado || '').toUpperCase();
     if (e === 'PAGADO') return 'bg-green-100 text-green-800';
     if (e === 'PENDIENTE') return 'bg-amber-100 text-amber-800';
-    if (e === 'ANULADO' || e === 'CANCELADO') return 'bg-red-100 text-red-800';
     return 'bg-gray-100 text-gray-800';
   }
 }
