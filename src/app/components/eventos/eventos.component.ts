@@ -10,6 +10,11 @@ import { PrecioActividadService } from '../../services/precio-actividad/precio-a
 import { Actividad } from '../../models/Actividad';
 import Swal from 'sweetalert2';
 import { forkJoin } from 'rxjs';
+import { CapitanActividadesService } from '../../services/capitan-actividades/capitan-actividades.service';
+import { PartidoResultadoService } from '../../services/resultados/partido-resultado.service';
+import { EquiposService } from '../../services/equipos/equipos.service';
+import { ActividadesEvento } from '../../models/ActividadesEvento';
+import { Equipo } from '../../models/Equipo';
 
 @Component({
   selector: 'app-eventos',
@@ -35,11 +40,29 @@ export class EventosComponent implements OnInit {
   public actividades: Actividad[] = [];
   public actividadesSeleccionadas: Actividad[] = [];
   public preciosActividades: { [key: number]: number } = {};
+
+  // Captain create resultado
+  public esCapitan: boolean = false;
+  public mostrarModalCrearResultado: boolean = false;
+  public eventoCrearResultado: Evento | null = null;
+  public actividadesEventoCrear: ActividadesEvento[] = [];
+  public equiposCrear: Equipo[] = [];
+  public formResultado = {
+    idEventoActividad: 0,
+    idActividad: 0,
+    idEquipoLocal: 0,
+    idEquipoVisitante: 0,
+    puntosLocal: 0,
+    puntosVisitante: 0,
+  };
   constructor(
     private _servicioEventos: EventosService,
     private _servicioProfesores: ProfesoresService,
     private _servicioActividades: ActividadesService,
-    private _servicioPrecioActividad: PrecioActividadService
+    private _servicioPrecioActividad: PrecioActividadService,
+    private _capitanService: CapitanActividadesService,
+    private _partidoResultadoService: PartidoResultadoService,
+    private _equiposService: EquiposService,
   ) {}
 
   abrirModal(): void {
@@ -223,62 +246,6 @@ export class EventosComponent implements OnInit {
     });
   }
 
-  // Método recursivo para insertar actividades una por una con delay
-  insertarActividadesSecuencialmente(idEvento: number, index: number, onComplete: () => void): void {
-    // Si ya procesamos todas las actividades, ejecutar el callback
-    if (index >= this.actividadesSeleccionadas.length) {
-      onComplete();
-      return;
-    }
-
-    const act = this.actividadesSeleccionadas[index];
-    console.log(`Añadiendo actividad ${index + 1}/${this.actividadesSeleccionadas.length}: ${act.nombre}`);
-
-    // Insertar la actividad en el evento
-    this._servicioEventos
-      .insertarActividadesEvento(idEvento, act.idActividad)
-      .subscribe({
-        next: (response) => {
-          console.log(response);
-          const idEventoActividad = response.idEventoActividad || response.id;
-          const precio = this.preciosActividades[act.idActividad] || 0;
-
-          // Si hay precio, insertarlo con delay
-          if (idEventoActividad && precio >= 0) {
-            setTimeout(() => {
-              console.log(`Insertando precio ${precio}€ para ${act.nombre}`);
-              this._servicioPrecioActividad
-                .insertarPrecioActividad(precio, idEventoActividad)
-                .subscribe({
-                  next: (precioResponse) => {
-                    console.log('Precio insertado:', precioResponse);
-                    // Continuar con la siguiente actividad después de 500ms
-                    setTimeout(() => {
-                      this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
-                    }, 500);
-                  },
-                  error: (error) => {
-                    console.error('Error al insertar precio:', error);
-                    // Continuar con la siguiente aunque falle
-                    setTimeout(() => {
-                      this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
-                    }, 500);
-                  },
-                });
-            }, 500);
-          } else {
-            // Si no hay precio, continuar directamente
-            this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
-          }
-        },
-        error: (error) => {
-          console.error('Error al insertar actividad:', error);
-          // Continuar con la siguiente aunque falle
-          this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
-        },
-      });
-  }
-
   
     // Método para asociar el profesor y finalizar la creación
     asociarProfesorYFinalizar(idEvento: number, idProfesor: number): void {
@@ -435,6 +402,18 @@ export class EventosComponent implements OnInit {
     if (parseInt(localStorage.getItem('idRole') || '0') == 4) {
       this.esOrganizador = true;
     }
+
+    // detección de capitán
+    const userIdRaw = localStorage.getItem('userID');
+    const userId = userIdRaw ? Number.parseInt(userIdRaw, 10) : NaN;
+    if (Number.isFinite(userId) && userId > 0) {
+      this._capitanService.getCapitanByUsuario(userId).subscribe({
+        next: (capitan) => (this.esCapitan = !!capitan),
+        error: () => (this.esCapitan = false),
+      });
+    } else {
+      this.esCapitan = false;
+    }
     this._servicioEventos.getEventos().subscribe((response) => {
       // En "todos": primero próximos/abiertos y después pasados.
       // - Próximos: fecha ascendente (el más cercano primero)
@@ -475,5 +454,106 @@ export class EventosComponent implements OnInit {
       this.actividades = response;
       console.log('Actividades:' + this.actividades);
     });
+  }
+
+  abrirModalCrearResultado(evento: Evento): void {
+    if (!this.esCapitan) return;
+    // find original event to keep raw date/id
+    const eventoOriginal =
+      this.eventosOriginales.find((e) => e.idEvento === evento.idEvento) || evento;
+    this.eventoCrearResultado = eventoOriginal;
+    this.mostrarModalCrearResultado = true;
+    this.actividadesEventoCrear = [];
+    this.equiposCrear = [];
+    this.formResultado = {
+      idEventoActividad: 0,
+      idActividad: 0,
+      idEquipoLocal: 0,
+      idEquipoVisitante: 0,
+      puntosLocal: 0,
+      puntosVisitante: 0,
+    };
+
+    this._servicioEventos.getActividadesEvento(eventoOriginal.idEvento).subscribe({
+      next: (acts) => (this.actividadesEventoCrear = acts ?? []),
+      error: () => (this.actividadesEventoCrear = []),
+    });
+  }
+
+  cerrarModalCrearResultado(): void {
+    this.mostrarModalCrearResultado = false;
+    this.eventoCrearResultado = null;
+    this.actividadesEventoCrear = [];
+    this.equiposCrear = [];
+  }
+
+  onActividadEventoCrearChange(): void {
+    const idEventoActividad = Number(this.formResultado.idEventoActividad || 0);
+    const act = this.actividadesEventoCrear.find((a) => a.idEventoActividad === idEventoActividad);
+    this.formResultado.idActividad = act?.idActividad ?? 0;
+    this.formResultado.idEquipoLocal = 0;
+    this.formResultado.idEquipoVisitante = 0;
+    this.equiposCrear = [];
+    if (!this.eventoCrearResultado || !act?.idActividad) return;
+    this._equiposService
+      .getEquiposActividadEvento(act.idActividad, this.eventoCrearResultado.idEvento)
+      .subscribe({
+        next: (equipos) => (this.equiposCrear = equipos ?? []),
+        error: () => (this.equiposCrear = []),
+      });
+  }
+
+  crearResultado(): void {
+    if (!this.eventoCrearResultado) return;
+    if (
+      !this.formResultado.idEventoActividad ||
+      !this.formResultado.idEquipoLocal ||
+      !this.formResultado.idEquipoVisitante
+    ) {
+      Swal.fire({
+        title: 'Datos incompletos',
+        text: 'Selecciona actividad y ambos equipos.',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar',
+      });
+      return;
+    }
+    if (this.formResultado.idEquipoLocal === this.formResultado.idEquipoVisitante) {
+      Swal.fire({
+        title: 'Equipos inválidos',
+        text: 'El equipo local y visitante no pueden ser el mismo.',
+        icon: 'warning',
+        confirmButtonText: 'Aceptar',
+      });
+      return;
+    }
+
+    this._partidoResultadoService
+      .create({
+        idPartidoResultado: 0,
+        idEventoActividad: this.formResultado.idEventoActividad,
+        idEquipoLocal: this.formResultado.idEquipoLocal,
+        idEquipoVisitante: this.formResultado.idEquipoVisitante,
+        puntosLocal: this.formResultado.puntosLocal,
+        puntosVisitante: this.formResultado.puntosVisitante,
+      })
+      .subscribe({
+        next: () => {
+          Swal.fire({
+            title: 'Resultado creado',
+            text: 'Se ha guardado el resultado correctamente.',
+            icon: 'success',
+            confirmButtonText: 'Aceptar',
+          }).then(() => this.cerrarModalCrearResultado());
+        },
+        error: () => {
+          Swal.fire({
+            title: 'Error',
+            text: 'No se pudo crear el resultado (requiere rol capitán).',
+            icon: 'error',
+            confirmButtonText: 'Aceptar',
+          });
+        },
+      });
   }
 }

@@ -1,0 +1,418 @@
+<div
+  class="min-h-screen bg-linear-to-br from-white via-blue-50 to-blue-100 p-6 md:p-12"
+>
+  <header class="max-w-7xl mx-auto mb-12 text-center">
+    <h1
+      class="text-5xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-blue-400 uppercase italic tracking-tighter"
+    >
+      RESULTADOS DE PARTIDOS
+    </h1>
+    <div class="h-1 w-32 bg-blue-500 mx-auto mt-2 rounded-full"></div>
+  </header>
+
+  <main class="max-w-7xl mx-auto">
+    @if (error()) {
+      <div
+        class="mb-6 bg-red-50 border border-red-200 text-red-800 rounded-xl p-4"
+      >
+        {{ error() }}
+      </div>
+    }
+
+    <section
+      class="bg-white/70 border border-gray-200 rounded-2xl px-6 py-4 shadow-sm mb-8"
+    >
+      <div
+        class="flex flex-col md:flex-row gap-4 md:items-end md:justify-between"
+      >
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-gray-700">Evento</label>
+          <input
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+            list="eventos-list"
+            placeholder="Todos los eventos"
+            [value]="selectedEventoLabel()"
+            (input)="onEventoChange($any($event.target).value)"
+          />
+          <datalist id="eventos-list">
+            @for (ev of eventosDisponibles(); track ev.idEvento) {
+              <option [value]="ev.eventoNombre">ID {{ ev.idEvento }}</option>
+            }
+          </datalist>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-semibold text-gray-700">Actividad</label>
+          <input
+            class="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+            list="actividades-list"
+            placeholder="Todas las actividades"
+            [value]="selectedActividadLabel()"
+            (input)="onActividadChange($any($event.target).value)"
+          />
+          <datalist id="actividades-list">
+            @for (act of actividadesDisponibles(); track act.idActividad) {
+              <option [value]="act.actividadNombre">
+                ID {{ act.idActividad }}
+              </option>
+            }
+          </datalist>
+        </div>
+
+        <div class="text-sm text-gray-600">
+          <span class="font-semibold">Partidos:</span> {{ totalPartidos() }}
+        </div>
+
+        @if (canManageResultados()) {
+          <button
+            type="button"
+            class="px-4 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700"
+            (click)="openCreate()"
+          >
+            + Crear resultado
+          </button>
+        }
+      </div>
+    </section>
+
+    @if (canManageResultados()) {
+      <div class="max-w-7xl mx-auto mb-6 text-sm text-blue-700">
+        Modo capitán: puedes editar/eliminar resultados desde las tarjetas.
+      </div>
+    }
+
+    @if (isLoading()) {
+      <div class="flex justify-center items-center h-64">
+        <div
+          class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"
+        ></div>
+      </div>
+    } @else {
+      @for (grupo of gruposEventos(); track grupo.idEvento) {
+        <div class="mb-16">
+          <div class="flex items-center mb-6">
+            <span
+              class="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-bold shadow-lg"
+            >
+              Jornada: {{ grupo.eventoNombre }}
+            </span>
+            <div class="grow h-px bg-blue-300 ml-4"></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            @for (partido of grupo.partidos; track partido.id) {
+              <div
+                class="relative group bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border border-white"
+              >
+                <div
+                  class="h-2 w-full bg-linear-to-r from-blue-300 via-blue-500 to-blue-100"
+                ></div>
+
+                <div class="p-8">
+                  <div class="mb-4 flex justify-center">
+                    <span
+                      class="text-xs font-black text-blue-700 uppercase tracking-widest bg-blue-100 border border-blue-200 rounded-full px-4 py-1.5 shadow-sm"
+                    >
+                      {{ partido.actividadNombre }}
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center space-x-2">
+                    <div class="flex flex-col items-center flex-1">
+                      <span
+                        class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2"
+                        >Local</span
+                      >
+                      <h3
+                        class="text-sm font-black text-gray-700 h-10 text-center flex items-center mb-2"
+                      >
+                        {{ partido.equipoLocal }}
+                      </h3>
+                      <span
+                        class="text-5xl font-black text-blue-600 group-hover:scale-110 transition-transform"
+                      >
+                        {{ partido.puntosLocal }}
+                      </span>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                      <span class="text-xs font-black text-blue-200 italic"
+                        >VS</span
+                      >
+                    </div>
+
+                    <div class="flex flex-col items-center flex-1">
+                      <span
+                        class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2"
+                        >Visitante</span
+                      >
+                      <h3
+                        class="text-sm font-black text-gray-700 h-10 text-center flex items-center mb-2"
+                      >
+                        {{ partido.equipoVisitante }}
+                      </h3>
+                      <span
+                        class="text-5xl font-black text-blue-600 group-hover:scale-110 transition-transform"
+                      >
+                        {{ partido.puntosVisitante }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="bg-slate-50 border-t border-gray-100 px-6 py-3 flex justify-between items-center"
+                >
+                  <span class="text-[10px] font-bold text-gray-400 uppercase"
+                    >ID: #{{ partido.id }}</span
+                  >
+                  <div class="flex items-center">
+                    <div
+                      class="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"
+                    ></div>
+                    <span
+                      class="text-[10px] font-bold text-gray-500 uppercase tracking-tighter"
+                      >Finalizado</span
+                    >
+                  </div>
+                </div>
+
+                @if (canManageResultados()) {
+                  <div
+                    class="px-6 py-3 bg-slate-50 border-t border-gray-100 flex gap-2 justify-end"
+                  >
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white hover:bg-blue-700"
+                      (click)="openEdit(partido)"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-600 text-white hover:bg-red-700"
+                      (click)="deleteResultado(partido)"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div
+          class="bg-white p-20 rounded-3xl shadow-inner text-center border-2 border-dashed border-blue-200"
+        >
+          <p class="text-blue-400 font-medium italic">
+            No hay resultados disponibles en este momento.
+          </p>
+        </div>
+      }
+    }
+  </main>
+</div>
+
+@if (editing(); as partido) {
+  <div class="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+    <div
+      class="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+    >
+      <div
+        class="px-6 py-4 border-b border-gray-100 flex items-center justify-between"
+      >
+        <div>
+          <div class="text-sm font-extrabold text-gray-800">
+            Editar resultado
+          </div>
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <span
+              class="text-xs font-black text-blue-700 bg-blue-100 border border-blue-200 rounded-full px-3 py-1"
+            >
+              {{ partido.actividadNombre }}
+            </span>
+            <span class="text-xs text-gray-500 font-semibold">
+              {{ partido.equipoLocal }} vs {{ partido.equipoVisitante }}
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="text-gray-500 hover:text-gray-800"
+          (click)="closeEdit()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="p-6 grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold text-gray-600"
+            >Puntos: {{ partido.equipoLocal }}</label
+          >
+          <input
+            class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+            type="number"
+            [(ngModel)]="editPuntosLocal"
+          />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-gray-600"
+            >Puntos: {{ partido.equipoVisitante }}</label
+          >
+          <input
+            class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+            type="number"
+            [(ngModel)]="editPuntosVisitante"
+          />
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
+        <button
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm font-bold bg-gray-100 hover:bg-gray-200"
+          (click)="closeEdit()"
+          [disabled]="isSaving()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700"
+          (click)="saveEdit()"
+          [disabled]="isSaving()"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (creating()) {
+  <div class="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+    <div
+      class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+    >
+      <div
+        class="px-6 py-4 border-b border-gray-100 flex items-center justify-between"
+      >
+        <div class="text-sm font-extrabold text-gray-800">Crear resultado</div>
+        <button
+          type="button"
+          class="text-gray-500 hover:text-gray-800"
+          (click)="closeCreate()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="p-6 grid grid-cols-1 gap-4">
+        <div>
+          <label class="text-xs font-bold text-gray-600">Evento (ID)</label>
+          <select
+            class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 bg-white"
+            [ngModel]="createEventoId()"
+            (ngModelChange)="onCreateEventoChange($event)"
+          >
+            <option [ngValue]="null">Selecciona un evento</option>
+            @for (ev of createEventosOptions(); track ev.idEvento) {
+              <option [ngValue]="ev.idEvento">
+                {{ ev.fechaEvento | date:'dd/MM/yyyy' }} (ID {{ ev.idEvento }})
+              </option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-gray-600">Actividad</label>
+          <select
+            class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 bg-white"
+            [ngModel]="createIdEventoActividad()"
+            (ngModelChange)="onCreateIdEventoActividadChange($event)"
+            [disabled]="!createEventoId()"
+          >
+            <option [ngValue]="null">Selecciona una actividad</option>
+            @for (a of createActividades(); track a.idEventoActividad) {
+              <option [ngValue]="a.idEventoActividad">
+                {{ a.nombreActividad }} (ID {{ a.idEventoActividad }})
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-gray-600">Equipo local</label>
+            <select
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 bg-white"
+              [(ngModel)]="createIdEquipoLocal"
+              [disabled]="createEquipos().length === 0"
+            >
+              <option [ngValue]="null">Selecciona</option>
+              @for (e of createEquipos(); track e.idEquipo) {
+                <option [ngValue]="e.idEquipo">{{ e.nombreEquipo }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-600"
+              >Equipo visitante</label
+            >
+            <select
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 bg-white"
+              [(ngModel)]="createIdEquipoVisitante"
+              [disabled]="createEquipos().length === 0"
+            >
+              <option [ngValue]="null">Selecciona</option>
+              @for (e of createEquipos(); track e.idEquipo) {
+                <option [ngValue]="e.idEquipo">{{ e.nombreEquipo }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-gray-600">Puntos local</label>
+            <input
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300"
+              type="number"
+              [(ngModel)]="createPuntosLocal"
+            />
+          </div>
+          <div>
+            <label class="text-xs font-bold text-gray-600"
+              >Puntos visitante</label
+            >
+            <input
+              class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300"
+              type="number"
+              [(ngModel)]="createPuntosVisitante"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-2">
+        <button
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm font-bold bg-gray-100 hover:bg-gray-200"
+          (click)="closeCreate()"
+          [disabled]="isSaving()"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700"
+          (click)="submitCreate()"
+          [disabled]="isSaving()"
+        >
+          Crear
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -242,62 +242,6 @@ export class PanelOrganizadorComponent implements OnInit {
     });
   }
 
-  // Método recursivo para insertar actividades una por una con delay
-  insertarActividadesSecuencialmente(idEvento: number, index: number, onComplete: () => void): void {
-    // Si ya procesamos todas las actividades, ejecutar el callback
-    if (index >= this.actividadesSeleccionadas.length) {
-      onComplete();
-      return;
-    }
-
-    const act = this.actividadesSeleccionadas[index];
-    console.log(`Añadiendo actividad ${index + 1}/${this.actividadesSeleccionadas.length}: ${act.nombre}`);
-
-    // Insertar la actividad en el evento
-    this._servicioEventos
-      .insertarActividadesEvento(idEvento, act.idActividad)
-      .subscribe({
-        next: (response) => {
-          console.log(response);
-          const idEventoActividad = response.idEventoActividad || response.id;
-          const precio = this.preciosActividades[act.idActividad] || 0;
-
-          // Si hay precio, insertarlo con delay
-          if (idEventoActividad && precio >= 0) {
-            setTimeout(() => {
-              console.log(`Insertando precio ${precio}€ para ${act.nombre}`);
-              this._servicioPrecioActividad
-                .insertarPrecioActividad(precio, idEventoActividad)
-                .subscribe({
-                  next: (precioResponse) => {
-                    console.log('Precio insertado:', precioResponse);
-                    // Continuar con la siguiente actividad después de 500ms
-                    setTimeout(() => {
-                      this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
-                    }, 500);
-                  },
-                  error: (error) => {
-                    console.error('Error al insertar precio:', error);
-                    // Continuar con la siguiente aunque falle
-                    setTimeout(() => {
-                      this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
-                    }, 500);
-                  },
-                });
-            }, 500);
-          } else {
-            // Si no hay precio, continuar directamente
-            this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
-          }
-        },
-        error: (error) => {
-          console.error('Error al insertar actividad:', error);
-          // Continuar con la siguiente aunque falle
-          this.insertarActividadesSecuencialmente(idEvento, index + 1, onComplete);
-        },
-      });
-  }
-
   // Método para asociar el profesor y finalizar la creación
   asociarProfesorYFinalizar(idEvento: number, idProfesor: number): void {
     if (idEvento && idProfesor > 0) {

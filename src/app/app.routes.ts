@@ -8,6 +8,7 @@ import { EquiposComponent } from './components/equipos/equipos.component';
 import { authGuard } from './auth/guards/auth.guard';
 import { PanelOrganizadorComponent } from './components/panel-organizador/panel-organizador.component';
 import { roleIdGuard } from './auth/guards/role-id.guard';
+import { ResultadosComponent } from './components/resultados/resultados.component';
 
 export const routes: Routes = [
   { path: 'auth', loadChildren: () => import('./auth/auth.routes') },
@@ -20,6 +21,7 @@ export const routes: Routes = [
       { path: 'eventos', component: EventosComponent },
       { path: 'equipos', component: EquiposComponent },
       { path: 'perfil', component: PerfilComponent },
+      { path: 'resultados', component: ResultadosComponent },
       {
         path: 'organizador',
         component: PanelOrganizadorComponent,
@@ -29,8 +31,7 @@ export const routes: Routes = [
       { path: 'materiales', component: MaterialesComponent },
       {
         path: 'eventos/:idEvento/resultados',
-        redirectTo: '/eventos',
-        // TODO: Create ResultadosComponent and replace redirectTo with component
+        component: ResultadosComponent,
       },
       {
         path: 'eventos/crear',
