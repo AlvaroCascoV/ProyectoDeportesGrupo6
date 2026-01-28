@@ -214,11 +214,9 @@ export class ResultadosComponent implements OnInit, OnDestroy {
 
   loadData(): void {
     this.isLoading.set(true);
-    this.error.set(null); // Limpiar error previo al iniciar nueva carga
     this._resultadosService.getInformacionCompleta().subscribe({
       next: (data) => {
         this.partidos.set(data);
-        this.error.set(null); // Limpiar error en caso de éxito
         this.isLoading.set(false);
       },
       error: () => {
