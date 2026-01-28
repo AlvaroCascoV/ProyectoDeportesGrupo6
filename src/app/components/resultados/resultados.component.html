@@ -253,7 +253,8 @@
           <input
             class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             type="number"
-            [(ngModel)]="editPuntosLocal"
+            [ngModel]="editPuntosLocal()"
+            (ngModelChange)="editPuntosLocal.set($event)"
           />
         </div>
         <div>
@@ -263,7 +264,8 @@
           <input
             class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-transparent"
             type="number"
-            [(ngModel)]="editPuntosVisitante"
+            [ngModel]="editPuntosVisitante()"
+            (ngModelChange)="editPuntosVisitante.set($event)"
           />
         </div>
       </div>
@@ -347,7 +349,8 @@
             <label class="text-xs font-bold text-gray-600">Equipo local</label>
             <select
               class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 bg-white"
-              [(ngModel)]="createIdEquipoLocal"
+              [ngModel]="createIdEquipoLocal()"
+              (ngModelChange)="createIdEquipoLocal.set($event)"
               [disabled]="createEquipos().length === 0"
             >
               <option [ngValue]="null">Selecciona</option>
@@ -362,7 +365,8 @@
             >
             <select
               class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300 bg-white"
-              [(ngModel)]="createIdEquipoVisitante"
+              [ngModel]="createIdEquipoVisitante()"
+              (ngModelChange)="createIdEquipoVisitante.set($event)"
               [disabled]="createEquipos().length === 0"
             >
               <option [ngValue]="null">Selecciona</option>
@@ -379,7 +383,8 @@
             <input
               class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300"
               type="number"
-              [(ngModel)]="createPuntosLocal"
+              [ngModel]="createPuntosLocal()"
+              (ngModelChange)="createPuntosLocal.set($event)"
             />
           </div>
           <div>
@@ -389,7 +394,8 @@
             <input
               class="mt-1 w-full px-3 py-2 rounded-lg border border-gray-300"
               type="number"
-              [(ngModel)]="createPuntosVisitante"
+              [ngModel]="createPuntosVisitante()"
+              (ngModelChange)="createPuntosVisitante.set($event)"
             />
           </div>
         </div>

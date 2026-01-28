@@ -13,6 +13,7 @@ import { forkJoin } from 'rxjs';
 import { CapitanActividadesService } from '../../services/capitan-actividades/capitan-actividades.service';
 import { PartidoResultadoService } from '../../services/resultados/partido-resultado.service';
 import { EquiposService } from '../../services/equipos/equipos.service';
+import { ResultadosService } from '../../services/resultados/resultados.service';
 import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { Equipo } from '../../models/Equipo';
 
@@ -63,6 +64,7 @@ export class EventosComponent implements OnInit {
     private _capitanService: CapitanActividadesService,
     private _partidoResultadoService: PartidoResultadoService,
     private _equiposService: EquiposService,
+    private _resultadosService: ResultadosService,
   ) {}
 
   abrirModal(): void {
@@ -539,6 +541,8 @@ export class EventosComponent implements OnInit {
       })
       .subscribe({
         next: () => {
+          // Invalidar caché de resultados para que /resultados muestre datos actualizados.
+          this._resultadosService.invalidateCache();
           Swal.fire({
             title: 'Resultado creado',
             text: 'Se ha guardado el resultado correctamente.',

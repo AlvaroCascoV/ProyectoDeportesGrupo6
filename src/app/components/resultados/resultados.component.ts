@@ -88,17 +88,29 @@ export class ResultadosComponent implements OnInit, OnDestroy {
   });
 
   eventosDisponibles = computed(() => {
-    const map = new Map<number, string>();
+    const nombrePorEvento = new Map<number, string>();
+    const fechaPorEvento = new Map<number, string>();
+
     this.partidos().forEach((p) => {
-      if (!map.has(p.idEvento)) map.set(p.idEvento, p.eventoNombre);
+      if (!nombrePorEvento.has(p.idEvento)) {
+        nombrePorEvento.set(p.idEvento, p.eventoNombre);
+        fechaPorEvento.set(p.idEvento, p.eventoFecha);
+      }
     });
-    return Array.from(map.entries())
-      .map(([idEvento, eventoNombre]) => ({ idEvento, eventoNombre }))
+
+    return Array.from(nombrePorEvento.entries())
+      .map(([idEvento, eventoNombre]) => ({
+        idEvento,
+        eventoNombre,
+        eventoFecha: fechaPorEvento.get(idEvento) ?? '',
+      }))
       .sort((a, b) => {
-        const pa = this.partidos().find((p) => p.idEvento === a.idEvento);
-        const pb = this.partidos().find((p) => p.idEvento === b.idEvento);
-        const da = pa?.eventoFecha ? new Date(pa.eventoFecha).getTime() : Number.POSITIVE_INFINITY;
-        const db = pb?.eventoFecha ? new Date(pb.eventoFecha).getTime() : Number.POSITIVE_INFINITY;
+        const da = a.eventoFecha
+          ? new Date(a.eventoFecha).getTime()
+          : Number.POSITIVE_INFINITY;
+        const db = b.eventoFecha
+          ? new Date(b.eventoFecha).getTime()
+          : Number.POSITIVE_INFINITY;
         return da - db;
       });
   });
