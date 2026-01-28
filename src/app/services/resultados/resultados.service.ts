@@ -16,24 +16,26 @@ export class ResultadosService {
   private _informacionCompleta$?: Observable<ResultadoVisual[]>;
 
   /**
-   * API: /api/Actividades/ActividadesEvento/{idEvento}
+   * API: /api/actividades/actividadesevento/{idEvento}
    * (incluye `nombreActividad` para las actividades de ese evento).
+   * Alineado con EventosService.getActividadesEvento() para consistencia.
    */
   private getActividadesEventoPorEventoId(
     idEvento: number,
   ): Observable<ActividadesEvento[]> {
     return this._http.get<ActividadesEvento[]>(
-      `${this._url}api/Actividades/ActividadesEvento/${idEvento}`,
+      `${this._url}api/actividades/actividadesevento/${idEvento}`,
     );
   }
 
   /**
    * NOTA de rendimiento:
-   * - Se cachea con `shareReplay` para no refetch en navegación/volver atrás.
+   * - Se cachea con `shareReplay({ refCount: false })` para mantener el cache
+   *   entre navegaciones incluso cuando no hay subscriptores activos.
    * - Solo se cargan nombres de actividades para eventos que realmente tienen resultados:
    *   se obtiene el conjunto de `idEvento` desde el join
    *   `PartidoResultado -> idEventoActividad -> ActividadesEvento`,
-   *   y se hace batch de `/Actividades/ActividadesEvento/{idEvento}` con `forkJoin`.
+   *   y se hace batch de `/actividades/actividadesevento/{idEvento}` con `forkJoin`.
    * - Se usan `Map` para búsquedas O(1) y evitar `find()` repetidos.
    */
   getInformacionCompleta(): Observable<ResultadoVisual[]> {
@@ -148,7 +150,7 @@ export class ResultadosService {
             });
           },
         ),
-        shareReplay({ bufferSize: 1, refCount: true }),
+        shareReplay({ bufferSize: 1, refCount: false }),
       );
     }
 
