@@ -15,11 +15,26 @@
       class="lg:hidden text-black p-2 rounded hover:bg-blue-300 transition-colors"
       aria-label="Toggle menu"
     >
-      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg
+        class="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
         @if (!isMenuOpen) {
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          ></path>
         } @else {
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
         }
       </svg>
     </button>
@@ -67,20 +82,28 @@
         >
           <i class="fas fa-building"></i>Aulas
         </a>
+        <a
+          routerLink="/resultados"
+          routerLinkActive="bg-blue-500 font-bold"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer flex items-center gap-2"
+        >
+          <i class="fas fa-trophy"></i>Resultados
+        </a>
       </div>
     </div>
 
     <!-- Desktop right menu - hidden on mobile -->
     <div class="hidden lg:flex items-center gap-2">
       @if (roleId() === 3 || roleId() === 4) {
-      <a
-        routerLink="/organizador"
-        routerLinkActive="bg-blue-500 font-bold"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer flex items-center gap-2"
-      >
-        <i class="fas fa-cog"></i>Panel
-      </a>
+        <a
+          routerLink="/organizador"
+          routerLinkActive="bg-blue-500 font-bold"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer flex items-center gap-2"
+        >
+          <i class="fas fa-cog"></i>Panel
+        </a>
       }
       <a
         routerLink="/perfil"
@@ -91,97 +114,106 @@
         <i class="fas fa-user"></i>Perfil
       </a>
 
-      @if (authService.authStatus() === 'authenticated') {
-      <button
-        type="button"
-        (click)="logout()"
-        class="text-black px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer flex items-center gap-2"
-      >
-        <i class="fas fa-sign-out-alt"></i>Salir
-      </button>
+      @if (authService.authStatus() === "authenticated") {
+        <button
+          type="button"
+          (click)="logout()"
+          class="text-black px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-300 cursor-pointer flex items-center gap-2"
+        >
+          <i class="fas fa-sign-out-alt"></i>Salir
+        </button>
       }
     </div>
   </div>
 
   <!-- Mobile menu - visible when hamburger is clicked -->
   @if (isMenuOpen) {
-  <div class="lg:hidden mt-4 space-y-2 bg-blue-300 p-4 rounded">
-    <a
-      routerLink="/home"
-      (click)="closeMenu()"
-      routerLinkActive="bg-blue-500 font-bold"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="block text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
-    >
-      <i class="fas fa-home"></i>Home
-    </a>
-    <a
-      routerLink="/eventos"
-      (click)="closeMenu()"
-      routerLinkActive="bg-blue-500 font-bold"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="block text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
-    >
-      <i class="fas fa-calendar"></i>Eventos
-    </a>
-    <a
-      routerLink="/equipos"
-      (click)="closeMenu()"
-      routerLinkActive="bg-blue-500 font-bold"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="block text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
-    >
-      <i class="fas fa-users"></i>Equipos
-    </a>
-    <a
-      routerLink="/materiales"
-      (click)="closeMenu()"
-      routerLinkActive="bg-blue-500 font-bold"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="block text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
-    >
-      <i class="fas fa-bell"></i>Materiales
-    </a>
-    <a
-      routerLink="/aulas"
-      (click)="closeMenu()"
-      routerLinkActive="bg-blue-500 font-bold"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="block text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
-    >
-      <i class="fas fa-building"></i>Aulas
-    </a>
-    <hr class="border-blue-400 my-2" />
-    @if (roleId() === 3 || roleId() === 4) {
-    <a
-      routerLink="/organizador"
-      (click)="closeMenu()"
-      routerLinkActive="bg-blue-500 font-bold"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="block text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
-    >
-      <i class="fas fa-cog"></i>Panel
-    </a>
-    }
-    <a
-      routerLink="/perfil"
-      (click)="closeMenu()"
-      routerLinkActive="bg-blue-500 font-bold"
-      [routerLinkActiveOptions]="{ exact: true }"
-      class="block text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
-    >
-      <i class="fas fa-user"></i>Perfil
-    </a>
+    <div class="lg:hidden mt-4 space-y-2 bg-blue-300 p-4 rounded">
+      <a
+        routerLink="/home"
+        (click)="closeMenu()"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+      >
+        <i class="fas fa-home"></i>Home
+      </a>
+      <a
+        routerLink="/eventos"
+        (click)="closeMenu()"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+      >
+        <i class="fas fa-calendar"></i>Eventos
+      </a>
+      <a
+        routerLink="/equipos"
+        (click)="closeMenu()"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+      >
+        <i class="fas fa-users"></i>Equipos
+      </a>
+      <a
+        routerLink="/materiales"
+        (click)="closeMenu()"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+      >
+        <i class="fas fa-bell"></i>Materiales
+      </a>
+      <a
+        routerLink="/aulas"
+        (click)="closeMenu()"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+      >
+        <i class="fas fa-building"></i>Aulas
+      </a>
+      <a
+        routerLink="/resultados"
+        (click)="closeMenu()"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+      >
+        <i class="fas fa-trophy"></i>Resultados
+      </a>
+      <hr class="border-blue-400 my-2" />
+      @if (roleId() === 3 || roleId() === 4) {
+        <a
+          routerLink="/organizador"
+          (click)="closeMenu()"
+          routerLinkActive="bg-blue-500 font-bold"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+        >
+          <i class="fas fa-cog"></i>Panel
+        </a>
+      }
+      <a
+        routerLink="/perfil"
+        (click)="closeMenu()"
+        routerLinkActive="bg-blue-500 font-bold"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="text-black no-underline px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+      >
+        <i class="fas fa-user"></i>Perfil
+      </a>
 
-    @if (authService.authStatus() === 'authenticated') {
-    <button
-      type="button"
-      (click)="logout(); closeMenu()"
-      class="w-full text-left text-black px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
-    >
-      <i class="fas fa-sign-out-alt"></i>Salir
-    </button>
-    }
-  </div>
+      @if (authService.authStatus() === "authenticated") {
+        <button
+          type="button"
+          (click)="logout(); closeMenu()"
+          class="w-full text-left text-black px-4 py-2 rounded transition-colors duration-300 hover:bg-blue-400 cursor-pointer flex items-center gap-2"
+        >
+          <i class="fas fa-sign-out-alt"></i>Salir
+        </button>
+      }
+    </div>
   }
 </nav>
