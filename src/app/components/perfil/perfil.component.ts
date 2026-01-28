@@ -1,3 +1,4 @@
+import { UserIdRoles } from './../../auth/constants/user-roles';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Alumno } from '../../models/Alumno';
@@ -6,6 +7,7 @@ import { Inscripcion } from '../../models/Inscripcion';
 import { CapitanActividadesService } from '../../services/capitan-actividades/capitan-actividades.service';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { UserRoles } from '../../auth/constants/user-roles';
 
 @Component({
   selector: 'app-perfil',
@@ -16,6 +18,8 @@ import { forkJoin } from 'rxjs';
 })
 export class PerfilComponent implements OnInit {
   public usuario!: Alumno;
+  public rolUser!: string;
+  public nombreRol!: string;
   public inscripciones: Inscripcion[] = [];
   public inscripcionesFiltro: Inscripcion[] = [];
   public filtroActivo: 'pasados' | 'proximos' | 'todos' = 'todos';
@@ -33,6 +37,10 @@ export class PerfilComponent implements OnInit {
       this._router.navigateByUrl('/auth/login');
       return;
     }
+
+    
+    this.nombreRol = this.obtenerNombreRol(localStorage.getItem("idRole") || "0");
+    
 
     this._servicioPerfil.getPerfil(token).subscribe((response) => {
       this.usuario = response;
@@ -120,5 +128,16 @@ export class PerfilComponent implements OnInit {
 
   esCapitanActividad(idEventoActividad: number): boolean {
     return this.esCapitan.get(idEventoActividad) || false;
+  }
+
+  obtenerNombreRol(idRol: string): string {
+    const rolMap: { [key: string]: string } = {
+      [UserIdRoles.PROFESOR]: UserRoles.PROFESOR,
+      [UserIdRoles.ALUMNO]: UserRoles.ALUMNO,
+      [UserIdRoles.ADMINISTRADOR]: UserRoles.ADMINISTRADOR,
+      [UserIdRoles.ORGANIZADOR]: UserRoles.ORGANIZADOR,
+      [UserIdRoles.CAPITAN]: UserRoles.CAPITAN,
+    };
+    return rolMap[idRol] || 'Desconocido';
   }
 }
