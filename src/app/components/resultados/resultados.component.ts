@@ -68,7 +68,8 @@ export class ResultadosComponent implements OnInit, OnDestroy {
   createEventosOptions = computed(() => {
     const eventos = this.createEventosAll() ?? [];
     return [...eventos].sort(
-      (a, b) => new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime(),
+      (a, b) =>
+        new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime(),
     );
   });
 
@@ -118,8 +119,10 @@ export class ResultadosComponent implements OnInit, OnDestroy {
   selectedEventoLabel = computed<string>(() => {
     const idEvento = this.selectedEventoId();
     if (idEvento == null) return '';
-    return this.eventosDisponibles().find((e) => e.idEvento === idEvento)
-      ?.eventoNombre ?? '';
+    return (
+      this.eventosDisponibles().find((e) => e.idEvento === idEvento)
+        ?.eventoNombre ?? ''
+    );
   });
 
   actividadesDisponibles = computed(() => {
@@ -130,24 +133,39 @@ export class ResultadosComponent implements OnInit, OnDestroy {
       if (!map.has(p.idActividad)) map.set(p.idActividad, p.actividadNombre);
     });
     return Array.from(map.entries())
-      .map(([idActividad, actividadNombre]) => ({ idActividad, actividadNombre }))
+      .map(([idActividad, actividadNombre]) => ({
+        idActividad,
+        actividadNombre,
+      }))
       .sort((a, b) => a.idActividad - b.idActividad);
   });
 
   selectedActividadLabel = computed<string>(() => {
     const idActividad = this.selectedActividadId();
     if (idActividad == null) return '';
-    return this.actividadesDisponibles().find((a) => a.idActividad === idActividad)
-      ?.actividadNombre ?? '';
+    return (
+      this.actividadesDisponibles().find((a) => a.idActividad === idActividad)
+        ?.actividadNombre ?? ''
+    );
   });
 
   gruposEventos = computed<
-    { idEvento: number; eventoNombre: string; eventoFecha: string; partidos: ResultadoVisual[] }[]
+    {
+      idEvento: number;
+      eventoNombre: string;
+      eventoFecha: string;
+      partidos: ResultadoVisual[];
+    }[]
   >(() => {
     const todos = this._partidosFiltrados();
     const map = new Map<
       number,
-      { idEvento: number; eventoNombre: string; eventoFecha: string; partidos: ResultadoVisual[] }
+      {
+        idEvento: number;
+        eventoNombre: string;
+        eventoFecha: string;
+        partidos: ResultadoVisual[];
+      }
     >();
 
     todos.forEach((p) => {
@@ -163,12 +181,17 @@ export class ResultadosComponent implements OnInit, OnDestroy {
       }
       existing.partidos.push(p);
       // Keep the earliest known date if any inconsistent data arrives
-      if (!existing.eventoFecha && p.eventoFecha) existing.eventoFecha = p.eventoFecha;
+      if (!existing.eventoFecha && p.eventoFecha)
+        existing.eventoFecha = p.eventoFecha;
     });
 
     return Array.from(map.values()).sort((a, b) => {
-      const da = a.eventoFecha ? new Date(a.eventoFecha).getTime() : Number.POSITIVE_INFINITY;
-      const db = b.eventoFecha ? new Date(b.eventoFecha).getTime() : Number.POSITIVE_INFINITY;
+      const da = a.eventoFecha
+        ? new Date(a.eventoFecha).getTime()
+        : Number.POSITIVE_INFINITY;
+      const db = b.eventoFecha
+        ? new Date(b.eventoFecha).getTime()
+        : Number.POSITIVE_INFINITY;
       return da - db;
     });
   });
@@ -229,7 +252,9 @@ export class ResultadosComponent implements OnInit, OnDestroy {
   }
 
   canManageResultados(): boolean {
-    return this._authService.authStatus() === 'authenticated' && this.isCapitan();
+    return (
+      this._authService.authStatus() === 'authenticated' && this.isCapitan()
+    );
   }
 
   openCreate(): void {
@@ -240,7 +265,10 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     // Cargar TODOS los eventos para crear (no solo los que ya tienen resultados)
     this._eventosService.getEventos().subscribe({
       next: (eventos) => this.createEventosAll.set(eventos ?? []),
-      error: () => this.createEventosAll.set([]),
+      error: () => {
+        this.createEventosAll.set([]);
+        this.error.set('No se pudieron cargar los eventos.');
+      },
     });
 
     const presetEventoId = this.selectedEventoId();
@@ -272,16 +300,20 @@ export class ResultadosComponent implements OnInit, OnDestroy {
 
     this._eventosService.getActividadesEvento(idEvento).subscribe({
       next: (acts) => this.createActividades.set(acts ?? []),
-      error: () => this.error.set('No se pudieron cargar las actividades del evento.'),
+      error: () =>
+        this.error.set('No se pudieron cargar las actividades del evento.'),
     });
   }
 
   onCreateEventoChange(raw: unknown): void {
     // `ngModelChange` puede emitir number | null
     const parsed =
-      raw == null || raw === '' ? NaN : typeof raw === 'number' ? raw : Number(raw);
-    const idEvento =
-      Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+      raw == null || raw === ''
+        ? NaN
+        : typeof raw === 'number'
+          ? raw
+          : Number(raw);
+    const idEvento = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 
     this.createEventoId.set(idEvento);
     // Asegurar que solo se muestren actividades del evento seleccionado
@@ -298,7 +330,11 @@ export class ResultadosComponent implements OnInit, OnDestroy {
 
   onCreateIdEventoActividadChange(raw: unknown): void {
     const parsed =
-      raw == null || raw === '' ? NaN : typeof raw === 'number' ? raw : Number(raw);
+      raw == null || raw === ''
+        ? NaN
+        : typeof raw === 'number'
+          ? raw
+          : Number(raw);
     const idEventoActividad =
       Number.isFinite(parsed) && parsed > 0 ? parsed : null;
     this.createIdEventoActividad.set(idEventoActividad);
@@ -307,12 +343,23 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     this.createIdEquipoVisitante.set(null);
 
     const idEvento = this.createEventoId();
-    const act = this.createActividades().find((a) => a.idEventoActividad === idEventoActividad);
-    if (idEvento != null && act?.idActividad != null && idEventoActividad != null) {
-      this._equiposService.getEquiposActividadEvento(act.idActividad, idEvento).subscribe({
-        next: (equipos) => this.createEquipos.set(equipos ?? []),
-        error: () => this.error.set('No se pudieron cargar los equipos para esta actividad.'),
-      });
+    const act = this.createActividades().find(
+      (a) => a.idEventoActividad === idEventoActividad,
+    );
+    if (
+      idEvento != null &&
+      act?.idActividad != null &&
+      idEventoActividad != null
+    ) {
+      this._equiposService
+        .getEquiposActividadEvento(act.idActividad, idEvento)
+        .subscribe({
+          next: (equipos) => this.createEquipos.set(equipos ?? []),
+          error: () =>
+            this.error.set(
+              'No se pudieron cargar los equipos para esta actividad.',
+            ),
+        });
     }
   }
 
@@ -330,24 +377,28 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     }
 
     this.isSaving.set(true);
-    this._partidoResultadoService.create({
-      idPartidoResultado: 0,
-      idEventoActividad,
-      idEquipoLocal,
-      idEquipoVisitante,
-      puntosLocal: this.createPuntosLocal(),
-      puntosVisitante: this.createPuntosVisitante(),
-    }).subscribe({
-      next: () => {
-        this._resultadosService.invalidateCache();
-        this.closeCreate();
-        this.loadData();
-      },
-      error: () => {
-        this.error.set('No se pudo crear el resultado (requiere rol capitán).');
-        this.isSaving.set(false);
-      },
-    });
+    this._partidoResultadoService
+      .create({
+        idPartidoResultado: 0,
+        idEventoActividad,
+        idEquipoLocal,
+        idEquipoVisitante,
+        puntosLocal: this.createPuntosLocal(),
+        puntosVisitante: this.createPuntosVisitante(),
+      })
+      .subscribe({
+        next: () => {
+          this._resultadosService.invalidateCache();
+          this.closeCreate();
+          this.loadData();
+        },
+        error: () => {
+          this.error.set(
+            'No se pudo crear el resultado (requiere rol capitán).',
+          );
+          this.isSaving.set(false);
+        },
+      });
   }
 
   openEdit(partido: ResultadoVisual): void {
@@ -382,7 +433,9 @@ export class ResultadosComponent implements OnInit, OnDestroy {
           this.loadData();
         },
         error: () => {
-          this.error.set('No se pudo actualizar el resultado (requiere rol capitán).');
+          this.error.set(
+            'No se pudo actualizar el resultado (requiere rol capitán).',
+          );
           this.isSaving.set(false);
         },
       });
@@ -398,7 +451,9 @@ export class ResultadosComponent implements OnInit, OnDestroy {
         this.loadData();
       },
       error: () => {
-        this.error.set('No se pudo eliminar el resultado (requiere rol capitán).');
+        this.error.set(
+          'No se pudo eliminar el resultado (requiere rol capitán).',
+        );
         this.isSaving.set(false);
       },
     });
