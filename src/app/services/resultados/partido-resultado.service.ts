@@ -13,7 +13,7 @@ export class PartidoResultadoService {
   private authHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     if (!token) {
-      throw new Error('No hay token de autenticación para gestionar resultados.');
+      throw new Error('No hay token de autenticación.');
     }
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,

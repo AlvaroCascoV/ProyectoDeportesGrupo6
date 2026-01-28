@@ -55,7 +55,6 @@ export class ResultadosService {
             (relaciones ?? []).map((r) => [r.idEventoActividad, r]),
           );
 
-          // Solo pedimos actividades de eventos que aparecen en resultados
           const eventoIds = Array.from(
             new Set(
               (resultados ?? [])

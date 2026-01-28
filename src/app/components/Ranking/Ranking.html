@@ -1,0 +1,31 @@
+<div class="max-w-md mx-auto p-6">
+  <h2 class="text-3xl font-black text-center text-blue-600 mb-8 italic uppercase">Podio Escolar</h2>
+
+  <div class="space-y-4">
+    @for (equipo of clasificacion(); track equipo.nombre; let i = $index) {
+      
+      <div class="flex items-center p-4 rounded-xl shadow-md border-2 transition-transform hover:scale-105"
+        [class.bg-gradient-to-r.from-yellow-400.to-yellow-100.border-yellow-500]="i === 0"
+        [class.bg-gradient-to-r.from-slate-300.to-slate-100.border-slate-400]="i === 1"
+        [class.bg-gradient-to-r.from-orange-400.to-orange-100.border-orange-500]="i === 2"
+        [class.bg-white.border-blue-100]="i > 2">
+        
+        <div class="w-10 h-10 flex items-center justify-center rounded-full bg-white/50 font-bold text-lg shadow-inner">
+          @if (i === 0) { 🥇 }
+          @else if (i === 1) { 🥈 }
+          @else if (i === 2) { 🥉 }
+          @else { {{ i + 1 }} }
+        </div>
+
+        <div class="ml-4 grow">
+          <p class="font-black uppercase text-sm" [class.text-yellow-900]="i === 0">{{ equipo.nombre }}</p>
+          
+        </div>
+
+        <div class="text-2xl font-black italic">
+          {{ equipo.puntos }}
+        </div>
+      </div>
+    }
+  </div>
+</div>

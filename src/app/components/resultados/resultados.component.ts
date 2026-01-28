@@ -180,7 +180,6 @@ export class ResultadosComponent implements OnInit, OnDestroy {
         return;
       }
       existing.partidos.push(p);
-      // Keep the earliest known date if any inconsistent data arrives
       if (!existing.eventoFecha && p.eventoFecha)
         existing.eventoFecha = p.eventoFecha;
     });
@@ -198,7 +197,6 @@ export class ResultadosComponent implements OnInit, OnDestroy {
   totalPartidos = computed(() => this._partidosFiltrados().length);
 
   ngOnInit(): void {
-    // React to /eventos/:idEvento/resultados navigation
     this._subs.add(
       this._route.paramMap.subscribe((pm) => {
         const raw = pm.get('idEvento');
@@ -209,12 +207,10 @@ export class ResultadosComponent implements OnInit, OnDestroy {
         const parsed = Number(raw);
         const nextEventoId = Number.isFinite(parsed) ? parsed : null;
         this.selectedEventoId.set(nextEventoId);
-        // When event is preset/changed, reset activity filter so it can't be invalid.
         this.selectedActividadId.set(null);
       }),
     );
 
-    // Determinar si el usuario es capitán (el servidor sigue validando permisos).
     const userIdRaw = localStorage.getItem('userID');
     const userId = userIdRaw ? Number.parseInt(userIdRaw, 10) : NaN;
     if (Number.isFinite(userId) && userId > 0) {
@@ -237,11 +233,11 @@ export class ResultadosComponent implements OnInit, OnDestroy {
 
   loadData(): void {
     this.isLoading.set(true);
-    this.error.set(null); // Limpiar error previo al iniciar nueva carga
+    this.error.set(null);
     this._resultadosService.getInformacionCompleta().subscribe({
       next: (data) => {
         this.partidos.set(data);
-        this.error.set(null); // Limpiar error en caso de éxito
+        this.error.set(null); 
         this.isLoading.set(false);
       },
       error: () => {
@@ -262,7 +258,6 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     this.error.set(null);
     this.isSaving.set(false);
 
-    // Cargar TODOS los eventos para crear (no solo los que ya tienen resultados)
     this._eventosService.getEventos().subscribe({
       next: (eventos) => this.createEventosAll.set(eventos ?? []),
       error: () => {
@@ -306,7 +301,6 @@ export class ResultadosComponent implements OnInit, OnDestroy {
   }
 
   onCreateEventoChange(raw: unknown): void {
-    // `ngModelChange` puede emitir number | null
     const parsed =
       raw == null || raw === ''
         ? NaN
@@ -316,7 +310,6 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     const idEvento = Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 
     this.createEventoId.set(idEvento);
-    // Asegurar que solo se muestren actividades del evento seleccionado
     if (idEvento != null) {
       this.loadCreateActividades(idEvento);
     } else {
@@ -463,8 +456,6 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     if (!raw) {
       this.selectedEventoId.set(null);
       this.selectedActividadId.set(null);
-      // If we came from /eventos/:idEvento/resultados, clear the param route
-      // so it doesn't "lock" the page to that event from the URL.
       if (this._route.snapshot.paramMap.get('idEvento')) {
         void this._router.navigate(['/resultados']);
       }
@@ -475,7 +466,6 @@ export class ResultadosComponent implements OnInit, OnDestroy {
     if (Number.isFinite(parsed)) {
       this.selectedEventoId.set(parsed);
     } else {
-      // Allow selecting by event label (typed into the searchable input).
       const match = this.eventosDisponibles().find(
         (e) => e.eventoNombre === normalized,
       );

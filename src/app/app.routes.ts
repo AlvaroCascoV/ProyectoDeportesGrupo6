@@ -9,6 +9,7 @@ import { authGuard } from './auth/guards/auth.guard';
 import { PanelOrganizadorComponent } from './components/panel-organizador/panel-organizador.component';
 import { roleIdGuard } from './auth/guards/role-id.guard';
 import { ResultadosComponent } from './components/resultados/resultados.component';
+import { Ranking } from './components/Ranking/Ranking';
 
 export const routes: Routes = [
   { path: 'auth', loadChildren: () => import('./auth/auth.routes') },
@@ -22,6 +23,7 @@ export const routes: Routes = [
       { path: 'equipos', component: EquiposComponent },
       { path: 'perfil', component: PerfilComponent },
       { path: 'resultados', component: ResultadosComponent },
+      { path: 'ranking', component: Ranking },
       {
         path: 'organizador',
         component: PanelOrganizadorComponent,
