@@ -1,4 +1,6 @@
-<app-menu></app-menu>
+@if (authService.authStatus() === 'authenticated') {
+  <app-menu></app-menu>
+}
 <router-outlet></router-outlet>
 <style>
   :host {

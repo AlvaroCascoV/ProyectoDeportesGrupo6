@@ -13,7 +13,12 @@ export class LoginPage {
   fb = inject(FormBuilder);
   hasError = signal(false);
   isPosting = signal(false);
+  passwordVisible = signal(false);
   router = inject(Router);
+
+  togglePasswordVisibility(): void {
+    this.passwordVisible.update((v) => !v);
+  }
 
   authService = inject(AuthService);
 

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MenuComponent } from './components/menu/menu.component';
 import { FullCalendarModule } from '@fullcalendar/angular';
+import { AuthService } from './auth/services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -12,4 +13,5 @@ import { FullCalendarModule } from '@fullcalendar/angular';
 })
 export class AppComponent {
   title = 'ProyectoDeportesGrupo6';
+  authService = inject(AuthService);
 }

@@ -37,12 +37,24 @@
         class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
       ></i>
       <input
-        type="password"
+        [type]="passwordVisible() ? 'text' : 'password'"
         placeholder="Tu contraseña"
         formControlName="password"
-        class="w-full pl-10 pr-3 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+        class="w-full pl-10 pr-10 py-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
         autocomplete="current-password"
       />
+      <button
+        type="button"
+        (click)="togglePasswordVisibility()"
+        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer p-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+        [attr.aria-label]="passwordVisible() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+      >
+        @if (passwordVisible()) {
+          <i class="fa-solid fa-eye-slash"></i>
+        } @else {
+          <i class="fa-solid fa-eye"></i>
+        }
+      </button>
     </div>
     @if (loginForm.get('password')?.touched &&
     loginForm.get('password')?.invalid) {
