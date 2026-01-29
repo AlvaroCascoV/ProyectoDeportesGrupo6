@@ -41,6 +41,24 @@
       </svg>
       Eliminar Actividad
     </button>
+    <button
+      (click)="abrirModalUpdateEvento()"
+      class="bg-yellow-400 text-black px-8 py-4 rounded-lg hover:bg-yellow-500 cursor-pointer font-semibold text-lg transition-colors flex items-center justify-center gap-2"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+      </svg>
+      Modificar Evento
+    </button>
+    <button
+      (click)="abrirModalUpdateActividad()"
+      class="bg-orange-400 text-black px-8 py-4 rounded-lg hover:bg-orange-500 cursor-pointer font-semibold text-lg transition-colors flex items-center justify-center gap-2"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+      </svg>
+      Modificar Actividad
+    </button>
     <app-gestion-capitanes (cambiosRealizados)="onCambiosCapitanes()"></app-gestion-capitanes>
     <app-gestion-pagos></app-gestion-pagos>
   </div>
@@ -359,6 +377,231 @@
         </form>
       </div>
     </div>
+  }
+
+  <!-- Modal para modificar evento -->
+  @if (mostrarModalUpdateEvento) {
+  <div
+    class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200"
+      (click)="$event.stopPropagation()"
+      style="background-color: white"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">Modificar Evento</h2>
+        <button
+          (click)="cerrarModalUpdateEvento()"
+          class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+        >
+          ×
+        </button>
+      </div>
+
+      <!-- Loader mientras se modifica el evento -->
+      @if(modificandoEvento) {
+      <div class="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-yellow-500 mb-4"></div>
+        <p class="text-gray-700 font-semibold text-lg">Guardando cambios...</p>
+        <p class="text-gray-500 text-sm mt-2">Por favor, espera un momento</p>
+      </div>
+      }
+
+      <form (ngSubmit)="modificarEvento()">
+        <div class="mb-4">
+          <label
+            for="selectEventoModificar"
+            class="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Selecciona el evento a modificar
+          </label>
+          <select
+            [(ngModel)]="IdEventoActualizar"
+            name="eventoAModificar"
+            id="selectEventoModificar"
+            (change)="onEventoSeleccionadoParaModificar()"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-gray-800"
+          >
+            <option [ngValue]="0">Selecciona un evento</option>
+            @for(evento of eventos; track evento.idEvento){
+              <option [ngValue]="evento.idEvento">Evento #{{evento.idEvento}} - {{formatearFecha(evento.fechaEvento)}}</option>
+            }
+          </select>
+        </div>
+
+        @if(IdEventoActualizar && eventoAModificar) {
+        <div class="mb-4">
+          <label
+            for="fechaEventoModificar"
+            class="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Fecha del Evento
+          </label>
+          <input
+            type="date"
+            id="fechaEventoModificar"
+            [(ngModel)]="eventoAModificar.fechaEvento"
+            name="fechaEventoModificar"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+          />
+        </div>
+
+        <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p class="text-sm text-yellow-800">
+            <strong>Nota:</strong> Selecciona o deselecciona actividades para añadirlas o quitarlas del evento. Los cambios en actividades se guardan automáticamente.
+          </p>
+        </div>
+
+        @if(actividades && actividades.length > 0) {
+        <div class="actividades-section mb-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Actividades del Evento</label>
+          <div class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 p-3 rounded-lg">
+            @for(actividad of actividades; track actividad.idActividad){
+            <div class="flex items-center gap-2">
+              <input
+                type="checkbox"
+                [id]="'actividad-modificar-' + actividad.idActividad"
+                [value]="actividad.idActividad"
+                [checked]="actividadEstaSeleccionadaModificar(actividad.idActividad)"
+                (change)="onActividadSeleccionadaModificar(actividad, $event)"
+                class="w-4 h-4 text-yellow-400 rounded focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+              />
+              <label
+                [for]="'actividad-modificar-' + actividad.idActividad"
+                class="text-sm text-gray-700 cursor-pointer flex-1"
+              >
+                {{ actividad.nombre }} (Mín: {{ actividad.minimoJugadores }})
+              </label>
+            </div>
+            }
+          </div>
+        </div>
+        }
+        }
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="cerrarModalUpdateEvento()"
+            class="flex-1 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 font-semibold"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!IdEventoActualizar || !eventoAModificar"
+            class="flex-1 bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+
+  <!-- Modal para modificar actividad -->
+  @if (mostrarModalUpdateActividad) {
+  <div
+    class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+    (click)="cerrarModalUpdateActividad()"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200"
+      (click)="$event.stopPropagation()"
+      style="background-color: white"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">Modificar Actividad</h2>
+        <button
+          (click)="cerrarModalUpdateActividad()"
+          class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+        >
+          ×
+        </button>
+      </div>
+
+      <form (ngSubmit)="modificarActividad()">
+        <div class="mb-4">
+          <label
+            for="selectActividadModificar"
+            class="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Selecciona la actividad a modificar
+          </label>
+          <select
+            [(ngModel)]="idActividadAModificar"
+            name="actividadAModificar"
+            id="selectActividadModificar"
+            (change)="onActividadSeleccionadaParaModificar()"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white text-gray-800"
+          >
+            <option [ngValue]="0">Selecciona una actividad</option>
+            @for(actividad of actividades; track actividad.idActividad){
+              <option [ngValue]="actividad.idActividad">{{ actividad.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        @if(idActividadAModificar && actividadAModificar.idActividad) {
+        <div class="mb-4">
+          <label
+            for="nombreActividadModificar"
+            class="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Nombre de la Actividad
+          </label>
+          <input
+            type="text"
+            id="nombreActividadModificar"
+            [(ngModel)]="actividadAModificar.nombre"
+            name="nombreActividadModificar"
+            placeholder="Ej: Fútbol, Baloncesto..."
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+          />
+        </div>
+
+        <div class="mb-6">
+          <label
+            for="minimoJugadoresModificar"
+            class="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Mínimo de Jugadores
+          </label>
+          <input
+            type="number"
+            id="minimoJugadoresModificar"
+            [(ngModel)]="actividadAModificar.minimoJugadores"
+            name="minimoJugadoresModificar"
+            required
+            min="1"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+          />
+        </div>
+        }
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="cerrarModalUpdateActividad()"
+            class="flex-1 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 font-semibold"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="!idActividadAModificar || !actividadAModificar.idActividad"
+            class="flex-1 bg-orange-400 text-black px-4 py-2 rounded hover:bg-orange-500 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
   }
 
 </div>
