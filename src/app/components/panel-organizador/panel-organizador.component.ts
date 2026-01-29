@@ -12,7 +12,8 @@ import { InscripcionesService } from '../../services/inscripciones/inscripciones
 import { GestionCapitanesComponent } from '../gestion-capitanes/gestion-capitanes.component';
 import { GestionPagosComponent } from '../gestion-pagos/gestion-pagos.component';
 import Swal from 'sweetalert2';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-panel-organizador',
@@ -437,16 +438,16 @@ export class PanelOrganizadorComponent implements OnInit {
   deleteEvento() {
     Swal.fire({
       title: '¿Estás seguro?',
-      text: 'Esta acción no se podrá deshacer...',
-      icon: 'question',
+      text: 'Se eliminará el evento y todo lo asociado (actividades, inscripciones, etc.) en cascada. Esta acción no se podrá deshacer.',
+      icon: 'warning',
       showCancelButton: true,
       cancelButtonText: 'Cancelar',
       cancelButtonColor: '#595d60',
-      confirmButtonText: 'Eliminar',
+      confirmButtonText: 'Eliminar en cascada',
       confirmButtonColor: '#c60000',
     }).then((result) => {
       if (result.isConfirmed) {
-        this._servicioEventos.deleteEvento(this.idEventoAEliminar).subscribe({
+        this._servicioEventos.deleteEventoPanic(this.idEventoAEliminar).subscribe({
           next: (response) => {
             Swal.fire({
               title: 'Evento Eliminado!',
@@ -487,33 +488,43 @@ export class PanelOrganizadorComponent implements OnInit {
   deleteActividad() {
     Swal.fire({
       title: '¿Estás seguro?',
-      text: 'Esta acción no se podrá deshacer...',
-      icon: 'question',
+      text: 'Se eliminará la actividad y todas sus asignaciones a eventos (en cascada). Esta acción no se podrá deshacer.',
+      icon: 'warning',
       showCancelButton: true,
       cancelButtonText: 'Cancelar',
       cancelButtonColor: '#595d60',
-      confirmButtonText: 'Eliminar',
+      confirmButtonText: 'Eliminar en cascada',
       confirmButtonColor: '#c60000',
     }).then((result) => {
       if (result.isConfirmed) {
-        this._servicioActividades
-          .deleteActividad(this.idActividadAEliminar)
+        const idActividad = this.idActividadAEliminar;
+        this._servicioEventos
+          .getTodosActividadesEvento()
+          .pipe(
+            switchMap((lista) => {
+              const relacionados = lista.filter((ae) => ae.idActividad === idActividad);
+              if (relacionados.length === 0) return of(null);
+              return forkJoin(
+                relacionados.map((ae) =>
+                  this._servicioEventos.deleteActividadesEvento(ae.idEventoActividad)
+                )
+              );
+            }),
+            switchMap(() => this._servicioActividades.deleteActividad(idActividad))
+          )
           .subscribe({
-            next: (response) => {
+            next: () => {
               Swal.fire({
                 title: 'Actividad Eliminada!',
-                text: 'La actividad se ha eliminado correctamente',
+                text: 'La actividad y sus asignaciones se han eliminado correctamente',
                 icon: 'success',
                 confirmButtonText: 'Aceptar',
                 confirmButtonColor: '#3085d6',
               }).then(() => {
                 this.cerrarModalDeleteActividad();
-                // Recargar actividades
-                this._servicioActividades
-                  .getActividades()
-                  .subscribe((response) => {
-                    this.actividades = response;
-                  });
+                this._servicioActividades.getActividades().subscribe((response) => {
+                  this.actividades = response;
+                });
               });
             },
             error: (response) => {

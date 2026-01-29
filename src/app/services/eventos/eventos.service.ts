@@ -99,13 +99,21 @@ export class EventosService {
     return this._http.put<any>(`${this.url}api/eventos/update`, evento, {headers: header});
   }
 
-  deleteActividadesEvento(idEventoActividad: number): Observable<any>{
-    let header = new HttpHeaders().set(
+  /** Lista todas las relaciones evento-actividad (para cascadas). */
+  getTodosActividadesEvento(): Observable<ActividadesEvento[]> {
+    return this._http.get<ActividadesEvento[]>(`${this.url}api/ActividadesEvento`);
+  }
+
+  /** Elimina una relación evento-actividad y todo lo asociado en cascada (panic delete). */
+  deleteActividadesEvento(idEventoActividad: number): Observable<any> {
+    const header = new HttpHeaders().set(
       'Authorization',
       `Bearer ${localStorage.getItem('token')}`
     );
-    return this._http.delete<any>(`${this.url}api/ActividadesEvento/deleteeventoactividadpanic/${idEventoActividad}`, {headers: header});
-
+    return this._http.delete<any>(
+      `${this.url}api/actividadesevento/deleteeventoactividadpanic/${idEventoActividad}`,
+      { headers: header }
+    );
   }
   
   deleteEvento(idEvento:number): Observable<any>{
@@ -115,5 +123,16 @@ export class EventosService {
     );
     return this._http.delete<any>(`${this.url}api/eventos/${idEvento}`, {headers: header});
   }
-    
+
+  /** Elimina el evento y todo lo asociado en cascada (panic delete). */
+  deleteEventoPanic(idEvento: number): Observable<any> {
+    const header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.delete<any>(
+      `${this.url}api/eventos/deleteeventopanic/${idEvento}`,
+      { headers: header }
+    );
+  }
 }

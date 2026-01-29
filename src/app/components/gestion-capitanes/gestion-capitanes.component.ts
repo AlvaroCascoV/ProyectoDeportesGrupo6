@@ -117,6 +117,9 @@ export class GestionCapitanesComponent implements OnInit {
   }
 
   cargarJugadoresEnLotes(actividades: ActividadesEvento[]): void {
+    // Sin actividades no hay nada que cargar (p. ej. BD vacía o evento sin actividades)
+    if (!actividades?.length) return;
+
     // Marcar todas las actividades como cargando
     actividades.forEach(actividad => {
       this.actividadesCargandoJugadores.add(actividad.idEventoActividad);
@@ -221,6 +224,9 @@ export class GestionCapitanesComponent implements OnInit {
   }
 
   cargarDetallesCapitanesEnLotes(actividades: ActividadesEvento[]): void {
+    // Sin actividades no hay nada que cargar (solo se llama con length > 0, pero por seguridad)
+    if (!actividades?.length) return;
+
     // Cargar detalles de capitanes en lotes de 3
     const batchSize = 3;
     let currentIndex = 0;
