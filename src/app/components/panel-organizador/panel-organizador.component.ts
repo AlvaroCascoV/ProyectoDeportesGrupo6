@@ -573,8 +573,8 @@ export class PanelOrganizadorComponent implements OnInit {
 
     this.eventoAModificar = { ...eventoSeleccionado };
     // Convertir la fecha al formato para input date (YYYY-MM-DD)
-    const fecha = new Date(eventoSeleccionado.fechaEvento);
-    this.eventoAModificar.fechaEvento = fecha.toISOString().split('T')[0];
+    // Extraer directamente la fecha sin conversiones de zona horaria
+    this.eventoAModificar.fechaEvento = eventoSeleccionado.fechaEvento.split('T')[0];
 
     this.actividadesModificarSeleccionadas = [];
     this.actividadesEventoOriginal = [];

@@ -418,8 +418,8 @@ export class EventosComponent implements OnInit {
 
     this.eventoAModificar = { ...eventoOriginal };
     // Convertir la fecha al formato para input date (YYYY-MM-DD)
-    const fecha = new Date(eventoOriginal.fechaEvento);
-    this.eventoAModificar.fechaEvento = fecha.toISOString().split('T')[0];
+    // Extraer directamente la fecha sin conversiones de zona horaria
+    this.eventoAModificar.fechaEvento = eventoOriginal.fechaEvento.split('T')[0];
 
     this.actividadesModificarSeleccionadas = [];
     this.actividadesEventoOriginal = [];
