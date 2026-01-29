@@ -97,6 +97,14 @@
           >
             Detalles
           </button>
+          @if(esOrganizador) {
+          <button
+            (click)="abrirModalModificar(evento)"
+            class="bg-yellow-300 text-black px-6 py-2 rounded hover:bg-yellow-500 cursor-pointer font-semibold w-full"
+          >
+            Modificar
+          </button>
+          }
           @if (comprobarFechaProxima(evento)) {
             <button
               (click)="abrirModalInscripcion(evento)"
@@ -373,6 +381,107 @@
           Crear
         </button>
       </div>
+    </div>
+  </div>
+  }
+
+  <!-- Modal para modificar evento -->
+  @if (mostrarModalModificar) {
+  <div
+    class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+    (click)="cerrarModalModificar()"
+  >
+    <div
+      class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200"
+      (click)="$event.stopPropagation()"
+      style="background-color: white"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">Modificar Evento</h2>
+        <button
+          (click)="cerrarModalModificar()"
+          class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+        >
+          ×
+        </button>
+      </div>
+
+      <!-- Loader mientras se modifica el evento -->
+      @if(modificandoEvento) {
+      <div class="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-lg flex flex-col items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-yellow-500 mb-4"></div>
+        <p class="text-gray-700 font-semibold text-lg">Guardando cambios...</p>
+        <p class="text-gray-500 text-sm mt-2">Por favor, espera un momento</p>
+      </div>
+      }
+
+      <form (ngSubmit)="modificarEvento()">
+        <div class="mb-4">
+          <label
+            for="fechaEventoModificar"
+            class="block text-sm font-semibold text-gray-700 mb-2"
+          >
+            Fecha del Evento
+          </label>
+          <input
+            type="date"
+            id="fechaEventoModificar"
+            [(ngModel)]="eventoAModificar.fechaEvento"
+            name="fechaEventoModificar"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent"
+          />
+        </div>
+
+        <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p class="text-sm text-yellow-800">
+            <strong>Nota:</strong> Selecciona o deselecciona actividades para añadirlas o quitarlas del evento. Los cambios se guardan automáticamente.
+          </p>
+        </div>
+
+        @if(actividades && actividades.length > 0) {
+        <div class="actividades-section mb-4">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Actividades del Evento</label>
+          @for(actividad of actividades; track actividad.idActividad){
+          <div class="checkbox-wrapper flex items-center gap-2 mb-2">
+            <div class="flex items-center flex-1">
+              <input
+                type="checkbox"
+                [id]="'actividad-modificar-' + actividad.idActividad"
+                [value]="actividad.idActividad"
+                [checked]="actividadEstaSeleccionadaModificar(actividad.idActividad)"
+                (change)="onActividadSeleccionadaModificar(actividad, $event)"
+                class="custom-checkbox"
+              />
+              <label
+                [for]="'actividad-modificar-' + actividad.idActividad"
+                class="checkbox-label"
+              >
+                <div class="checkbox-custom"></div>
+                <span class="checkbox-text">{{ actividad.nombre }}</span>
+              </label>
+            </div>
+          </div>
+          }
+        </div>
+        }
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="cerrarModalModificar()"
+            class="flex-1 bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400 font-semibold"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="flex-1 bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500 font-semibold"
+          >
+            Guardar Cambios
+          </button>
+        </div>
+      </form>
     </div>
   </div>
   }

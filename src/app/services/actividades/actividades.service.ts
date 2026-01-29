@@ -27,6 +27,13 @@ export class ActividadesService {
     );
   }
 
+  updateActividad(actividad: Actividad): Observable<any> {
+    const header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.put<any>(`${this.url}api/actividades/update`, actividad, { headers: header });
+  }
   deleteActividad(idActividad: number): Observable<any> {
     const header = new HttpHeaders().set(
       'Authorization',
