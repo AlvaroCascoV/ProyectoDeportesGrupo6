@@ -67,7 +67,9 @@
   @if (mostrarModalEvento) {
   <div
     class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
-    
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-modal-crear-evento"
   >
     <div
       class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200"
@@ -75,10 +77,12 @@
       style="background-color: white"
     >
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Crear Nuevo Evento</h2>
+        <h2 id="titulo-modal-crear-evento" class="text-2xl font-bold text-gray-800">Crear Nuevo Evento</h2>
         <button
+          type="button"
           (click)="cerrarModalEvento()"
           class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          aria-label="Cerrar"
         >
           ×
         </button>
@@ -186,6 +190,9 @@
   @if (mostrarModalActividad) {
   <div
     class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-modal-crear-actividad"
     (click)="cerrarModalActividad()"
   >
     <div
@@ -194,10 +201,12 @@
       style="background-color: white"
     >
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Crear Nueva Actividad</h2>
+        <h2 id="titulo-modal-crear-actividad" class="text-2xl font-bold text-gray-800">Crear Nueva Actividad</h2>
         <button
+          type="button"
           (click)="cerrarModalActividad()"
           class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          aria-label="Cerrar"
         >
           ×
         </button>
@@ -263,6 +272,9 @@
   @if(mostrarModalDeleteEvento){
     <div
       class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-modal-eliminar-evento"
       (click)="cerrarModalDeleteEvento()"
     >
       <div
@@ -271,10 +283,12 @@
         style="background-color: white"
       >
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-gray-800">Eliminar Evento</h2>
+          <h2 id="titulo-modal-eliminar-evento" class="text-2xl font-bold text-gray-800">Eliminar Evento</h2>
           <button
+            type="button"
             (click)="cerrarModalDeleteEvento()"
             class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            aria-label="Cerrar"
           >
             ×
           </button>
@@ -322,6 +336,9 @@
   @if(mostrarModalDeleteActividad){
     <div
       class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="titulo-modal-eliminar-actividad"
       (click)="cerrarModalDeleteActividad()"
     >
       <div
@@ -330,10 +347,12 @@
         style="background-color: white"
       >
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-gray-800">Eliminar Actividad</h2>
+          <h2 id="titulo-modal-eliminar-actividad" class="text-2xl font-bold text-gray-800">Eliminar Actividad</h2>
           <button
+            type="button"
             (click)="cerrarModalDeleteActividad()"
             class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            aria-label="Cerrar"
           >
             ×
           </button>
@@ -383,6 +402,9 @@
   @if (mostrarModalUpdateEvento) {
   <div
     class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-modal-modificar-evento"
   >
     <div
       class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4 relative z-10 border border-gray-200"
@@ -390,10 +412,12 @@
       style="background-color: white"
     >
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Modificar Evento</h2>
+        <h2 id="titulo-modal-modificar-evento" class="text-2xl font-bold text-gray-800">Modificar Evento</h2>
         <button
+          type="button"
           (click)="cerrarModalUpdateEvento()"
           class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          aria-label="Cerrar"
         >
           ×
         </button>
@@ -417,7 +441,7 @@
             Selecciona el evento a modificar
           </label>
           <select
-            [(ngModel)]="IdEventoActualizar"
+            [(ngModel)]="idEventoActualizar"
             name="eventoAModificar"
             id="selectEventoModificar"
             (change)="onEventoSeleccionadoParaModificar()"
@@ -430,7 +454,7 @@
           </select>
         </div>
 
-        @if(IdEventoActualizar && eventoAModificar) {
+        @if(idEventoActualizar && eventoAModificar) {
         <div class="mb-4">
           <label
             for="fechaEventoModificar"
@@ -491,7 +515,7 @@
           </button>
           <button
             type="submit"
-            [disabled]="!IdEventoActualizar || !eventoAModificar"
+            [disabled]="!idEventoActualizar || !eventoAModificar"
             class="flex-1 bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Guardar Cambios
@@ -506,6 +530,9 @@
   @if (mostrarModalUpdateActividad) {
   <div
     class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-white/30"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="titulo-modal-modificar-actividad"
     (click)="cerrarModalUpdateActividad()"
   >
     <div
@@ -514,10 +541,12 @@
       style="background-color: white"
     >
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-2xl font-bold text-gray-800">Modificar Actividad</h2>
+        <h2 id="titulo-modal-modificar-actividad" class="text-2xl font-bold text-gray-800">Modificar Actividad</h2>
         <button
+          type="button"
           (click)="cerrarModalUpdateActividad()"
           class="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          aria-label="Cerrar"
         >
           ×
         </button>

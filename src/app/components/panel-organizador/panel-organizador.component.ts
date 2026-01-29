@@ -33,7 +33,7 @@ export class PanelOrganizadorComponent implements OnInit {
   public eventos: Evento[] = [];
   public idEventoAEliminar!: number;
   public idActividadAEliminar!: number;
-  public IdEventoActualizar!: number;
+  public idEventoActualizar = 0;
   // Datos para formulario de evento
   public nuevoEvento = {
     fechaEvento: '',
@@ -43,7 +43,7 @@ export class PanelOrganizadorComponent implements OnInit {
   public preciosActividades: { [key: number]: number } = {};
 
   // Variables para modal de modificar evento
-  public eventoAModificar!: Evento;
+  public eventoAModificar: Evento | null = null;
   public actividadesEventoOriginal: ActividadesEvento[] = [];
   public actividadesModificarSeleccionadas: Actividad[] = [];
   public modificandoEvento = false;
@@ -546,15 +546,17 @@ export class PanelOrganizadorComponent implements OnInit {
   cerrarModalUpdateEvento(): void {
     this.mostrarModalUpdateEvento = false;
     this.modificandoEvento = false;
+    this.idEventoActualizar = 0;
+    this.eventoAModificar = null;
     this.actividadesModificarSeleccionadas = [];
     this.actividadesEventoOriginal = [];
   }
 
   onEventoSeleccionadoParaModificar(): void {
-    if (!this.IdEventoActualizar) return;
+    if (!this.idEventoActualizar) return;
 
     const eventoSeleccionado = this.eventos.find(
-      (e) => e.idEvento === this.IdEventoActualizar
+      (e) => e.idEvento === this.idEventoActualizar
     );
     if (!eventoSeleccionado) return;
 
@@ -566,12 +568,14 @@ export class PanelOrganizadorComponent implements OnInit {
     this.actividadesModificarSeleccionadas = [];
     this.actividadesEventoOriginal = [];
 
-    // Cargar las actividades del evento
-    this._servicioEventos.getActividadesEvento(this.IdEventoActualizar).subscribe({
-      next: (actividadesEvento) => {
-        this.actividadesEventoOriginal = actividadesEvento || [];
-        // Marcar las actividades que ya están asociadas al evento
-        this.actividadesModificarSeleccionadas = this.actividades.filter((act) =>
+    // Cargar actividades y actividades del evento en paralelo para evitar estado vacío si actividades aún no ha llegado
+    forkJoin({
+      actividades: this._servicioActividades.getActividades(),
+      actividadesEvento: this._servicioEventos.getActividadesEvento(this.idEventoActualizar),
+    }).subscribe({
+      next: (result) => {
+        this.actividadesEventoOriginal = result.actividadesEvento || [];
+        this.actividadesModificarSeleccionadas = result.actividades.filter((act) =>
           this.actividadesEventoOriginal.some(
             (ae) => ae.idActividad === act.idActividad
           )
@@ -592,6 +596,8 @@ export class PanelOrganizadorComponent implements OnInit {
   }
 
   onActividadSeleccionadaModificar(actividad: Actividad, event: Event): void {
+    const evento = this.eventoAModificar;
+    if (!evento) return;
     const input = event.target as HTMLInputElement;
     const actividadEvento = this.actividadesEventoOriginal.find(
       (ae) => ae.idActividad === actividad.idActividad
@@ -608,19 +614,19 @@ export class PanelOrganizadorComponent implements OnInit {
       // Si no estaba en el evento original, insertar
       if (!actividadEvento) {
         this._servicioEventos
-          .insertarActividadesEvento(this.eventoAModificar.idEvento, actividad.idActividad)
+          .insertarActividadesEvento(evento.idEvento, actividad.idActividad)
           .subscribe({
             next: (response) => {
               console.log('Actividad insertada:', response);
               // Añadir a las actividades originales para mantener el tracking
               this.actividadesEventoOriginal.push({
                 idEventoActividad: response.idEventoActividad || response.id,
-                idEvento: this.eventoAModificar.idEvento,
+                idEvento: evento.idEvento,
                 idActividad: actividad.idActividad,
                 nombreActividad: actividad.nombre,
                 posicion: 0,
-                fechaEvento: this.eventoAModificar.fechaEvento,
-                idProfesor: this.eventoAModificar.idProfesor,
+                fechaEvento: evento.fechaEvento,
+                idProfesor: evento.idProfesor,
                 minimoJugadores: 0,
               } as ActividadesEvento);
               Swal.fire({
