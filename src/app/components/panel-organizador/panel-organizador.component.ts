@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Evento } from '../../models/Evento';
 import { Actividad } from '../../models/Actividad';
+import { ActividadesEvento } from '../../models/ActividadesEvento';
 import { EventosService } from '../../services/eventos/eventos.service';
 import { ProfesoresService } from '../../services/profesores/profesores.service';
 import { ActividadesService } from '../../services/actividades/actividades.service';
@@ -24,12 +25,15 @@ export class PanelOrganizadorComponent implements OnInit {
   // Estados para modales
   public mostrarModalEvento = false;
   public mostrarModalActividad = false;
+  public mostrarModalUpdateEvento = false;
   public mostrarModalDeleteEvento = false;
   public mostrarModalDeleteActividad = false;
+  public mostrarModalUpdateActividad = false;
   public insertandoActividades = false;
   public eventos: Evento[] = [];
   public idEventoAEliminar!: number;
   public idActividadAEliminar!: number;
+  public IdEventoActualizar!: number;
   // Datos para formulario de evento
   public nuevoEvento = {
     fechaEvento: '',
@@ -38,8 +42,22 @@ export class PanelOrganizadorComponent implements OnInit {
   public actividadesSeleccionadas: Actividad[] = [];
   public preciosActividades: { [key: number]: number } = {};
 
+  // Variables para modal de modificar evento
+  public eventoAModificar!: Evento;
+  public actividadesEventoOriginal: ActividadesEvento[] = [];
+  public actividadesModificarSeleccionadas: Actividad[] = [];
+  public modificandoEvento = false;
+
   // Datos para formulario de actividad
   public nuevaActividad = {
+    nombre: '',
+    minimoJugadores: 1,
+  };
+
+  // Datos para modificar actividad
+  public idActividadAModificar: number = 0;
+  public actividadAModificar: Actividad = {
+    idActividad: 0,
     nombre: '',
     minimoJugadores: 1,
   };
@@ -516,5 +534,297 @@ export class PanelOrganizadorComponent implements OnInit {
   onCambiosCapitanes(): void {
     // Método opcional para manejar cambios en capitanes si es necesario
     // Por ejemplo, refrescar eventos si es necesario
+  }
+
+  abrirModalUpdateEvento(): void {
+    this.mostrarModalUpdateEvento = true;
+    this._servicioEventos.getEventos().subscribe((response) => {
+      this.eventos = response;
+    });
+  }
+
+  cerrarModalUpdateEvento(): void {
+    this.mostrarModalUpdateEvento = false;
+    this.modificandoEvento = false;
+    this.actividadesModificarSeleccionadas = [];
+    this.actividadesEventoOriginal = [];
+  }
+
+  onEventoSeleccionadoParaModificar(): void {
+    if (!this.IdEventoActualizar) return;
+
+    const eventoSeleccionado = this.eventos.find(
+      (e) => e.idEvento === this.IdEventoActualizar
+    );
+    if (!eventoSeleccionado) return;
+
+    this.eventoAModificar = { ...eventoSeleccionado };
+    // Convertir la fecha al formato para input date (YYYY-MM-DD)
+    const fecha = new Date(eventoSeleccionado.fechaEvento);
+    this.eventoAModificar.fechaEvento = fecha.toISOString().split('T')[0];
+
+    this.actividadesModificarSeleccionadas = [];
+    this.actividadesEventoOriginal = [];
+
+    // Cargar las actividades del evento
+    this._servicioEventos.getActividadesEvento(this.IdEventoActualizar).subscribe({
+      next: (actividadesEvento) => {
+        this.actividadesEventoOriginal = actividadesEvento || [];
+        // Marcar las actividades que ya están asociadas al evento
+        this.actividadesModificarSeleccionadas = this.actividades.filter((act) =>
+          this.actividadesEventoOriginal.some(
+            (ae) => ae.idActividad === act.idActividad
+          )
+        );
+        this._cdr.detectChanges();
+      },
+      error: () => {
+        this.actividadesEventoOriginal = [];
+        this.actividadesModificarSeleccionadas = [];
+      },
+    });
+  }
+
+  actividadEstaSeleccionadaModificar(idActividad: number): boolean {
+    return this.actividadesModificarSeleccionadas.some(
+      (a) => a.idActividad === idActividad
+    );
+  }
+
+  onActividadSeleccionadaModificar(actividad: Actividad, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const actividadEvento = this.actividadesEventoOriginal.find(
+      (ae) => ae.idActividad === actividad.idActividad
+    );
+
+    if (input.checked) {
+      // Añadir actividad si no existe
+      if (!this.actividadesModificarSeleccionadas.find(
+        (a) => a.idActividad === actividad.idActividad
+      )) {
+        this.actividadesModificarSeleccionadas.push(actividad);
+      }
+
+      // Si no estaba en el evento original, insertar
+      if (!actividadEvento) {
+        this._servicioEventos
+          .insertarActividadesEvento(this.eventoAModificar.idEvento, actividad.idActividad)
+          .subscribe({
+            next: (response) => {
+              console.log('Actividad insertada:', response);
+              // Añadir a las actividades originales para mantener el tracking
+              this.actividadesEventoOriginal.push({
+                idEventoActividad: response.idEventoActividad || response.id,
+                idEvento: this.eventoAModificar.idEvento,
+                idActividad: actividad.idActividad,
+                nombreActividad: actividad.nombre,
+                posicion: 0,
+                fechaEvento: this.eventoAModificar.fechaEvento,
+                idProfesor: this.eventoAModificar.idProfesor,
+                minimoJugadores: 0,
+              } as ActividadesEvento);
+              Swal.fire({
+                title: 'Actividad añadida',
+                text: `Se ha añadido "${actividad.nombre}" al evento`,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+              });
+            },
+            error: (error) => {
+              console.error('Error al insertar actividad:', error);
+              // Revertir selección
+              this.actividadesModificarSeleccionadas = this.actividadesModificarSeleccionadas.filter(
+                (a) => a.idActividad !== actividad.idActividad
+              );
+              input.checked = false;
+              Swal.fire({
+                title: 'Error',
+                text: 'No se pudo añadir la actividad',
+                icon: 'error',
+              });
+            },
+          });
+      }
+    } else {
+      // Quitar de seleccionadas
+      this.actividadesModificarSeleccionadas = this.actividadesModificarSeleccionadas.filter(
+        (a) => a.idActividad !== actividad.idActividad
+      );
+
+      // Si estaba en el evento original, eliminar
+      if (actividadEvento) {
+        this._servicioEventos
+          .deleteActividadesEvento(actividadEvento.idEventoActividad)
+          .subscribe({
+            next: () => {
+              console.log('Actividad eliminada');
+              // Quitar de las actividades originales
+              this.actividadesEventoOriginal = this.actividadesEventoOriginal.filter(
+                (ae) => ae.idActividad !== actividad.idActividad
+              );
+              Swal.fire({
+                title: 'Actividad eliminada',
+                text: `Se ha eliminado "${actividad.nombre}" del evento`,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+              });
+            },
+            error: (error) => {
+              console.error('Error al eliminar actividad:', error);
+              // Revertir selección
+              this.actividadesModificarSeleccionadas.push(actividad);
+              input.checked = true;
+              Swal.fire({
+                title: 'Error',
+                text: 'No se pudo eliminar la actividad',
+                icon: 'error',
+              });
+            },
+          });
+      }
+    }
+  }
+
+  modificarEvento(): void {
+    if (!this.eventoAModificar || !this.eventoAModificar.fechaEvento) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Por favor, selecciona un evento y una fecha',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#d33',
+      });
+      return;
+    }
+
+    this.modificandoEvento = true;
+
+    // Convertir la fecha al formato ISO
+    const fechaISO = new Date(this.eventoAModificar.fechaEvento).toISOString();
+    const eventoActualizado: Evento = {
+      idEvento: this.eventoAModificar.idEvento,
+      fechaEvento: fechaISO,
+      idProfesor: this.eventoAModificar.idProfesor,
+      listaActividades: [],
+    };
+
+    this._servicioEventos.updateEvento(eventoActualizado).subscribe({
+      next: () => {
+        this.modificandoEvento = false;
+        this.cerrarModalUpdateEvento();
+
+        // Refrescar lista de eventos
+        this._servicioEventos.getEventos().subscribe((response) => {
+          this.eventos = response;
+        });
+
+        Swal.fire({
+          title: '¡Evento Modificado!',
+          text: 'El evento se ha actualizado correctamente',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        });
+      },
+      error: () => {
+        this.modificandoEvento = false;
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo modificar el evento. Por favor, intenta nuevamente',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33',
+        });
+      },
+    });
+  }
+
+  abrirModalUpdateActividad(): void {
+    this.mostrarModalUpdateActividad = true;
+    this._servicioActividades.getActividades().subscribe((response) => {
+      this.actividades = response;
+    });
+  }
+
+  cerrarModalUpdateActividad(): void {
+    this.mostrarModalUpdateActividad = false;
+    this.idActividadAModificar = 0;
+    this.actividadAModificar = {
+      idActividad: 0,
+      nombre: '',
+      minimoJugadores: 1,
+    };
+  }
+
+  onActividadSeleccionadaParaModificar(): void {
+    if (!this.idActividadAModificar) {
+      this.actividadAModificar = {
+        idActividad: 0,
+        nombre: '',
+        minimoJugadores: 1,
+      };
+      return;
+    }
+
+    const actividadSeleccionada = this.actividades.find(
+      (a) => a.idActividad === this.idActividadAModificar
+    );
+
+    if (actividadSeleccionada) {
+      this.actividadAModificar = { ...actividadSeleccionada };
+    }
+  }
+
+  modificarActividad(): void {
+    if (!this.actividadAModificar.nombre) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Por favor, ingresa un nombre para la actividad',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#d33',
+      });
+      return;
+    }
+
+    if (this.actividadAModificar.minimoJugadores < 1) {
+      Swal.fire({
+        title: 'Error',
+        text: 'El mínimo de jugadores debe ser al menos 1',
+        icon: 'error',
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#d33',
+      });
+      return;
+    }
+
+    this._servicioActividades.updateActividad(this.actividadAModificar).subscribe({
+      next: () => {
+        Swal.fire({
+          title: '¡Actividad Modificada!',
+          text: 'La actividad se ha actualizado correctamente',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#3085d6',
+        }).then(() => {
+          this.cerrarModalUpdateActividad();
+          // Recargar actividades
+          this._servicioActividades.getActividades().subscribe((response) => {
+            this.actividades = response;
+          });
+        });
+      },
+      error: () => {
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo modificar la actividad. Por favor, intenta nuevamente',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+          confirmButtonColor: '#d33',
+        });
+      },
+    });
   }
 }

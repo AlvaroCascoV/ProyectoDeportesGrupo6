@@ -91,6 +91,23 @@ export class EventosService {
     );
   }
 
+  updateEvento(evento: Evento): Observable<any>{
+    let header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.put<any>(`${this.url}api/eventos/update`, evento, {headers: header});
+  }
+
+  deleteActividadesEvento(idEventoActividad: number): Observable<any>{
+    let header = new HttpHeaders().set(
+      'Authorization',
+      `Bearer ${localStorage.getItem('token')}`
+    );
+    return this._http.delete<any>(`${this.url}api/ActividadesEvento/deleteeventoactividadpanic/${idEventoActividad}`, {headers: header});
+
+  }
+  
   deleteEvento(idEvento:number): Observable<any>{
     let header = new HttpHeaders().set(
       'Authorization',
