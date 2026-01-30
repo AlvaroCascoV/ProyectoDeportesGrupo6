@@ -1,14 +1,9 @@
 <div
   class="min-h-screen bg-linear-to-br from-white via-blue-50 to-blue-100 p-6 md:p-12"
 >
-  <header class="max-w-7xl mx-auto mb-12 text-center">
-    <h1
-      class="text-5xl font-extrabold bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-blue-400 uppercase italic tracking-tighter"
-    >
-      RESULTADOS DE PARTIDOS
-    </h1>
-    <div class="h-1 w-32 bg-blue-500 mx-auto mt-2 rounded-full"></div>
-  </header>
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Resultados</h1>
+  </div>
 
   <main class="max-w-7xl mx-auto">
     @if (error()) {
@@ -323,7 +318,7 @@
             <option [ngValue]="null">Selecciona un evento</option>
             @for (ev of createEventosOptions(); track ev.idEvento) {
               <option [ngValue]="ev.idEvento">
-                {{ ev.fechaEvento | date:'dd/MM/yyyy' }} (ID {{ ev.idEvento }})
+                {{ ev.fechaEvento | date: "dd/MM/yyyy" }} (ID {{ ev.idEvento }})
               </option>
             }
           </select>
