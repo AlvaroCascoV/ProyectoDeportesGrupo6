@@ -13,6 +13,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 
+import Swal from 'sweetalert2';
 import { AuthService } from '../../auth/services/auth.service';
 import { CapitanActividadesService } from '../../services/capitan-actividades/capitan-actividades.service';
 import { EventosService } from '../../services/eventos/eventos.service';
@@ -441,8 +442,18 @@ export class ResultadosComponent implements OnInit, OnDestroy {
       });
   }
 
-  deleteResultado(partido: ResultadoVisual): void {
-    if (!confirm(`¿Eliminar el resultado #${partido.id}?`)) return;
+  async deleteResultado(partido: ResultadoVisual): Promise<void> {
+    const result = await Swal.fire({
+      title: '¿Eliminar resultado?',
+      html: `¿Eliminar el resultado #<strong>${partido.id}</strong>?`,
+      icon: 'question',
+      showCancelButton: true,
+      cancelButtonText: 'Cancelar',
+      cancelButtonColor: '#595d60',
+      confirmButtonText: 'Sí, eliminar',
+      confirmButtonColor: '#d33',
+    });
+    if (!result.isConfirmed) return;
     this.isSaving.set(true);
     this._partidoResultadoService.delete(partido.id).subscribe({
       next: () => {
